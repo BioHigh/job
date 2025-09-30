@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Footer Example</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    footer {
+      background: #222;
+      color: #ddd;
+      padding: 50px 0 20px;
+    }
+    footer h4 {
+      color: #fff;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+    footer ul {
+      list-style: none;
+      padding: 0;
+    }
+    footer ul li {
+      margin-bottom: 10px;
+    }
+    footer ul li a {
+      color: #bbb;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    footer ul li a:hover {
+      color: #fff;
+    }
+    .copy-right {
+      border-top: 1px solid #444;
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 15px;
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+<div th:fragment="site-footer">
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      
+      <div class="col-md-3 col-sm-6">
+        <h4>Featured Job</h4>
+        <ul>
+          <li><a href="#">Browse Jobs</a></li>
+          <li><a href="#">Premium MBA Jobs</a></li>
+          <li><a href="#">Access Database</a></li>
+          <li><a href="#">Manage Responses</a></li>
+          <li><a href="#">Report a Problem</a></li>
+          <li><a href="#">Mobile Site</a></li>
+          <li><a href="#">Jobs by Skill</a></li>
+        </ul>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <h4>Latest Job</h4>
+        <ul>
+          <li><a href="#">Browse Jobs</a></li>
+          <li><a href="#">Premium MBA Jobs</a></li>
+          <li><a href="#">Access Database</a></li>
+          <li><a href="#">Manage Responses</a></li>
+          <li><a href="#">Report a Problem</a></li>
+          <li><a href="#">Mobile Site</a></li>
+          <li><a href="#">Jobs by Skill</a></li>
+        </ul>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <h4>Reach Us</h4>
+        <ul>
+          <li>1201, Murakeu Market, QUCH07<br>United Kingdom</li>
+          <li>Email: Support@job.com</li>
+          <li>Call: 044 123 458 65879</li>
+          <li>Skype: job@skype</li>
+          <li>FAX: 123 456 85</li>
+        </ul>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <h4>Drop A Mail</h4>
+        <form>
+          <div class="mb-2">
+            <input type="text" class="form-control form-control-sm" placeholder="Your Name">
+          </div>
+          <div class="mb-2">
+            <input type="email" class="form-control form-control-sm" placeholder="Email...">
+          </div>
+          <div class="mb-2">
+            <textarea class="form-control form-control-sm" rows="3" placeholder="Message"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Send</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="copy-right">
+    <p>&copy; Copyright 2025 JobJump | Design By <a href="https://jobjump.com/" class="text-decoration-none text-light">JobJump</a></p>
+  </div>
+</footer>
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
