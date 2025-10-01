@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Job Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: -50px;
+        }
+        .card-header {
+            background: linear-gradient(45deg, #4e73df, #2e59d9);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 2rem;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e3e6f0;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #4e73df, #2e59d9);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4);
+        }
+        .photo-comparison {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .photo-container {
+            text-align: center;
+            position: relative;
+        }
+        .photo-label {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        .current-photo-container {
+            border: 3px solid #28a745;
+            border-radius: 50%;
+            padding: 5px;
+            background: #f8fff9;
+        }
+        .new-photo-container {
+            border: 3px solid #007bff;
+            border-radius: 50%;
+            padding: 5px;
+            background: #f0f8ff;
+        }
+        .file-upload-container {
+            border: 2px dashed #dee2e6;
+            border-radius: 50%;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            cursor: pointer;
+            position: relative;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .file-upload-container:hover {
+            border-color: #4e73df;
+            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+        .file-upload-container.has-image {
+            border-style: solid;
+            border-color: #4e73df;
+            background: #f0f4ff;
+            padding: 1rem;
+        }
+        .file-upload-container.has-image:hover {
+            transform: none;
+        }
+        .photo-display {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .current-photo {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .upload-placeholder {
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .has-image .upload-placeholder {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        .remove-photo {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            font-size: 0.9rem;
+        }
+        .new-photo-container:hover .remove-photo {
+            opacity: 1;
+        }
+        .remove-photo:hover {
+            background: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .upload-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #4e73df, #2e59d9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+        .upload-icon i {
+            font-size: 1.25rem;
+            color: white;
+        }
+        .upload-text {
+            font-size: 0.85rem;
+            line-height: 1.2;
+        }
+        .upload-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #495057;
+        }
+        .upload-subtitle {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        .photo-upload-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        .file-info {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+        .comparison-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #6c757d;
+        }
+        .badge-current {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-new {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #007bff;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .input-group-text {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 2px solid #e3e6f0;
+            border-right: none;
+        }
+        .form-check-input:checked {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+        .btn-group .btn-outline-primary {
+            border-radius: 6px;
+        }
+        .btn-check:checked + .btn-outline-primary {
+            background: linear-gradient(45deg, #4e73df, #2e59d9);
+            border-color: #4e73df;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .photo-comparison {
+                gap: 1rem;
+            }
+            .comparison-arrow {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold">
+                        <i class="bi bi-pencil-square me-3"></i>Edit Profile
+                    </h1>
+                    <p class="lead mb-0">Update your personal information and preferences</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="btn-group">
+                        <a th:href="@{/user/profile}" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <br> <br> 
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-xl-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="h1 mb-0"><i class="bi bi-person-gear me-2"></i>Profile Details</h2>
+                        <p class="mb-0 opacity-75">Update your information below</p>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <!-- Alert Messages -->
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <form th:action="@{/user/profile/update}" method="post" enctype="multipart/form-data" id="editProfileForm">
+                            <input type="hidden" th:name="id" th:value="${user.id}">
+                            
+                            <!-- Profile Photo Comparison Section -->
+                            <div class="photo-upload-section">
+                                <label class="form-label mb-4 h5">
+                                    <i class="bi bi-camera-fill me-2"></i>Profile Photo
+                                </label>
+                                
+                                <div class="photo-comparison">
+                                    <!-- New Photo Upload -->
+                                    <div class="photo-container">
+                                        <div class="photo-label">New Photo</div>
+                                        <div class="new-photo-container position-relative">
+                                            <span class="badge-new">NEW</span>
+                                            <div class="file-upload-container" id="uploadContainer">
+                                                <div class="preview-container">
+                                                    <!-- New Photo Preview -->
+                                                    <img id="photoPreview" class="photo-display" alt="New profile photo preview" style="display: none;">
+                                                    <div class="upload-placeholder">
+                                                        <div class="upload-icon">
+                                                            <i class="bi bi-cloud-arrow-up"></i>
+                                                        </div>
+                                                        <div class="upload-text">
+                                                            <div class="upload-title">Upload New</div>
+                                                            <div class="upload-subtitle">Click or drag</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="remove-photo" id="removePhoto" title="Remove new photo">
+                                                    <i class="bi bi-x-lg text-danger"></i>
+                                                </button>
+                                                <input type="file" class="form-control d-none" id="profilePhoto" name="profilePhoto" 
+                                                       accept="image/*">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="file-info" class="file-info text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>JPG, PNG up to 5MB - Leave empty to keep current photo
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">
+                                            <i class="bi bi-person-fill me-2"></i>Full Name
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-person"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="name" name="name" 
+                                                   th:value="${user.name}" placeholder="Enter your full name" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="age" class="form-label">
+                                                    <i class="bi bi-calendar3 me-2"></i>Age
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-calendar3"></i>
+                                                    </span>
+                                                    <input type="number" class="form-control" id="age" name="age" 
+                                                           th:value="${user.age}" placeholder="Age" min="16" max="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="dateOfBirth" class="form-label">
+                                                    <i class="bi bi-calendar-date me-2"></i>Date of Birth
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-calendar-date"></i>
+                                                    </span>
+                                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                                                           th:value="${user.dateOfBirth}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-6">
+                                    <!-- Gender Selection -->
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i class="bi bi-gender-ambiguous me-2"></i>Gender
+                                        </label>
+                                        <div class="d-grid gap-2">
+                                            <div class="btn-group" role="group">
+                                                <input type="radio" class="btn-check" name="gender" id="male" value="Male" 
+                                                       th:checked="${user.gender == 'Male'}" autocomplete="off">
+                                                <label class="btn btn-outline-primary" for="male">
+                                                    <i class="bi bi-gender-male me-2"></i>Male
+                                                </label>
+
+                                                <input type="radio" class="btn-check" name="gender" id="female" value="Female" 
+                                                       th:checked="${user.gender == 'Female'}" autocomplete="off">
+                                                <label class="btn btn-outline-primary" for="female">
+                                                    <i class="bi bi-gender-female me-2"></i>Female
+                                                </label>
+
+                                                <input type="radio" class="btn-check" name="gender" id="other" value="Other" 
+                                                       th:checked="${user.gender == 'Other'}" autocomplete="off">
+                                                <label class="btn btn-outline-primary" for="other">
+                                                    <i class="bi bi-gender-neuter me-2"></i>Other
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">
+                                            <i class="bi bi-telephone-fill me-2"></i>Phone Number
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-phone"></i>
+                                            </span>
+                                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                                   th:value="${user.phone}" placeholder="+1 (555) 123-4567">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                                <a th:href="@{/user/profile}" class="btn btn-outline-secondary me-md-2 px-4">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="bi bi-check-circle me-2"></i>Update Profile
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Photo Preview Functionality
+        const profilePhotoInput = document.getElementById('profilePhoto');
+        const photoPreview = document.getElementById('photoPreview');
+        const uploadContainer = document.getElementById('uploadContainer');
+        const removePhotoBtn = document.getElementById('removePhoto');
+        const fileInfo = document.getElementById('file-info');
+        const currentPhotoDisplay = document.getElementById('currentPhotoDisplay');
+
+        // Click on upload container to trigger file input
+        uploadContainer.addEventListener('click', function(e) {
+            if (e.target !== removePhotoBtn && !e.target.closest('.remove-photo')) {
+                profilePhotoInput.click();
+            }
+        });
+
+        // Handle file selection
+        profilePhotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                if (!file.type.match('image.*')) {
+                    alert('Please select an image file (JPEG, PNG, etc.)');
+                    return;
+                }
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    return;
+                }
+
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    uploadContainer.classList.add('has-image');
+                    
+                    // Update file info
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                    fileInfo.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>${file.name} (${fileSize}MB) - New photo ready for update`;
+                    fileInfo.className = 'file-info text-success';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove photo
+        removePhotoBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering file input
+            profilePhotoInput.value = '';
+            photoPreview.style.display = 'none';
+            uploadContainer.classList.remove('has-image');
+            fileInfo.innerHTML = '<i class="bi bi-info-circle me-1"></i>JPG, PNG up to 5MB - Leave empty to keep current photo';
+            fileInfo.className = 'file-info text-muted';
+        });
+
+        // Drag and drop functionality
+        uploadContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadContainer.style.borderColor = '#4e73df';
+            uploadContainer.style.background = '#e8f0fe';
+        });
+
+        uploadContainer.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            if (!uploadContainer.classList.contains('has-image')) {
+                uploadContainer.style.borderColor = '#dee2e6';
+                uploadContainer.style.background = '#f8f9fa';
+            }
+        });
+
+        uploadContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                profilePhotoInput.files = files;
+                profilePhotoInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Form validation
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            if (!name) {
+                e.preventDefault();
+                alert('Please enter your full name.');
+                document.getElementById('name').focus();
+                return;
+            }
+            
+            // Additional validation can be added here
+            const age = document.getElementById('age').value;
+            if (age && (age < 16 || age > 100)) {
+                e.preventDefault();
+                alert('Please enter a valid age between 16 and 100.');
+                document.getElementById('age').focus();
+                return;
+            }
+        });
+    </script>
+</body>
+</html>
