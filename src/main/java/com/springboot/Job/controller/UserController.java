@@ -1,4 +1,4 @@
-package com.springboot.MovieSpringBoot.controller;
+package com.springboot.Job.controller;
 
 import java.util.Base64;
 import java.util.Optional;
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.springboot.MovieSpringBoot.model.UserBean;
-import com.springboot.MovieSpringBoot.service.UserService;
+import com.springboot.Job.model.UserBean;
+import com.springboot.Job.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 

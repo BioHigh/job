@@ -1,4 +1,4 @@
-package com.springboot.MovieSpringBoot.service;
+package com.springboot.Job.service;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.springboot.MovieSpringBoot.model.UserBean;
-import com.springboot.MovieSpringBoot.repository.UserRepository;
+import com.springboot.Job.model.UserBean;
+import com.springboot.Job.repository.UserRepository;
 
 @Service
 public class UserService {

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #004e92, #000428);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding-top: 60px; /* push card down, not full screen center */
+        }
+        .login-card {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transition: transform 0.2s ease-in-out;
+            max-width: 480px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 6px rgba(0,123,255,0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            transition: 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: scale(1.02);
+        }
+        .alert {
+            border-radius: 12px;
+        }
+        small {
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+                <div class="card login-card">
+                    <!-- Header -->
+                    <div class="card-header text-white text-center py-3">
+                        <h3 class="fw-bold mb-0">
+                            <i class="bi bi-shield-lock-fill me-2"></i>Admin Login
+                        </h3>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body p-4">
+                        <!-- Error Message -->
+                        <div th:if="${msg}" class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:text="${msg}"></span>
+                        </div>
+                        
+                        <form th:action="@{/admindashboard}" method="post" th:object="${admlogin}">
+                            <!-- Name -->
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-semibold">Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-person text-primary"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" id="name" th:field="*{name}" placeholder="Enter your name" required>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="gmail" class="form-label fw-semibold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-envelope text-primary"></i>
+                                    </span>
+                                    <input type="email" class="form-control border-start-0" id="gmail" th:field="*{gmail}" placeholder="Enter your email" required>
+                                </div>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0">
+                                        <i class="bi bi-lock text-primary"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0" id="password" th:field="*{password}" placeholder="Enter your password" required>
+                                    <button class="btn btn-outline-secondary border-start-0" type="button" id="togglePassword">
+                                        <i class="bi bi-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="d-grid mt-3">
+                                <button type="submit" class="btn btn-primary fw-semibold py-2">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer bg-light text-center py-2">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check me-1"></i> Secure Admin Access
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Password Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.querySelector('#togglePassword');
+            const password = document.querySelector('#password');
+            const toggleIcon = document.querySelector('#toggleIcon');
+            
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                toggleIcon.classList.toggle('bi-eye');
+                toggleIcon.classList.toggle('bi-eye-slash');
+            });
+        });
+    </script>
+</body>
+</html>

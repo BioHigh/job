@@ -1,4 +1,4 @@
-package com.springboot.MovieSpringBoot.controller;
+package com.springboot.Job.controller;
 
 import org.springframework.stereotype.Controller;
 
@@ -20,6 +20,17 @@ public class IndexController {
 	public String showIndex1() {
 	
 		return "index";
+	}
+	
+	@GetMapping("/home")
+	public String showIndex2() {
+	
+		return "home";
+	}
+	@GetMapping("/company")
+	public String showIndex3() {
+	
+		return "company";
 	}
 	
 	

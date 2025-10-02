@@ -1,4 +1,4 @@
-package com.springboot.MovieSpringBoot.model;
+package com.springboot.Job.model;
 
 import lombok.Getter;
 

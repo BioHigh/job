@@ -1,13 +1,13 @@
-package com.springboot.MovieSpringBoot;
+package com.springboot.Job;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MovieSpringBootApplication {
+public class Job {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MovieSpringBootApplication.class, args);
+		SpringApplication.run(Job.class, args);
 	}
 
 }

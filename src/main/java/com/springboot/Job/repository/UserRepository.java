@@ -1,4 +1,4 @@
-package com.springboot.MovieSpringBoot.repository;
+package com.springboot.Job.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import com.springboot.MovieSpringBoot.model.UserBean;
+import com.springboot.Job.model.UserBean;
 
 @Repository
 public class UserRepository {
