@@ -26,113 +26,145 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /* ===================== LOGIN ===================== */
-
     @GetMapping("/login")
     public String showLoginPage() {
         return "userlogin";
     }
+    
+    @GetMapping("/index")
+	public String showIndex1() {
+	
+		return "index";
+	}
 
     @PostMapping("/login")
-    public String loginUser(@RequestParam String gmail,
-                            @RequestParam String password,
-                            HttpSession session,
-                            RedirectAttributes redirectAttributes) {
+    public String loginUser(@RequestParam String gmail, 
+                           @RequestParam String password,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
         Optional<UserBean> user = userService.authenticateUser(gmail, password);
-
+        
         if (user.isPresent()) {
             session.setAttribute("user", user.get());
             session.setAttribute("userId", user.get().getId());
-            return "redirect:/user/dashboard";
+            return "redirect:/user/home"; // Redirect to a home endpoint
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password");
             return "redirect:/user/login";
         }
     }
 
-    /* ===================== DASHBOARD ===================== */
+    // Add this method to handle the home page
+    @GetMapping("/home")
+    public String showHome(HttpSession session, Model model) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
+        
+        Optional<UserBean> user = userService.getUserById(userId);
+        if (user.isPresent()) {
+            model.addAttribute("user", user.get());
+            return "home";
+        } else {
+            return "redirect:/user/login";
+        }
+    }
 
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/user/login";
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
 
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
-
             byte[] profilePhoto = userService.getProfilePhoto(userId);
             if (profilePhoto != null) {
-                model.addAttribute("profilePhoto", Base64.getEncoder().encodeToString(profilePhoto));
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                model.addAttribute("profilePhoto", base64Photo);
             }
             return "userdashboard";
+        } else {
+            return "redirect:/user/login";
         }
-        return "redirect:/user/login";
     }
-
-    /* ===================== PROFILE ===================== */
 
     @GetMapping("/profile")
     public String showProfile(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/user/login";
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
 
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
-
+            // Get profile photo separately
             byte[] profilePhoto = userService.getProfilePhoto(userId);
             if (profilePhoto != null) {
-                model.addAttribute("profilePhoto", Base64.getEncoder().encodeToString(profilePhoto));
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                model.addAttribute("profilePhoto", base64Photo);
             }
             return "userprofile";
+        } else {
+            return "redirect:/user/login";
         }
-        return "redirect:/user/login";
     }
 
     @GetMapping("/profile/edit")
     public String showEditProfile(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/user/login";
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
 
         Optional<UserBean> user = userService.getUserById(userId);
-        user.ifPresent(value -> model.addAttribute("user", value));
-
-        return "editprofile";
+        if (user.isPresent()) {
+            model.addAttribute("user", user.get());
+            return "admin/editprofile";
+        } else {
+            return "redirect:/user/login";
+        }
     }
 
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam String name,
-                                @RequestParam String dateOfBirth,
-                                @RequestParam String gender,
-                                @RequestParam String phone,
-                                @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
-                                HttpSession session,
-                                RedirectAttributes redirectAttributes) {
-
+                               @RequestParam Integer age,
+                               @RequestParam String dateOfBirth,
+                               @RequestParam String gender,
+                               @RequestParam String phone,
+                               @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) return "redirect:/user/login";
+        if (userId == null) {
+            return "redirect:/user/login";
+        }
 
+        // Create UserBean manually
         UserBean user = new UserBean();
         user.setId(userId);
         user.setName(name);
-        user.setDateOfBirth(dateOfBirth); // Should be LocalDate in entity
+        user.setAge(age);
+        user.setDateOfBirth(dateOfBirth);
         user.setGender(gender);
         user.setPhone(phone);
 
         boolean isUpdated = userService.updateUserProfile(user, profilePhoto);
-
+        
         if (isUpdated) {
             redirectAttributes.addFlashAttribute("success", "Profile updated successfully!");
-            userService.getUserById(userId).ifPresent(u -> session.setAttribute("user", u));
+            Optional<UserBean> updatedUser = userService.getUserById(userId);
+            updatedUser.ifPresent(u -> session.setAttribute("user", u));
         } else {
             redirectAttributes.addFlashAttribute("error", "Failed to update profile");
         }
-
+        
         return "redirect:/user/profile";
     }
-
-    /* ===================== REGISTRATION ===================== */
 
     @GetMapping("/register")
     public String showRegistrationPage(Model model) {
@@ -142,10 +174,11 @@ public class UserController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute UserBean user,
-                               @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
-                               @RequestParam String confirmPassword,
-                               RedirectAttributes redirectAttributes) {
-
+                              @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+                              @RequestParam String confirmPassword,
+                              RedirectAttributes redirectAttributes) {
+        
+        // Validation
         if (!user.getPassword().equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("error", "Passwords do not match");
             return "redirect:/user/register";
@@ -154,6 +187,14 @@ public class UserController {
         if (userService.isEmailExists(user.getGmail())) {
             redirectAttributes.addFlashAttribute("error", "Email already exists");
             return "redirect:/user/register";
+        }
+
+        // Check if phone number already exists
+        if (user.getPhone() != null && !user.getPhone().trim().isEmpty()) {
+            if (userService.isPhoneExists(user.getPhone())) {
+                redirectAttributes.addFlashAttribute("error", "Phone number already exists");
+                return "redirect:/user/register";
+            }
         }
 
         boolean isRegistered = userService.registerUser(user, profilePhoto);
@@ -165,8 +206,6 @@ public class UserController {
             return "redirect:/user/register";
         }
     }
-
-    /* ===================== LOGOUT ===================== */
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {

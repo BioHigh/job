@@ -55,12 +55,31 @@
         .bg-success-light { background-color: rgba(76,201,240,0.1); color: var(--success); }
         .bg-warning-light { background-color: rgba(247,37,133,0.1); color: var(--warning); }
         .bg-info-light { background-color: rgba(72,149,239,0.1); color: var(--info); }
+        .bg-purple-light { background-color: rgba(157,78,221,0.1); color: #9d4edd; }
         .welcome-banner { background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); color: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
         
         /* Table scroll */
         .table-container {
             max-height: 300px;
             overflow-y: auto;
+        }
+        
+        /* Category section styling */
+        .category-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+           
+        }
+        
+        /* Stats highlight */
+        .stats-highlight {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
         }
     </style>
 </head>
@@ -74,14 +93,13 @@
         <!-- Navigation Menu -->
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" th:classappend="${!showCategorySection} ? 'active'" th:href="@{/admin/dashboard}">
+                <a class="nav-link" th:classappend="${showCategorySection == false} ? 'active'" th:href="@{/admin/dashboard}">
                     <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <!-- ✅ scroll auto -->
-                <a class="nav-link" th:classappend="${showCategorySection} ? 'active'" th:href="@{/admin/category} + '#category-section'">
-                    <i class="fas fa-users"></i> <span>Edit Category</span>
+                <a class="nav-link" th:classappend="${showCategorySection == true} ? 'active'" th:href="@{/admin/category}">
+                    <i class="fas fa-tags"></i> <span>Manage Categories</span>
                 </a>
             </li>
             <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-building"></i> <span>Employers</span></a></li>
@@ -99,54 +117,116 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-custom rounded-3 mb-4">
-            <div class="container-fluid">
-                <h4 class="mb-0">Admin Dashboard</h4>
-            </div>
-        </nav>
-
         <!-- Welcome Banner -->
         <div class="welcome-banner">
             <h3>
-                Welcome back, <span th:text="${session.adminName != null ? session.adminName : 'Admin'}"></span>!
+                Welcome back, <span th:text="${session.adminName != null ? session.adminName : 'Hla'}"></span>!
             </h3>
-            <p class="mb-0">Here’s today’s overview of the Job Portal.</p>
+            <p class="mb-0">Here's today's overview of the JobJump.</p>
         </div>
+
+
 
         <!-- Stats Cards -->
         <div class="row mb-4">
-            <div class="col-md-3"><div class="card card-dashboard"><div class="card-body stat-card bg-primary-light">
-                <i class="fas fa-users"></i>
-                <div class="count" th:text="${jobSeekerCount}">0</div>
-                <div class="label">Job Seekers</div>
-            </div></div></div>
-
-            <div class="col-md-3"><div class="card card-dashboard"><div class="card-body stat-card bg-success-light">
-                <i class="fas fa-building"></i>
-                <div class="count" th:text="${employerCount}">0</div>
-                <div class="label">Employers</div>
-            </div></div></div>
-
-            <div class="col-md-3"><div class="card card-dashboard"><div class="card-body stat-card bg-warning-light">
-                <i class="fas fa-briefcase"></i>
-                <div class="count" th:text="${activeJobCount}">0</div>
-                <div class="label">Active Jobs</div>
-            </div></div></div>
-
-            <div class="col-md-3"><div class="card card-dashboard"><div class="card-body stat-card bg-info-light">
-                <i class="fas fa-file-alt"></i>
-                <div class="count" th:text="${applicationCount}">0</div>
-                <div class="label">Applications</div>
-            </div></div></div>
+            <div class="col-md-3">
+                <div class="card card-dashboard">
+                    <div class="card-body stat-card bg-primary-light">
+                        <i class="fas fa-users"></i>
+                        <div class="count" th:text="${jobSeekerCount}">0</div>
+                        <div class="label">Active Job Seekers</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-dashboard">
+                    <div class="card-body stat-card bg-success-light">
+                        <i class="fas fa-building"></i>
+                        <div class="count" th:text="${employerCount}">0</div>
+                        <div class="label">Verified Employers</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-dashboard">
+                    <div class="card-body stat-card bg-warning-light">
+                        <i class="fas fa-briefcase"></i>
+                        <div class="count" th:text="${activeJobCount}">0</div>
+                        <div class="label">Active Jobs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-dashboard">
+                    <div class="card-body stat-card bg-info-light">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="count" th:text="${applicationCount}">0</div>
+                        <div class="label">Applications</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- ✅ Include Category Section from fragment -->
-      
-<div th:if="${showCategorySection == true}" 
-     th:replace="admin/fragments/category :: categorySection(${category}, ${categories}, ${msg})"></div>
+        <!-- In your category section of admdashboard.html -->
+<div th:if="${showCategorySection == true}" class="category-section" id="category-section">
+    <h3>Manage Categories</h3>
 
+    <!-- Success message -->
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    
+    <!-- Error message for duplicate category -->
+    <div th:if="${errorMsg}" class="alert alert-danger" th:text="${errorMsg}"></div>
 
+    <!-- Form -->
+    <form th:action="@{/admin/category/save}" method="post" class="mb-3">
+        <input type="hidden" name="id" th:value="${category != null ? category.id : 0}">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <input type="text" class="form-control"
+                       name="catName" th:value="${category != null ? category.catName : ''}"
+                       placeholder="Enter Category" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Rest of your category table remains the same -->
+    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+    <table class="table table-bordered table-hover mb-0">
+        <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+                <th style="width: 80px; text-align: center;">No.</th>
+                <th>Category Name</th>
+                <th style="width: 250px; text-align: center;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="cat, stat : ${categories}">
+                <td th:text="${stat.count}" style="width: 80px; text-align: center;"></td>
+                <td th:text="${cat.catName}" style="min-width: 200px; padding: 12px 15px;"></td>
+                <td style="width: 250px; padding: 8px;">
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a th:href="@{'/admin/category/edit/' + ${cat.id}}" 
+                           class="btn btn-sm btn-warning px-3">
+                            <i class="fa fa-edit me-1"></i> Edit
+                        </a>
+                        <a th:href="@{'/admin/category/delete/' + ${cat.id}}" 
+                           class="btn btn-sm btn-danger px-3"
+                           onclick="return confirm('Are you sure you want to delete this category?')">
+                            <i class="fa fa-trash me-1"></i> Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+    </div>
+</div>
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

@@ -1,7 +1,9 @@
 package com.springboot.Job.model;
 
-import lombok.Getter;
 
+import java.time.LocalDateTime;
+
+import lombok.Getter;
 import lombok.Setter;
 
 @Getter
@@ -18,4 +20,5 @@ public class UserBean {
     private String phone;
     private String userType;
     private String status;
+    private LocalDateTime createdAt;
 }

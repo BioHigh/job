@@ -201,6 +201,20 @@
             margin-top: 1rem;
             font-size: 0.8rem;
         }
+        .form-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.form-header h2 {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.form-header p {
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+}
     </style>
 </head>
 <body class="bg-light">
@@ -212,16 +226,16 @@
         <div class="row justify-content-center">
             <div class="col-xl-10">
                 <div class="card">
-          
-
-
+                    
                     <div class="card-body p-4 p-md-5">
-                        <!-- Alert Messages -->
-                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    
+                        <!-- Alert Messages (Only show non-phone errors) -->
+                        <div th:if="${error != null and !#strings.contains(error, 'Phone number') and !#strings.contains(error, 'Date of Birth')}" class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
                             <span th:text="${error}"></span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
+                        
                         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
                             <span th:text="${success}"></span>
@@ -288,11 +302,24 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label for="dateOfBirth" class="form-label">
-                                                    <i class="bi bi-calendar-date me-2"></i>Date of Birth
-                                                </label>
-                                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
-                                                       th:value="${user?.dateOfBirth}">
+                                                <label for="dateOfBirth" class="form-label" >
+    <i class="bi bi-calendar-date me-2"></i>Date of Birth
+    
+</label>
+                                               <div class="input-group">
+    <span class="input-group-text bg-light">
+        <i class="bi bi-calendar-date"></i>
+    </span>
+    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+           th:value="${user?.dateOfBirth}" required>
+</div>
+                                                
+                                                
+                                                <!-- Client-side validation error -->
+                                                <div id="dobValidationError" class="dob-error">
+                                                    <i class="bi bi-exclamation-circle me-1"></i>
+                                                    <span id="dobValidationErrorText"></span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -315,6 +342,11 @@
                                 <div class="col-lg-6">
                                     <!-- Gender Selection -->
                                     <div class="mb-4">
+                                      <div class="form-header">
+    <h2>Create Your Account</h2>
+    <p>Tell us a bit about yourself</p>
+  </div>
+  <div class="border-top border-2 mb-4"></div>
                                         <label class="form-label">
                                             <i class="bi bi-gender-ambiguous me-2"></i>Gender
                                         </label>
@@ -350,7 +382,21 @@
                                                 <i class="bi bi-phone"></i>
                                             </span>
                                             <input type="tel" class="form-control" id="phone" name="phone" 
-                                                   th:value="${user?.phone}" placeholder="09*******">
+                                                   th:value="${user?.phone}" placeholder="09*******" 
+                                                   pattern="[0-9]{10,15}" title="Please enter a valid phone number (10-15 digits)">
+                                        </div>
+                                        
+                                        <!-- Phone Error Message - Will be shown for duplicate phone numbers -->
+                                        <div th:if="${error != null and #strings.contains(error, 'Phone number')}" 
+                                             class="phone-error d-block">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            <span th:text="${error}">Phone number already exists</span>
+                                        </div>
+                                        
+                                        <!-- Client-side validation error -->
+                                        <div id="phoneValidationError" class="phone-error">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            <span id="phoneValidationErrorText"></span>
                                         </div>
                                     </div>
                                     
@@ -458,7 +504,13 @@
         const photoPreview = document.getElementById('photoPreview');
         const uploadContainer = document.getElementById('uploadContainer');
         const removePhotoBtn = document.getElementById('removePhoto');
-        //const fileInfo = document.getElementById('file-info');
+        const fileInfo = document.getElementById('file-info');
+        const phoneInput = document.getElementById('phone');
+        const phoneValidationError = document.getElementById('phoneValidationError');
+        const phoneValidationErrorText = document.getElementById('phoneValidationErrorText');
+        const dobInput = document.getElementById('dateOfBirth');
+        const dobValidationError = document.getElementById('dobValidationError');
+        const dobValidationErrorText = document.getElementById('dobValidationErrorText');
 
         // Click on upload container to trigger file input
         uploadContainer.addEventListener('click', function(e) {
@@ -590,15 +642,147 @@
             }
         });
 
+        // Phone number validation
+        phoneInput.addEventListener('blur', function() {
+            const phone = this.value.trim();
+            
+            if (phone === '') {
+                hidePhoneValidationError();
+                return;
+            }
+            
+            // Basic phone format validation
+            const phoneRegex = /^[0-9]{10,15}$/;
+            if (!phoneRegex.test(phone)) {
+                showPhoneValidationError('Please enter a valid phone number (10-15 digits)');
+                return;
+            }
+            
+            hidePhoneValidationError();
+        });
+
+        function showPhoneValidationError(message) {
+            phoneValidationErrorText.textContent = message;
+            phoneValidationError.style.display = 'block';
+            phoneInput.classList.add('field-error');
+        }
+
+        function hidePhoneValidationError() {
+            phoneValidationError.style.display = 'none';
+            phoneInput.classList.remove('field-error');
+        }
+
+        // Date of Birth validation
+        dobInput.addEventListener('blur', function() {
+            const dob = this.value.trim();
+            
+            
+            
+            // Validate that date is not in the future
+            const selectedDate = new Date(dob);
+            const today = new Date();
+            if (selectedDate > today) {
+                showDobValidationError('Date of Birth cannot be in the future');
+                return;
+            }
+            
+            // Validate minimum age (16 years)
+            const minAgeDate = new Date();
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 16);
+            if (selectedDate > minAgeDate) {
+                showDobValidationError('You must be at least 16 years old');
+                return;
+            }
+            
+            hideDobValidationError();
+        });
+
+        function showDobValidationError(message) {
+            dobValidationErrorText.textContent = message;
+            dobValidationError.style.display = 'block';
+            dobInput.classList.add('field-error');
+        }
+
+        function hideDobValidationError() {
+            dobValidationError.style.display = 'none';
+            dobInput.classList.remove('field-error');
+        }
+
         // Form validation
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value.trim();
+            const dob = document.getElementById('dateOfBirth').value.trim();
             
+            // Check password match
             if (password !== confirmPassword) {
                 e.preventDefault();
                 alert('Passwords do not match. Please check your password confirmation.');
                 document.getElementById('confirmPassword').focus();
+                return;
+            }
+            
+            // Check phone format if provided
+            if (phone !== '') {
+                const phoneRegex = /^[0-9]{10,15}$/;
+                if (!phoneRegex.test(phone)) {
+                    e.preventDefault();
+                    showPhoneValidationError('Please enter a valid phone number (10-15 digits)');
+                    phoneInput.focus();
+                    return;
+                }
+            }
+            
+            // Check Date of Birth
+            if (dob === '') {
+                e.preventDefault();
+                showDobValidationError('Date of Birth is required');
+                dobInput.focus();
+                return;
+            }
+            
+            // Validate date is not in future
+            const selectedDate = new Date(dob);
+            const today = new Date();
+            if (selectedDate > today) {
+                e.preventDefault();
+                showDobValidationError('Date of Birth cannot be in the future');
+                dobInput.focus();
+                return;
+            }
+            
+            // Validate minimum age
+            const minAgeDate = new Date();
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 16);
+            if (selectedDate > minAgeDate) {
+                e.preventDefault();
+                showDobValidationError('You must be at least 16 years old');
+                dobInput.focus();
+                return;
+            }
+            
+            // Check terms and conditions
+            const terms = document.getElementById('terms');
+            if (!terms.checked) {
+                e.preventDefault();
+                alert('Please agree to the Terms of Service and Privacy Policy.');
+                terms.focus();
+            }
+        });
+
+        // Auto-focus on field if there's an error
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneError = document.querySelector('.phone-error.d-block');
+            if (phoneError) {
+                phoneInput.focus();
+                phoneInput.classList.add('field-error');
+            }
+            
+            const dobError = document.querySelector('.dob-error.d-block');
+            if (dobError) {
+                dobInput.focus();
+                dobInput.classList.add('field-error');
             }
         });
     </script>

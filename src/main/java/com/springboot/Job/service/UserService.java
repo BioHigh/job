@@ -56,4 +56,9 @@ public class UserService {
     public byte[] getProfilePhoto(int userId) {
         return userRepository.getProfilePhotoById(userId);
     }
+    
+    public boolean isPhoneExists(String phone) {
+        return userRepository.findByPhone(phone).isPresent();
+    }
+    
 }

@@ -57,13 +57,12 @@ public class AdminController {
         model.addAttribute("employerCount", 0);
         model.addAttribute("activeJobCount", 0);
         model.addAttribute("applicationCount", 0);
-
-        // Add default so Thymeleaf won't break
+        
+        // Remove showCategorySection or set to false for dashboard
         model.addAttribute("showCategorySection", false);
 
         return "admin/admdashboard";
     }
-
 
     @GetMapping("/admin/logout")
     public String adminLogout(HttpSession session) {
@@ -73,20 +72,35 @@ public class AdminController {
 
     // =================== CATEGORY MANAGEMENT ====================
 
-    // Show category page
+    // Show category page - now with showCategorySection = true
     @GetMapping("/admin/category")
     public String showCategoryPage(Model model) {
         if (!model.containsAttribute("category")) {
             model.addAttribute("category", new CategoryBean());
         }
         model.addAttribute("categories", categoryRepo.findAll());
-        return "admin/category";  // ✅ separate template for category page
+        model.addAttribute("showCategorySection", true); // ✅ Show category section
+        return "admin/admdashboard";  // ✅ Use the same dashboard template
     }
 
     @PostMapping("/admin/category/save")
     public String saveCategory(@ModelAttribute("category") CategoryBean category,
                                HttpSession session,
                                RedirectAttributes ra) {
+
+        // Check for duplicate category name (case-insensitive)
+        String categoryName = category.getCatName().trim();
+        boolean isDuplicate = categoryRepo.findAll().stream()
+                .anyMatch(existingCat -> 
+                    existingCat.getCatName().trim().equalsIgnoreCase(categoryName) &&
+                    existingCat.getId() != category.getId()); // Exclude current category during update
+
+        if (isDuplicate) {
+            ra.addFlashAttribute("errorMsg", "Category name '" + categoryName + "' already exists!");
+            ra.addFlashAttribute("category", category); // Keep the form data
+            ra.addFlashAttribute("categories", categoryRepo.findAll());
+            return "redirect:/admin/category#category-section";
+        }
 
         AdminLoginBean admin = (AdminLoginBean) session.getAttribute("loginadm");
         if (admin != null) {
@@ -101,22 +115,31 @@ public class AdminController {
             ra.addFlashAttribute("msg", "Category updated successfully!");
         }
 
+        // Add category data for the page
+        ra.addFlashAttribute("category", new CategoryBean()); // Reset form
+        ra.addFlashAttribute("categories", categoryRepo.findAll());
+        
         return "redirect:/admin/category#category-section";
     }
 
     @GetMapping("/admin/category/edit/{id}")
     public String editCategory(@PathVariable("id") int id, RedirectAttributes ra) {
         ra.addFlashAttribute("category", categoryRepo.findById(id).orElse(new CategoryBean()));
+        ra.addFlashAttribute("categories", categoryRepo.findAll());
         return "redirect:/admin/category#category-section";
     }
 
+
+        
     @GetMapping("/admin/category/delete/{id}")
     public String deleteCategory(@PathVariable("id") int id, RedirectAttributes ra) {
         categoryRepo.delete(id);
+        
         ra.addFlashAttribute("msg", "Category deleted successfully!");
+        ra.addFlashAttribute("category", new CategoryBean());
+        ra.addFlashAttribute("categories", categoryRepo.findAll());
         return "redirect:/admin/category#category-section";
     }
-
     // =================== HELPER ====================
     private void addDashboardStats(Model model) {
         model.addAttribute("jobSeekerCount", 0);

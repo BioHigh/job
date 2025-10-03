@@ -17,6 +17,8 @@ public class CategoryRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    
+    
 
     private static class CategoryRowMapper implements RowMapper<CategoryBean> {
         @Override
@@ -67,4 +69,6 @@ public class CategoryRepository {
         int result = jdbcTemplate.update(sql, id);
         return result > 0;
     }
+    
+    
 }

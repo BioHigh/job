@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>Employer Dashboard - HireHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
@@ -36,14 +36,14 @@
             background-color: #2e59d9;
             border-color: #2e59d9;
         }
+        .company-logo {
+            border: 5px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
-     <div th:replace="headerLogin :: profile-header"></div>
-
-   <br><br><br>
-
-     <div class="container mt-4">
+    <div class="container mt-4">
         <!-- Quick Stats -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
@@ -52,9 +52,26 @@
                         <div class="row align-items-center">
                             <div class="col mr-2">
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Active Jobs
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">8</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-briefcase fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                     Applications
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
                             </div>
                             <div class="col-auto">
                                 <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
@@ -68,10 +85,10 @@
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                     Interviews
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">6</div>
                             </div>
                             <div class="col-auto">
                                 <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
@@ -85,30 +102,13 @@
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                     Profile Views
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">156</div>
                             </div>
                             <div class="col-auto">
                                 <i class="bi bi-eye fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    New Jobs
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-briefcase fa-2x text-gray-300"></i>
                             </div>
                         </div>
                     </div>
@@ -122,21 +122,23 @@
                     <div class="card-body text-center">
                         <div th:if="${profilePhoto}">
                             <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
-                                 class="img-fluid rounded-circle mb-3 shadow" 
+                                 class="img-fluid rounded-circle mb-3 company-logo" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                         </div>
                         <div th:unless="${profilePhoto}">
-                            <img src="/images/default-avatar.png" 
-                                 class="img-fluid rounded-circle mb-3 shadow" 
+                            <img src="/images/default-company.png" 
+                                 class="img-fluid rounded-circle mb-3 company-logo" 
                                  style="width: 150px; height: 150px; object-fit: cover;">
                         </div>
-                        <h4 th:text="${user.name}">User Name</h4>
-                        <p class="text-muted" th:text="${user.userType}">User Type</p>
-                        <div class="d-grid gap-2">
-                            <a th:href="@{/user/profile}" class="btn btn-primary">
-                                <i class="bi bi-person me-1"></i>View Profile
+                        <h4 th:text="${owner.companyName}">Company Name</h4>
+                        <p class="text-muted" th:text="${owner.type}">Company Type</p>
+                        <span class="badge bg-success" th:text="${owner.status}">Active</span>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <a th:href="@{/owner/profile}" class="btn btn-primary">
+                                <i class="bi bi-building me-1"></i>View Profile
                             </a>
-                            <a th:href="@{/user/profile/edit}" class="btn btn-outline-primary">
+                            <a th:href="@{/owner/profile/edit}" class="btn btn-outline-primary">
                                 <i class="bi bi-pencil me-1"></i>Edit Profile
                             </a>
                         </div>
@@ -150,17 +152,17 @@
                     </div>
                     <div class="card-body">
                         <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-search me-2"></i>Browse Jobs
+                            <a th:href="@{/owner/job/post}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-plus-circle me-2"></i>Post New Job
                             </a>
                             <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-file-earmark-plus me-2"></i>Create Resume
+                                <i class="bi bi-people me-2"></i>View Candidates
                             </a>
                             <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-bell me-2"></i>Job Alerts
+                                <i class="bi bi-briefcase me-2"></i>Manage Jobs
                             </a>
                             <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-gear me-2"></i>Settings
+                                <i class="bi bi-graph-up me-2"></i>Analytics
                             </a>
                         </div>
                     </div>
@@ -169,37 +171,64 @@
             <div class="col-lg-8">
                 <div class="card welcome-card h-100">
                     <div class="card-header">
-                        <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>Welcome to Your Dashboard</h4>
+                        <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>Welcome to Your Employer Dashboard</h4>
                     </div>
                     <div class="card-body">
-                        <h5>Hello, <span class="text-primary" th:text="${user.name}"></span>!</h5>
-                        <p class="lead">Welcome to your job portal dashboard. Here you can manage your job search and applications.</p>
+                        <h5>Welcome, <span class="text-primary" th:text="${owner.companyName}"></span>!</h5>
+                        <p class="lead">Manage your hiring process efficiently with our employer tools.</p>
                         
                         <div class="row mt-4">
                             <div class="col-md-6">
                                 <div class="card bg-light mb-3">
                                     <div class="card-body">
-                                        <h6><i class="bi bi-file-earmark-text me-2"></i>Applications</h6>
-                                        <p class="mb-0">Track and manage your job applications</p>
+                                        <h6><i class="bi bi-briefcase me-2"></i>Job Management</h6>
+                                        <p class="mb-0">Create and manage job postings</p>
+                                        <a th:href="@{/owner/job/post}" class="btn btn-sm btn-primary mt-2">Post a Job</a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="card bg-light mb-3">
                                     <div class="card-body">
-                                        <h6><i class="bi bi-briefcase me-2"></i>Job Search</h6>
-                                        <p class="mb-0">Find new opportunities that match your skills</p>
+                                        <h6><i class="bi bi-people me-2"></i>Candidates</h6>
+                                        <p class="mb-0">Review applications and schedule interviews</p>
+                                        <a href="#" class="btn btn-sm btn-primary mt-2">View Candidates</a>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="mt-4">
+                            <h6><i class="bi bi-clock-history me-2"></i>Recent Activity</h6>
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small>3 new applications for Senior Developer</small>
+                                        <small class="text-muted">2 hours ago</small>
+                                    </div>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small>Job "Frontend Engineer" published</small>
+                                        <small class="text-muted">1 day ago</small>
+                                    </div>
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <small>Interview scheduled with John Doe</small>
+                                        <small class="text-muted">2 days ago</small>
+                                    </div>
+                                </a>
                             </div>
                         </div>
 
                         <div class="alert alert-info mt-4">
                             <h6><i class="bi bi-info-circle me-2"></i>Quick Tips</h6>
                             <ul class="mb-0">
-                                <li>Keep your profile updated to attract more employers</li>
-                                <li>Set up job alerts to never miss an opportunity</li>
-                                <li>Regularly check your application status</li>
+                                <li>Keep your company profile updated to attract better candidates</li>
+                                <li>Use detailed job descriptions to get relevant applications</li>
+                                <li>Respond to candidates within 48 hours for better engagement</li>
                             </ul>
                         </div>
                     </div>

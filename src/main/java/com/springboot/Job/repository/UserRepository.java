@@ -32,6 +32,13 @@ public class UserRepository {
             user.setPhone(rs.getString("phone"));
             user.setUserType(rs.getString("user_type"));
             user.setStatus(rs.getString("status"));
+            
+            // Handle created_at - get as timestamp and convert to LocalDateTime
+            java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
+            if (createdAt != null) {
+                user.setCreatedAt(createdAt.toLocalDateTime());
+            }
+            
             return user;
         }
     }
@@ -94,7 +101,7 @@ public class UserRepository {
     }
 
     public boolean createUser(UserBean user, byte[] profilePhoto) {
-        String sql = "INSERT INTO user (name, age, date_of_birth, password, gmail, gender, phone, profile_photo, user_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'USER', 'ACTIVE')";
+        String sql = "INSERT INTO user (name, age, date_of_birth, password, gmail, gender, phone, profile_photo, user_type, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'USER', 'active', CURRENT_TIMESTAMP)";
         int result = jdbcTemplate.update(sql,
             user.getName(),
             user.getAge(),
@@ -116,4 +123,15 @@ public class UserRepository {
             return null;
         }
     }
+    
+    public Optional<UserBean> findByPhone(String phone) {
+        try {
+            String sql = "SELECT * FROM user WHERE phone = ?";
+            UserBean user = jdbcTemplate.queryForObject(sql, new UserRowMapper(), phone);
+            return Optional.ofNullable(user);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+    
 }
