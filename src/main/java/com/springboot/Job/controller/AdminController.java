@@ -1,6 +1,7 @@
 package com.springboot.Job.controller;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +14,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.springboot.Job.model.AdminLoginBean;
 import com.springboot.Job.model.CategoryBean;
+import com.springboot.Job.model.JobPostBean;
 import com.springboot.Job.model.LoginBean;
 import com.springboot.Job.repository.AdminLoginRepository;
 import com.springboot.Job.repository.CategoryRepository;
+import com.springboot.Job.repository.JobPVByAdmRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -27,6 +30,9 @@ public class AdminController {
 
     @Autowired
     private CategoryRepository categoryRepo;
+
+    @Autowired
+    private JobPVByAdmRepository jobPVByAdmRepo;
 
     // =================== LOGIN ====================
     @GetMapping("/admin")
@@ -53,14 +59,8 @@ public class AdminController {
 
     @GetMapping("/admin/dashboard")
     public String showDashboard(Model model) {
-        model.addAttribute("jobSeekerCount", 0);
-        model.addAttribute("employerCount", 0);
-        model.addAttribute("activeJobCount", 0);
-        model.addAttribute("applicationCount", 0);
-        
-        // Remove showCategorySection or set to false for dashboard
-        model.addAttribute("showCategorySection", false);
-
+        addDashboardStats(model);
+        model.addAttribute("activeSection", "dashboard");
         return "admin/admdashboard";
     }
 
@@ -71,16 +71,15 @@ public class AdminController {
     }
 
     // =================== CATEGORY MANAGEMENT ====================
-
-    // Show category page - now with showCategorySection = true
     @GetMapping("/admin/category")
     public String showCategoryPage(Model model) {
         if (!model.containsAttribute("category")) {
             model.addAttribute("category", new CategoryBean());
         }
         model.addAttribute("categories", categoryRepo.findAll());
-        model.addAttribute("showCategorySection", true); // ✅ Show category section
-        return "admin/admdashboard";  // ✅ Use the same dashboard template
+        model.addAttribute("activeSection", "categories");
+        addDashboardStats(model);
+        return "admin/admdashboard";
     }
 
     @PostMapping("/admin/category/save")
@@ -97,34 +96,28 @@ public class AdminController {
         boolean isDuplicate = categoryRepo.findAll().stream()
                 .anyMatch(existingCat -> 
                     existingCat.getCatName().trim().equalsIgnoreCase(categoryName) &&
-                    existingCat.getId() != category.getId()); // Exclude current category during update
+                    existingCat.getId() != category.getId());
 
         if (isDuplicate) {
             System.out.println("DEBUG: Duplicate category found: " + categoryName);
             ra.addFlashAttribute("errorMsg", "Category name '" + categoryName + "' already exists!");
-            ra.addFlashAttribute("category", category); // Keep the form data
+            ra.addFlashAttribute("category", category);
             ra.addFlashAttribute("categories", categoryRepo.findAll());
+            ra.addFlashAttribute("activeSection", "categories");
             return "redirect:/admin/category#category-section";
         }
 
-        // Debug: Check the admin session
         AdminLoginBean admin = (AdminLoginBean) session.getAttribute("loginadm");
         System.out.println("DEBUG: Admin from session: " + admin);
         
         if (admin != null) {
             System.out.println("DEBUG: Admin ID: " + admin.getId());
-            System.out.println("DEBUG: Admin Name: " + admin.getName());
-            System.out.println("DEBUG: Admin Email: " + admin.getGmail());
             category.setAdminId(admin.getId());
         } else {
             System.out.println("DEBUG: No admin found in session! Redirecting to login.");
             ra.addFlashAttribute("errorMsg", "You must be logged in to manage categories!");
             return "redirect:/admin";
         }
-
-        System.out.println("DEBUG: Final Category Bean before save - ID: " + category.getId() + 
-                          ", Name: " + category.getCatName() + 
-                          ", Admin ID: " + category.getAdminId());
 
         try {
             if (category.getId() == 0) {
@@ -144,12 +137,13 @@ public class AdminController {
             ra.addFlashAttribute("errorMsg", "Error saving category: " + e.getMessage());
             ra.addFlashAttribute("category", category);
             ra.addFlashAttribute("categories", categoryRepo.findAll());
+            ra.addFlashAttribute("activeSection", "categories");
             return "redirect:/admin/category#category-section";
         }
 
-        // Add category data for the page
-        ra.addFlashAttribute("category", new CategoryBean()); // Reset form
+        ra.addFlashAttribute("category", new CategoryBean());
         ra.addFlashAttribute("categories", categoryRepo.findAll());
+        ra.addFlashAttribute("activeSection", "categories");
         
         System.out.println("DEBUG: Category operation completed successfully");
         return "redirect:/admin/category#category-section";
@@ -159,11 +153,10 @@ public class AdminController {
     public String editCategory(@PathVariable("id") int id, RedirectAttributes ra) {
         ra.addFlashAttribute("category", categoryRepo.findById(id).orElse(new CategoryBean()));
         ra.addFlashAttribute("categories", categoryRepo.findAll());
+        ra.addFlashAttribute("activeSection", "categories");
         return "redirect:/admin/category#category-section";
     }
 
-
-        
     @GetMapping("/admin/category/delete/{id}")
     public String deleteCategory(@PathVariable("id") int id, RedirectAttributes ra) {
         categoryRepo.delete(id);
@@ -171,14 +164,71 @@ public class AdminController {
         ra.addFlashAttribute("msg", "Category deleted successfully!");
         ra.addFlashAttribute("category", new CategoryBean());
         ra.addFlashAttribute("categories", categoryRepo.findAll());
+        ra.addFlashAttribute("activeSection", "categories");
         return "redirect:/admin/category#category-section";
     }
-    // =================== HELPER ====================
-    @SuppressWarnings("unused")
-	private void addDashboardStats(Model model) {
-        model.addAttribute("jobSeekerCount", 0);
-        model.addAttribute("employerCount", 0);
-        model.addAttribute("activeJobCount", 0);
-        model.addAttribute("applicationCount", 0);
+
+    // =================== JOB LISTINGS MANAGEMENT ====================
+    @GetMapping("/admin/joblistings")
+    public String showJobListings(Model model) {
+        List<JobPostBean> jobListings = jobPVByAdmRepo.findAll();
+        model.addAttribute("jobListings", jobListings);
+        model.addAttribute("activeSection", "joblistings");
+        addDashboardStats(model);
+        return "admin/admdashboard";
+    }
+
+    @GetMapping("/admin/job/approve/{id}")
+    public String approveJob(@PathVariable("id") Integer id, RedirectAttributes ra) {
+        try {
+            boolean updated = jobPVByAdmRepo.updateJobStatus(id, "APPROVED");
+            if (updated) {
+                ra.addFlashAttribute("jobMsg", "Job approved successfully!");
+            } else {
+                ra.addFlashAttribute("jobErrorMsg", "Failed to approve job!");
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("jobErrorMsg", "Error approving job: " + e.getMessage());
+        }
+        return "redirect:/admin/joblistings#joblistings-section";
+    }
+
+    @GetMapping("/admin/job/reject/{id}")
+    public String rejectJob(@PathVariable("id") Integer id, RedirectAttributes ra) {
+        try {
+            boolean updated = jobPVByAdmRepo.updateJobStatus(id, "REJECTED");
+            if (updated) {
+                ra.addFlashAttribute("jobMsg", "Job rejected successfully!");
+            } else {
+                ra.addFlashAttribute("jobErrorMsg", "Failed to reject job!");
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("jobErrorMsg", "Error rejecting job: " + e.getMessage());
+        }
+        return "redirect:/admin/joblistings#joblistings-section";
+    }
+
+    @GetMapping("/admin/job/delete/{id}")
+    public String deleteJob(@PathVariable("id") Long id, RedirectAttributes ra) {
+        try {
+            boolean deleted = jobPVByAdmRepo.deleteById(id);
+            if (deleted) {
+                ra.addFlashAttribute("jobMsg", "Job deleted successfully!");
+            } else {
+                ra.addFlashAttribute("jobErrorMsg", "Failed to delete job!");
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("jobErrorMsg", "Error deleting job: " + e.getMessage());
+        }
+        return "redirect:/admin/joblistings#joblistings-section";
+    }
+
+    // =================== HELPER METHODS ====================
+    private void addDashboardStats(Model model) {
+        // Add your actual statistics here
+        model.addAttribute("jobSeekerCount", jobPVByAdmRepo.countJobSeekers());
+        model.addAttribute("employerCount", jobPVByAdmRepo.countEmployers());
+        model.addAttribute("activeJobCount", jobPVByAdmRepo.countActiveJobs());
+        model.addAttribute("applicationCount", jobPVByAdmRepo.countApplications());
     }
 }

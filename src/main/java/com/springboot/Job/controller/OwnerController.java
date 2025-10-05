@@ -1,5 +1,6 @@
 package com.springboot.Job.controller;
 
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,8 @@ public class OwnerController {
     @Autowired
     private CategoryRepository categoryRepo;
 
+    
+    
     @GetMapping("/login")
     public String showLoginPage() {
         return "owner/ownerlogin";
@@ -259,7 +262,7 @@ public class OwnerController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/owner/login";
+        return "redirect:/owner/";
     }
     
     @PostMapping("/job/post")
@@ -318,7 +321,8 @@ public class OwnerController {
             jobPost.setSalaryMax(salaryMax);
             jobPost.setBenefits(benefits);
             jobPost.setApplicationEmail(owner.get().getGmail());
-            jobPost.setApplicationDeadline(applicationDeadline);
+            jobPost.setApplicationDeadline(LocalDate.parse(applicationDeadline));
+
             jobPost.setApplicationInstructions(applicationInstructions);
             jobPost.setOwnerId(ownerId);
             jobPost.setCategoryId(categoryId); // Set the category ID

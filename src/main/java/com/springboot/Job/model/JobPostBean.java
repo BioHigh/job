@@ -1,8 +1,8 @@
 package com.springboot.Job.model;
 
 import lombok.Getter;
-
 import lombok.Setter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,11 +25,10 @@ public class JobPostBean {
     private Integer salaryMax;
     private String benefits;
     private String applicationEmail;
-    private String applicationDeadline;
+    private LocalDate applicationDeadline; 
     private String applicationInstructions;
     private Integer ownerId;
     private Integer adminId;
     private String status;
     private LocalDateTime createdAt;
-    
 }

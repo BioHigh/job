@@ -32,10 +32,9 @@ public class UserController {
     }
     
     @GetMapping("/index")
-	public String showIndex1() {
-	
-		return "index";
-	}
+    public String showIndex1() {
+        return "index";
+    }
 
     @PostMapping("/login")
     public String loginUser(@RequestParam String gmail, 
@@ -47,14 +46,13 @@ public class UserController {
         if (user.isPresent()) {
             session.setAttribute("user", user.get());
             session.setAttribute("userId", user.get().getId());
-            return "redirect:/user/home"; // Redirect to a home endpoint
+            return "redirect:/user/home"; // ✅ redirect fixes the CSS URL issue
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password");
             return "redirect:/user/login";
         }
     }
 
-    // Add this method to handle the home page
     @GetMapping("/home")
     public String showHome(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
@@ -65,11 +63,12 @@ public class UserController {
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
-            return "home";
+            return "home"; // ✅ this is fine since URL is now /user/home
         } else {
             return "redirect:/user/login";
         }
     }
+
 
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="owner-header">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top custom-header">
+    <div class="container-fluid px-4">
+
+      <!-- Logo -->
+      <a class="navbar-brand fw-bold" th:href="@{/owner/dashboard}" style="font-size: 1.8rem; color: #1a73e8 !important;">
+        <i class="bi bi-building-fill me-2"></i> JobJump
+      </a>
+
+      <!-- Toggle -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#ownerNavbar"
+        aria-controls="ownerNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="ownerNavbar">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/dashboard}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/profile}">Profile</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/companies}">My Company</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/contact}">Support</a></li>
+        </ul>
+
+        <div class="d-flex gap-2 ms-auto">
+          <a th:href="@{/owner/job/post}" class="btn btn-outline-primary fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Post Job
+          </a>
+          <a th:href="@{/owner/login}" class="btn btn-outline-primary fw-semibold">
+            <i class="bi bi-chat-dots me-1"></i> Messages
+          </a>
+          <a th:href="@{/company}" class="btn btn-primary fw-semibold">
+            <i class="bi bi-box-arrow-right me-1"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+</body>
+</html>

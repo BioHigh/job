@@ -1,7 +1,6 @@
 package com.springboot.Job.repository;
 
 import java.sql.PreparedStatement;
-
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
@@ -16,10 +15,111 @@ import org.springframework.stereotype.Repository;
 import com.springboot.Job.model.JobPostBean;
 
 @Repository
-public class JobPostRepository {
+public class JobPVByAdmRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    // =================== ADMIN METHODS ====================
+    
+    // Find all job posts for admin
+    public List<JobPostBean> findAll() {
+        try {
+            String sql = "SELECT * FROM job_post ORDER BY created_at DESC";
+            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class));
+        } catch (Exception e) {
+            System.err.println("Error finding all job posts: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    // Find job post by ID
+    public JobPostBean findById(Integer id) {
+        try {
+            String sql = "SELECT * FROM job_post WHERE id = ?";
+            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(JobPostBean.class), id);
+        } catch (Exception e) {
+            System.err.println("Error finding job post by ID: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Update job status (APPROVE/REJECT)
+    public boolean updateJobStatus(Integer id, String status) {
+        try {
+            String sql = "UPDATE job_post SET status = ? WHERE id = ?";
+            int result = jdbcTemplate.update(sql, status, id);
+            return result > 0;
+        } catch (Exception e) {
+            System.err.println("Error updating job status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Delete job post by ID
+    public boolean deleteById(Long id) {
+        try {
+            String sql = "DELETE FROM job_post WHERE id = ?";
+            int result = jdbcTemplate.update(sql, id);
+            return result > 0;
+        } catch (Exception e) {
+            System.err.println("Error deleting job post: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Count methods for dashboard statistics
+    public int countJobSeekers() {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_seeker"; // Adjust table name as needed
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        } catch (Exception e) {
+            System.err.println("Error counting job seekers: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int countEmployers() {
+        try {
+            String sql = "SELECT COUNT(*) FROM employer"; // Adjust table name as needed
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        } catch (Exception e) {
+            System.err.println("Error counting employers: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int countActiveJobs() {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_post WHERE status = 'APPROVED'";
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        } catch (Exception e) {
+            System.err.println("Error counting active jobs: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int countApplications() {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_application"; // Adjust table name as needed
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        } catch (Exception e) {
+            System.err.println("Error counting applications: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public int countPendingJobs() {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_post WHERE status = 'PENDING'";
+            return jdbcTemplate.queryForObject(sql, Integer.class);
+        } catch (Exception e) {
+            System.err.println("Error counting pending jobs: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    // =================== EXISTING OWNER METHODS ====================
 
     public boolean createJobPost(JobPostBean jobPost) {
         try {
@@ -67,16 +167,14 @@ public class JobPostRepository {
                     } else {
                         ps.setNull(16, Types.DATE);
                     }
+
                     ps.setString(17, jobPost.getApplicationInstructions());
                     ps.setInt(18, jobPost.getOwnerId());
                     ps.setString(19, "PENDING");
                     
-                    // Set category_id - this is the crucial fix
                     if (jobPost.getCategoryId() != null) {
                         ps.setInt(20, jobPost.getCategoryId());
                     } else {
-                        // If no category is selected, you might want to set a default category
-                        // or handle it differently based on your business logic
                         ps.setNull(20, Types.INTEGER);
                     }
                 }
@@ -102,7 +200,7 @@ public class JobPostRepository {
             return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId, limit);
         } catch (Exception e) {
             System.err.println("Error finding recent jobs: " + e.getMessage());
-            return List.of(); // Return empty list on error
+            return List.of();
         }
     }
 
@@ -120,7 +218,6 @@ public class JobPostRepository {
         try {
             // If you have an applications table, use this:
             // String sql = "SELECT COUNT(*) FROM applications a JOIN job_post j ON a.job_post_id = j.id WHERE j.owner_id = ?";
-            // For now, return 0 or a default value
             return 0;
         } catch (Exception e) {
             System.err.println("Error counting applications: " + e.getMessage());
@@ -132,12 +229,10 @@ public class JobPostRepository {
         try {
             // If you have an interviews table, use this:
             // String sql = "SELECT COUNT(*) FROM interviews i JOIN job_post j ON i.job_post_id = j.id WHERE j.owner_id = ?";
-            // For now, return 0 or a default value
             return 0;
         } catch (Exception e) {
             System.err.println("Error counting interviews: " + e.getMessage());
             return 0;
         }
     }
-    
 }

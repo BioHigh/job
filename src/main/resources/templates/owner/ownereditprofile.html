@@ -10,14 +10,7 @@
         .card {
             border: none;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            background: linear-gradient(45deg, #4e73df, #2e59d9);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 2rem;
-        }
+       }
         .form-control {
             border-radius: 8px;
             padding: 0.75rem 1rem;
@@ -179,15 +172,16 @@
     </style>
 </head>
 <body>
-    <div class="container mt-4">
+<div class="sticky-top bg-white shadow-sm">
+    <div th:replace="ownerheader :: owner-header"></div>
+</div>
+    <div class="container">
+    
         <div class="row justify-content-center">
             <div class="col-xl-10">
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="h1 mb-0"><i class="bi bi-building-gear me-2"></i>Edit Company Profile</h2>
-                        <p class="mb-0 opacity-75">Update your company information</p>
-                    </div>
-                    <div class="card-body p-4 p-md-5">
+                   
+                    <div class="card-body p-4 ">
                         <!-- Alert Messages -->
                         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="bi bi-check-circle-fill me-2"></i>
