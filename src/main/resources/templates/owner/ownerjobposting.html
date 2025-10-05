@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post a Job - HireHub</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
         :root {
@@ -18,11 +20,6 @@
         body {
             background-color: #f5f7fb;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            color: var(--primary);
         }
         
         .job-posting-container {
@@ -43,10 +40,11 @@
         .form-section {
             padding: 1.5rem 2rem;
             border-bottom: 1px solid #eaeaea;
+            display: none;
         }
         
-        .form-section:last-child {
-            border-bottom: none;
+        .form-section.active {
+            display: block;
         }
         
         .section-title {
@@ -222,6 +220,97 @@
             margin-left: 0.5rem;
         }
         
+        /* Multi-step progress indicator */
+        .progress-container {
+            margin-bottom: 2rem;
+            padding: 0 2rem;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .step.active:not(:last-child)::after {
+            background-color: var(--primary);
+        }
+        
+        .step.completed:not(:last-child)::after {
+            background-color: var(--primary);
+        }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            position: relative;
+            z-index: 2;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .step.active .step-circle {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .step.completed .step-circle {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .step.completed .step-label {
+            color: var(--success);
+        }
+        
+        .progress {
+            height: 4px;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+        
         @media (max-width: 768px) {
             .job-posting-container {
                 margin: 1rem;
@@ -234,10 +323,23 @@
             .posting-header {
                 padding: 1.5rem;
             }
+            
+            .progress-container {
+                padding: 0 1rem;
+            }
+            
+            .step-indicator {
+                font-size: 0.8rem;
+            }
+            
+            .step:not(:last-child)::after {
+                right: -40%;
+            }
         }
     </style>
 </head>
 <body>
+
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -270,7 +372,9 @@
     </div>
 
     <!-- Main Content -->
+    <div th:replace="owner/header :: owner-header"></div>
     <div class="container my-4">
+    
         <div class="job-posting-container">
             <!-- Header -->
             <div class="posting-header">
@@ -278,10 +382,39 @@
                 <p class="mb-0">Fill in the details below to create your job posting</p>
             </div>
 
+            <!-- Progress Indicator -->
+            <div class="progress-container">
+                <div class="step-indicator">
+                    <div class="step active" id="step1">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Job Details</div>
+                    </div>
+                    <div class="step" id="step2">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Requirements</div>
+                    </div>
+                    <div class="step" id="step3">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Compensation</div>
+                    </div>
+                    <div class="step" id="step4">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Application</div>
+                    </div>
+                    <div class="step" id="step5">
+                        <div class="step-circle">5</div>
+                        <div class="step-label">Preview</div>
+                    </div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar" style="width: 20%"></div>
+                </div>
+            </div>
+
             <!-- Job Posting Form -->
             <form th:action="@{/owner/job/post}" method="post" id="jobPostingForm">
                 <!-- Job Details -->
-                <div class="form-section">
+                <div class="form-section active" id="section1">
                     <h3 class="section-title"><i class="bi bi-briefcase"></i> Job Details</h3>
                     
                     <div class="row">
@@ -302,11 +435,25 @@
                         </div>
                     </div>
                     
+                    <!-- Category Selection - ADDED THIS SECTION -->
                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="categoryId" class="form-label">Job Category *</label>
+                            <select class="form-select" id="categoryId" name="categoryId" required>
+                                <option value="" selected disabled>Select a category</option>
+                                <option th:each="category : ${categories}" 
+                                        th:value="${category.id}" 
+                                        th:text="${category.catName}">
+                                </option>
+                            </select>
+                        </div>
                         <div class="col-md-6 mb-3">
                             <label for="department" class="form-label">Department</label>
                             <input type="text" class="form-control" id="department" name="department" placeholder="e.g. Engineering">
                         </div>
+                    </div>
+                    
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="location" class="form-label">Location *</label>
                             <input type="text" class="form-control" id="location" name="location" placeholder="e.g. New York, NY" required>
@@ -317,10 +464,17 @@
                         <label for="jobDescription" class="form-label">Job Description *</label>
                         <textarea class="form-control" id="jobDescription" name="jobDescription" rows="5" placeholder="Describe the role, responsibilities, and requirements..." required></textarea>
                     </div>
+                    
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-outline-secondary" id="saveDraft">
+                            <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                        </button>
+                        <button type="button" class="btn btn-primary" id="next1">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                    </div>
                 </div>
 
                 <!-- Company Details -->
-                <div class="form-section">
+                <div class="form-section" id="section2">
                     <h3 class="section-title"><i class="bi bi-building"></i> Company Details</h3>
                     
                     <div class="row">
@@ -340,11 +494,8 @@
                         <textarea class="form-control" id="companyDescription" readonly th:text="${owner.description}"></textarea>
                         <input type="hidden" name="companyDescription" th:value="${owner.description}">
                     </div>
-                </div>
-
-                <!-- Requirements & Skills -->
-                <div class="form-section">
-                    <h3 class="section-title"><i class="bi bi-list-check"></i> Requirements & Skills</h3>
+                    
+                    <h3 class="section-title mt-4"><i class="bi bi-list-check"></i> Requirements & Skills</h3>
                     
                     <div class="mb-3">
                         <label class="form-label">Required Skills *</label>
@@ -382,24 +533,31 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-outline-secondary" id="prev2">
+                            <i class="bi bi-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="next2">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                    </div>
                 </div>
 
                 <!-- Compensation & Benefits -->
-                <div class="form-section">
+                <div class="form-section" id="section3">
                     <h3 class="section-title"><i class="bi bi-currency-dollar"></i> Compensation & Benefits</h3>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="salaryMin" class="form-label">Salary Range (Min)</label>
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
+                                <span class="input-group-text">MMK</span>
                                 <input type="number" class="form-control" id="salaryMin" name="salaryMin" placeholder="e.g. 50000" min="0">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="salaryMax" class="form-label">Salary Range (Max)</label>
                             <div class="input-group">
-                                <span class="input-group-text">$</span>
+                                <span class="input-group-text">MMK</span>
                                 <input type="number" class="form-control" id="salaryMax" name="salaryMax" placeholder="e.g. 80000" min="0">
                             </div>
                         </div>
@@ -407,32 +565,49 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Benefits</label>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input benefit-checkbox" type="checkbox" id="healthInsurance" value="Health Insurance">
-                            <label class="form-check-label" for="healthInsurance">Health Insurance</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input benefit-checkbox" type="checkbox" id="dentalInsurance" value="Dental Insurance">
-                            <label class="form-check-label" for="dentalInsurance">Dental Insurance</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input benefit-checkbox" type="checkbox" id="retirementPlan" value="Retirement Plan">
-                            <label class="form-check-label" for="retirementPlan">Retirement Plan</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input benefit-checkbox" type="checkbox" id="paidTimeOff" value="Paid Time Off">
-                            <label class="form-check-label" for="paidTimeOff">Paid Time Off</label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input benefit-checkbox" type="checkbox" id="remoteWork" value="Remote Work Options">
-                            <label class="form-check-label" for="remoteWork">Remote Work Options</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="healthInsurance" value="Health Insurance">
+                                    <label class="form-check-label" for="healthInsurance">Health Insurance</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="dentalInsurance" value="Dental Insurance">
+                                    <label class="form-check-label" for="dentalInsurance">Dental Insurance</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="retirementPlan" value="Retirement Plan">
+                                    <label class="form-check-label" for="retirementPlan">Retirement Plan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="paidTimeOff" value="Paid Time Off">
+                                    <label class="form-check-label" for="paidTimeOff">Paid Time Off</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="remoteWork" value="Remote Work Options">
+                                    <label class="form-check-label" for="remoteWork">Remote Work Options</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input benefit-checkbox" type="checkbox" id="flexibleHours" value="Flexible Hours">
+                                    <label class="form-check-label" for="flexibleHours">Flexible Hours</label>
+                                </div>
+                            </div>
                         </div>
                         <input type="hidden" id="benefits" name="benefits">
+                    </div>
+                    
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-outline-secondary" id="prev3">
+                            <i class="bi bi-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="next3">Next <i class="bi bi-arrow-right ms-1"></i></button>
                     </div>
                 </div>
 
                 <!-- Application Process -->
-                <div class="form-section">
+                <div class="form-section" id="section4">
                     <h3 class="section-title"><i class="bi bi-send"></i> Application Process</h3>
                     
                     <div class="mb-3">
@@ -450,10 +625,17 @@
                         <label for="applicationInstructions" class="form-label">Application Instructions</label>
                         <textarea class="form-control" id="applicationInstructions" name="applicationInstructions" rows="3" placeholder="Any specific instructions for applicants..."></textarea>
                     </div>
+                    
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-outline-secondary" id="prev4">
+                            <i class="bi bi-arrow-left me-1"></i> Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="next4">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                    </div>
                 </div>
 
                 <!-- Preview & Submit -->
-                <div class="form-section">
+                <div class="form-section" id="section5">
                     <h3 class="section-title"><i class="bi bi-eye"></i> Preview</h3>
                     
                     <div class="preview-card">
@@ -468,7 +650,13 @@
                                 <i class="bi bi-clock"></i> <span id="previewJobType">Job Type</span>
                             </div>
                             <div class="preview-detail">
+                                <i class="bi bi-tags"></i> <span id="previewCategory">Category</span>
+                            </div>
+                            <div class="preview-detail">
                                 <i class="bi bi-cash"></i> <span id="previewSalary">Salary</span>
+                            </div>
+                            <div class="preview-detail">
+                                <i class="bi bi-person"></i> <span id="previewExperience">Experience Level</span>
                             </div>
                         </div>
                         
@@ -479,15 +667,19 @@
                         <div class="mt-3" id="previewSkills">
                             <!-- Skills will appear here -->
                         </div>
+                        
+                        <div class="mt-3" id="previewBenefits">
+                            <!-- Benefits will appear here -->
+                        </div>
                     </div>
                     
-                    <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-secondary" id="saveDraft">
-                            <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                    <div class="form-navigation">
+                        <button type="button" class="btn btn-outline-secondary" id="prev5">
+                            <i class="bi bi-arrow-left me-1"></i> Previous
                         </button>
                         <div>
                             <button type="button" class="btn btn-outline-primary me-2" id="previewBtn">
-                                <i class="bi bi-eye me-1"></i> Update Preview
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Preview
                             </button>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-send me-1"></i> Post Job
@@ -502,6 +694,143 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Multi-step form navigation
+            let currentStep = 1;
+            const totalSteps = 5;
+            
+            // Navigation functions
+            function showStep(step) {
+                // Hide all sections
+                document.querySelectorAll('.form-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show current section
+                document.getElementById(`section${step}`).classList.add('active');
+                
+                // Update progress indicator
+                updateProgressIndicator(step);
+                
+                // Update preview if we're on the preview step
+                if (step === 5) {
+                    updatePreview();
+                }
+            }
+            
+            function updateProgressIndicator(step) {
+                // Update step indicators
+                document.querySelectorAll('.step').forEach((stepEl, index) => {
+                    if (index + 1 < step) {
+                        stepEl.classList.remove('active');
+                        stepEl.classList.add('completed');
+                    } else if (index + 1 === step) {
+                        stepEl.classList.add('active');
+                        stepEl.classList.remove('completed');
+                    } else {
+                        stepEl.classList.remove('active', 'completed');
+                    }
+                });
+                
+                // Update progress bar
+                const progress = ((step - 1) / (totalSteps - 1)) * 100;
+                document.getElementById('progressBar').style.width = `${progress}%`;
+            }
+            
+            // Navigation event listeners
+            document.getElementById('next1').addEventListener('click', function() {
+                if (validateStep(1)) {
+                    currentStep = 2;
+                    showStep(currentStep);
+                }
+            });
+            
+            document.getElementById('next2').addEventListener('click', function() {
+                // Validate skills
+                const skills = requiredSkillsInput.value.trim();
+                if (!skills) {
+                    alert('Please add at least one required skill.');
+                    skillInput.focus();
+                    return;
+                }
+                
+                currentStep = 3;
+                showStep(currentStep);
+            });
+            
+            document.getElementById('next3').addEventListener('click', function() {
+                currentStep = 4;
+                showStep(currentStep);
+            });
+            
+            document.getElementById('next4').addEventListener('click', function() {
+                currentStep = 5;
+                showStep(currentStep);
+            });
+            
+            // Previous buttons
+            document.getElementById('prev2').addEventListener('click', function() {
+                currentStep = 1;
+                showStep(currentStep);
+            });
+            
+            document.getElementById('prev3').addEventListener('click', function() {
+                currentStep = 2;
+                showStep(currentStep);
+            });
+            
+            document.getElementById('prev4').addEventListener('click', function() {
+                currentStep = 3;
+                showStep(currentStep);
+            });
+            
+            document.getElementById('prev5').addEventListener('click', function() {
+                currentStep = 4;
+                showStep(currentStep);
+            });
+            
+            // Step validation
+            function validateStep(step) {
+                if (step === 1) {
+                    const jobTitle = document.getElementById('jobTitle').value.trim();
+                    const jobType = document.getElementById('jobType').value;
+                    const location = document.getElementById('location').value.trim();
+                    const jobDescription = document.getElementById('jobDescription').value.trim();
+                    const categoryId = document.getElementById('categoryId').value; // Add category validation
+                    
+                    if (!jobTitle) {
+                        alert('Please enter a job title.');
+                        document.getElementById('jobTitle').focus();
+                        return false;
+                    }
+                    
+                    if (!jobType) {
+                        alert('Please select a job type.');
+                        document.getElementById('jobType').focus();
+                        return false;
+                    }
+                    
+                    if (!location) {
+                        alert('Please enter a location.');
+                        document.getElementById('location').focus();
+                        return false;
+                    }
+                    
+                    if (!jobDescription) {
+                        alert('Please enter a job description.');
+                        document.getElementById('jobDescription').focus();
+                        return false;
+                    }
+                    
+                    if (!categoryId) { // Validate category
+                        alert('Please select a job category.');
+                        document.getElementById('categoryId').focus();
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            
             // Skills functionality
             const skillInput = document.getElementById('skillInput');
             const skillsContainer = document.getElementById('skillsContainer');
@@ -558,12 +887,19 @@
                     .map(tag => tag.textContent.trim().replace('×', ''));
                 
                 previewSkills.innerHTML = '';
-                skills.forEach(skill => {
-                    const skillElement = document.createElement('span');
-                    skillElement.className = 'tag';
-                    skillElement.textContent = skill;
-                    previewSkills.appendChild(skillElement);
-                });
+                if (skills.length > 0) {
+                    const skillsTitle = document.createElement('div');
+                    skillsTitle.className = 'fw-bold mb-2';
+                    skillsTitle.textContent = 'Required Skills:';
+                    previewSkills.appendChild(skillsTitle);
+                    
+                    skills.forEach(skill => {
+                        const skillElement = document.createElement('span');
+                        skillElement.className = 'tag';
+                        skillElement.textContent = skill;
+                        previewSkills.appendChild(skillElement);
+                    });
+                }
             }
             
             // Benefits functionality
@@ -579,6 +915,30 @@
                     .filter(checkbox => checkbox.checked)
                     .map(checkbox => checkbox.value);
                 benefitsInput.value = selectedBenefits.join(',');
+                updatePreviewBenefits();
+            }
+            
+            function updatePreviewBenefits() {
+                const selectedBenefits = Array.from(benefitCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                
+                const previewBenefits = document.getElementById('previewBenefits');
+                previewBenefits.innerHTML = '';
+                
+                if (selectedBenefits.length > 0) {
+                    const benefitsTitle = document.createElement('div');
+                    benefitsTitle.className = 'fw-bold mb-2';
+                    benefitsTitle.textContent = 'Benefits:';
+                    previewBenefits.appendChild(benefitsTitle);
+                    
+                    selectedBenefits.forEach(benefit => {
+                        const benefitElement = document.createElement('span');
+                        benefitElement.className = 'tag';
+                        benefitElement.textContent = benefit;
+                        previewBenefits.appendChild(benefitElement);
+                    });
+                }
             }
             
             // Preview functionality
@@ -595,28 +955,39 @@
                 const jobTypeText = jobTypeSelect.options[jobTypeSelect.selectedIndex]?.text || 'Job Type';
                 document.getElementById('previewJobType').textContent = jobTypeText;
                 
+                // Category
+                const categorySelect = document.getElementById('categoryId');
+                const categoryText = categorySelect.options[categorySelect.selectedIndex]?.text || 'Not specified';
+                document.getElementById('previewCategory').textContent = categoryText;
+                
+                // Experience level
+                const experienceSelect = document.getElementById('experienceLevel');
+                const experienceText = experienceSelect.options[experienceSelect.selectedIndex]?.text || 'Not specified';
+                document.getElementById('previewExperience').textContent = experienceText;
+                
                 // Salary
                 const minSalary = document.getElementById('salaryMin').value;
                 const maxSalary = document.getElementById('salaryMax').value;
                 let salaryText = 'Salary not specified';
                 if (minSalary && maxSalary) {
-                    salaryText = `$${parseInt(minSalary).toLocaleString()} - $${parseInt(maxSalary).toLocaleString()}`;
+                    salaryText = `MMK ${parseInt(minSalary).toLocaleString()} - MMK ${parseInt(maxSalary).toLocaleString()}`;
                 } else if (minSalary) {
-                    salaryText = `From $${parseInt(minSalary).toLocaleString()}`;
+                    salaryText = `From MMK ${parseInt(minSalary).toLocaleString()}`;
                 } else if (maxSalary) {
-                    salaryText = `Up to $${parseInt(maxSalary).toLocaleString()}`;
+                    salaryText = `Up to MMK ${parseInt(maxSalary).toLocaleString()}`;
                 }
                 document.getElementById('previewSalary').textContent = salaryText;
                 
                 // Description (truncate if too long)
                 const fullDescription = document.getElementById('jobDescription').value;
-                const previewDescription = fullDescription.length > 200 ? 
-                    fullDescription.substring(0, 200) + '...' : fullDescription;
+                const previewDescription = fullDescription.length > 300 ? 
+                    fullDescription.substring(0, 300) + '...' : fullDescription;
                 document.getElementById('previewDescription').textContent = 
                     previewDescription || 'Job description will appear here...';
                 
-                // Skills
+                // Skills and Benefits
                 updatePreviewSkills();
+                updatePreviewBenefits();
             }
             
             // Form validation and submission
@@ -635,6 +1006,7 @@
                 const jobType = document.getElementById('jobType').value;
                 const location = document.getElementById('location').value.trim();
                 const jobDescription = document.getElementById('jobDescription').value.trim();
+                const categoryId = document.getElementById('categoryId').value; // Validate category
                 
                 if (!jobTitle) {
                     e.preventDefault();
@@ -664,6 +1036,13 @@
                     return false;
                 }
                 
+                if (!categoryId) { // Validate category
+                    e.preventDefault();
+                    alert('Please select a job category.');
+                    document.getElementById('categoryId').focus();
+                    return false;
+                }
+                
                 // Validate salary range
                 const minSalary = parseInt(document.getElementById('salaryMin').value) || 0;
                 const maxSalary = parseInt(document.getElementById('salaryMax').value) || 0;
@@ -687,6 +1066,7 @@
                 const formData = {
                     jobTitle: document.getElementById('jobTitle').value,
                     jobType: document.getElementById('jobType').value,
+                    categoryId: document.getElementById('categoryId').value, // Save category
                     department: document.getElementById('department').value,
                     location: document.getElementById('location').value,
                     jobDescription: document.getElementById('jobDescription').value,
@@ -717,6 +1097,7 @@
                     
                     document.getElementById('jobTitle').value = draft.jobTitle || '';
                     document.getElementById('jobType').value = draft.jobType || '';
+                    document.getElementById('categoryId').value = draft.categoryId || ''; // Load category
                     document.getElementById('department').value = draft.department || '';
                     document.getElementById('location').value = draft.location || '';
                     document.getElementById('jobDescription').value = draft.jobDescription || '';

@@ -36,8 +36,10 @@ public class Owner {
     
     private String type = "COMPANY";
     
-    @Column(name = "profile_photo")
+    @Lob
+    @Column(name = "profile_photo", columnDefinition = "LONGBLOB")
     private byte[] profilePhoto;
+
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;

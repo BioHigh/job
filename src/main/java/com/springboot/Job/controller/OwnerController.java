@@ -1,6 +1,7 @@
 package com.springboot.Job.controller;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.springboot.Job.model.JobPost;
+import com.springboot.Job.model.JobPostBean;
 import com.springboot.Job.model.Owner;
+import com.springboot.Job.repository.CategoryRepository;
 import com.springboot.Job.service.JobPostService;
 import com.springboot.Job.service.OwnerService;
 
@@ -29,6 +31,9 @@ public class OwnerController {
     
     @Autowired
     private JobPostService jobPostService;
+    
+    @Autowired
+    private CategoryRepository categoryRepo;
 
     @GetMapping("/login")
     public String showLoginPage() {
@@ -84,6 +89,19 @@ public class OwnerController {
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
+            
+            List<JobPostBean> recentJobs = jobPostService.findRecentJobsByOwner(ownerId, 5);
+            model.addAttribute("recentJobs", recentJobs);
+            
+            // Calculate statistics - ADD THIS PART
+            long activeJobsCount = jobPostService.countActiveJobsByOwner(ownerId);
+            long totalApplications = jobPostService.countTotalApplicationsByOwner(ownerId);
+            long totalInterviews = jobPostService.countTotalInterviewsByOwner(ownerId);
+            
+            model.addAttribute("activeJobsCount", activeJobsCount);
+            model.addAttribute("totalApplications", totalApplications);
+            model.addAttribute("totalInterviews", totalInterviews);
+            
             // Get profile photo separately
             byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
             if (profilePhoto != null) {
@@ -95,6 +113,7 @@ public class OwnerController {
             return "redirect:/owner/login";
         }
     }
+
 
     @GetMapping("/profile/edit")
     public String showEditProfile(HttpSession session, Model model) {
@@ -223,12 +242,14 @@ public class OwnerController {
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
-            // Get profile photo for display
             byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
             if (profilePhoto != null) {
                 String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
                 model.addAttribute("profilePhoto", base64Photo);
             }
+            
+            model.addAttribute("categories", categoryRepo.findAll());
+            
             return "owner/ownerjobposting";
         } else {
             return "redirect:/owner/login";
@@ -256,6 +277,7 @@ public class OwnerController {
                          @RequestParam(required = false) String benefits,
                          @RequestParam(required = false) String applicationDeadline,
                          @RequestParam(required = false) String applicationInstructions,
+                         @RequestParam Integer categoryId, 
                          HttpSession session,
                          RedirectAttributes redirectAttributes) {
         
@@ -276,22 +298,11 @@ public class OwnerController {
         }
 
         System.out.println("Owner found: " + owner.get().getCompanyName());
+        System.out.println("Category ID: " + categoryId);
         
-        // Debug print all parameters
-        System.out.println("Job Title: " + jobTitle);
-        System.out.println("Job Type: " + jobType);
-        System.out.println("Department: " + department);
-        System.out.println("Location: " + location);
-        System.out.println("Required Skills: " + requiredSkills);
-        System.out.println("Experience Level: " + experienceLevel);
-        System.out.println("Education Level: " + educationLevel);
-        System.out.println("Salary Min: " + salaryMin);
-        System.out.println("Salary Max: " + salaryMax);
-        System.out.println("Benefits: " + benefits);
-
         try {
             // Create JobPost object
-            JobPost jobPost = new JobPost();
+            JobPostBean jobPost = new JobPostBean();
             jobPost.setJobTitle(jobTitle);
             jobPost.setJobType(jobType);
             jobPost.setDepartment(department);
@@ -303,13 +314,14 @@ public class OwnerController {
             jobPost.setRequiredSkills(requiredSkills);
             jobPost.setExperienceLevel(experienceLevel);
             jobPost.setEducationLevel(educationLevel);
-            jobPost.setSalaryMin(salaryMin);
+            jobPost.setSalaryMini(salaryMin);
             jobPost.setSalaryMax(salaryMax);
             jobPost.setBenefits(benefits);
             jobPost.setApplicationEmail(owner.get().getGmail());
             jobPost.setApplicationDeadline(applicationDeadline);
             jobPost.setApplicationInstructions(applicationInstructions);
             jobPost.setOwnerId(ownerId);
+            jobPost.setCategoryId(categoryId); // Set the category ID
 
             System.out.println("Calling jobPostService.createJobPost...");
             boolean isPosted = jobPostService.createJobPost(jobPost);

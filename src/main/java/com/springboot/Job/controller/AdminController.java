@@ -88,6 +88,10 @@ public class AdminController {
                                HttpSession session,
                                RedirectAttributes ra) {
 
+        System.out.println("DEBUG: Starting saveCategory method");
+        System.out.println("DEBUG: Category ID: " + category.getId());
+        System.out.println("DEBUG: Category Name: " + category.getCatName());
+
         // Check for duplicate category name (case-insensitive)
         String categoryName = category.getCatName().trim();
         boolean isDuplicate = categoryRepo.findAll().stream()
@@ -96,29 +100,58 @@ public class AdminController {
                     existingCat.getId() != category.getId()); // Exclude current category during update
 
         if (isDuplicate) {
+            System.out.println("DEBUG: Duplicate category found: " + categoryName);
             ra.addFlashAttribute("errorMsg", "Category name '" + categoryName + "' already exists!");
             ra.addFlashAttribute("category", category); // Keep the form data
             ra.addFlashAttribute("categories", categoryRepo.findAll());
             return "redirect:/admin/category#category-section";
         }
 
+        // Debug: Check the admin session
         AdminLoginBean admin = (AdminLoginBean) session.getAttribute("loginadm");
+        System.out.println("DEBUG: Admin from session: " + admin);
+        
         if (admin != null) {
+            System.out.println("DEBUG: Admin ID: " + admin.getId());
+            System.out.println("DEBUG: Admin Name: " + admin.getName());
+            System.out.println("DEBUG: Admin Email: " + admin.getGmail());
             category.setAdminId(admin.getId());
+        } else {
+            System.out.println("DEBUG: No admin found in session! Redirecting to login.");
+            ra.addFlashAttribute("errorMsg", "You must be logged in to manage categories!");
+            return "redirect:/admin";
         }
 
-        if (category.getId() == 0) {
-            categoryRepo.save(category);
-            ra.addFlashAttribute("msg", "Category added successfully!");
-        } else {
-            categoryRepo.update(category);
-            ra.addFlashAttribute("msg", "Category updated successfully!");
+        System.out.println("DEBUG: Final Category Bean before save - ID: " + category.getId() + 
+                          ", Name: " + category.getCatName() + 
+                          ", Admin ID: " + category.getAdminId());
+
+        try {
+            if (category.getId() == 0) {
+                System.out.println("DEBUG: Creating new category");
+                boolean saveResult = categoryRepo.save(category);
+                System.out.println("DEBUG: Save result: " + saveResult);
+                ra.addFlashAttribute("msg", "Category added successfully!");
+            } else {
+                System.out.println("DEBUG: Updating existing category");
+                boolean updateResult = categoryRepo.update(category);
+                System.out.println("DEBUG: Update result: " + updateResult);
+                ra.addFlashAttribute("msg", "Category updated successfully!");
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error during category save/update: " + e.getMessage());
+            e.printStackTrace();
+            ra.addFlashAttribute("errorMsg", "Error saving category: " + e.getMessage());
+            ra.addFlashAttribute("category", category);
+            ra.addFlashAttribute("categories", categoryRepo.findAll());
+            return "redirect:/admin/category#category-section";
         }
 
         // Add category data for the page
         ra.addFlashAttribute("category", new CategoryBean()); // Reset form
         ra.addFlashAttribute("categories", categoryRepo.findAll());
         
+        System.out.println("DEBUG: Category operation completed successfully");
         return "redirect:/admin/category#category-section";
     }
 
@@ -141,7 +174,8 @@ public class AdminController {
         return "redirect:/admin/category#category-section";
     }
     // =================== HELPER ====================
-    private void addDashboardStats(Model model) {
+    @SuppressWarnings("unused")
+	private void addDashboardStats(Model model) {
         model.addAttribute("jobSeekerCount", 0);
         model.addAttribute("employerCount", 0);
         model.addAttribute("activeJobCount", 0);

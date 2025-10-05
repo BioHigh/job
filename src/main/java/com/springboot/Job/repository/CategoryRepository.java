@@ -17,8 +17,6 @@ public class CategoryRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    
-    
 
     private static class CategoryRowMapper implements RowMapper<CategoryBean> {
         @Override
@@ -26,17 +24,26 @@ public class CategoryRepository {
             CategoryBean category = new CategoryBean();
             category.setId(rs.getInt("id"));
             category.setCatName(rs.getString("cat_name"));
-            // still map admin_id if you want to display it later
             category.setAdminId(rs.getInt("admin_id"));
             return category;
         }
     }
 
-    // ✅ Create (Insert) — always link to admin_id = 1
+    // ✅ Create (Insert)
     public boolean save(CategoryBean category) {
-        String sql = "INSERT INTO category (cat_name, admin_id) VALUES (?, ?)";
-        int result = jdbcTemplate.update(sql, category.getCatName(), 1);
-        return result > 0;
+        try {
+            System.out.println("DEBUG: Repository save - Category: " + category.getCatName() + 
+                             ", Admin ID: " + category.getAdminId());
+            
+            String sql = "INSERT INTO category (cat_name, admin_id) VALUES (?, ?)";
+            int result = jdbcTemplate.update(sql, category.getCatName(), category.getAdminId());
+            
+            System.out.println("DEBUG: Repository save result: " + result);
+            return result > 0;
+        } catch (Exception e) {
+            System.out.println("DEBUG: Repository save error: " + e.getMessage());
+            throw e;
+        }
     }
 
     // ✅ Find All
@@ -56,11 +63,22 @@ public class CategoryRepository {
         }
     }
 
-    // ✅ Update — always keep admin_id = 1
+    // ✅ Update
     public boolean update(CategoryBean category) {
-        String sql = "UPDATE category SET cat_name = ?, admin_id = ? WHERE id = ?";
-        int result = jdbcTemplate.update(sql, category.getCatName(), 1, category.getId());
-        return result > 0;
+        try {
+            System.out.println("DEBUG: Repository update - ID: " + category.getId() + 
+                             ", Category: " + category.getCatName() + 
+                             ", Admin ID: " + category.getAdminId());
+            
+            String sql = "UPDATE category SET cat_name = ?, admin_id = ? WHERE id = ?";
+            int result = jdbcTemplate.update(sql, category.getCatName(), category.getAdminId(), category.getId());
+            
+            System.out.println("DEBUG: Repository update result: " + result);
+            return result > 0;
+        } catch (Exception e) {
+            System.out.println("DEBUG: Repository update error: " + e.getMessage());
+            throw e;
+        }
     }
 
     // ✅ Delete
@@ -69,6 +87,4 @@ public class CategoryRepository {
         int result = jdbcTemplate.update(sql, id);
         return result > 0;
     }
-    
-    
 }

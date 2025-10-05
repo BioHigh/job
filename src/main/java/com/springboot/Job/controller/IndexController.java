@@ -30,7 +30,7 @@ public class IndexController {
 	@GetMapping("/company")
 	public String showIndex3() {
 	
-		return "company";
+		return "owner/company";
 	}
 	
 	
