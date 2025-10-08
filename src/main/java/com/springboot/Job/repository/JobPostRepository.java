@@ -1,10 +1,10 @@
 package com.springboot.Job.repository;
 
 import java.sql.PreparedStatement;
-
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -66,17 +66,14 @@ public class JobPostRepository {
                         ps.setDate(16, java.sql.Date.valueOf(jobPost.getApplicationDeadline()));
                     } else {
                         ps.setNull(16, Types.DATE);
-                    }
+                    }                      
                     ps.setString(17, jobPost.getApplicationInstructions());
                     ps.setInt(18, jobPost.getOwnerId());
                     ps.setString(19, "PENDING");
                     
-                    // Set category_id - this is the crucial fix
                     if (jobPost.getCategoryId() != null) {
                         ps.setInt(20, jobPost.getCategoryId());
                     } else {
-                        // If no category is selected, you might want to set a default category
-                        // or handle it differently based on your business logic
                         ps.setNull(20, Types.INTEGER);
                     }
                 }
@@ -118,9 +115,6 @@ public class JobPostRepository {
 
     public long countTotalApplicationsByOwner(Integer ownerId) {
         try {
-            // If you have an applications table, use this:
-            // String sql = "SELECT COUNT(*) FROM applications a JOIN job_post j ON a.job_post_id = j.id WHERE j.owner_id = ?";
-            // For now, return 0 or a default value
             return 0;
         } catch (Exception e) {
             System.err.println("Error counting applications: " + e.getMessage());
@@ -130,14 +124,90 @@ public class JobPostRepository {
 
     public long countTotalInterviewsByOwner(Integer ownerId) {
         try {
-            // If you have an interviews table, use this:
-            // String sql = "SELECT COUNT(*) FROM interviews i JOIN job_post j ON i.job_post_id = j.id WHERE j.owner_id = ?";
-            // For now, return 0 or a default value
             return 0;
         } catch (Exception e) {
             System.err.println("Error counting interviews: " + e.getMessage());
             return 0;
         }
+    }
+    
+    public List<JobPostBean> findAllJobsByOwner(Integer ownerId) {
+        try {
+            String sql = "SELECT * FROM job_post WHERE owner_id = ? ORDER BY created_at DESC";
+            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+        } catch (Exception e) {
+            System.err.println("Error finding all jobs by owner: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    public Optional<JobPostBean> findByIdAndOwnerId(Integer jobId, Integer ownerId) {
+        try {
+            String sql = "SELECT * FROM job_post WHERE id = ? AND owner_id = ?";
+            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(JobPostBean.class), jobId, ownerId);
+            return Optional.ofNullable(jobPost);
+        } catch (Exception e) {
+            System.err.println("Error finding job by ID and owner: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    public boolean updateJobPost(JobPostBean jobPost) {
+        try {
+            String sql = "UPDATE job_post SET " +
+                "job_title = ?, job_type = ?, department = ?, location = ?, " +
+                "job_description = ?, company_name = ?, company_website = ?, " +
+                "company_description = ?, required_skills = ?, experience_level = ?, " +
+                "education_level = ?, salary_mini = ?, salary_max = ?, benefits = ?, " +
+                "application_email = ?, application_deadline = ?, " +
+                "application_instructions = ?, category_id = ?, status = ? " +
+                "WHERE id = ? AND owner_id = ?";
+
+            int result = jdbcTemplate.update(sql,
+                jobPost.getJobTitle(),
+                jobPost.getJobType(),
+                jobPost.getDepartment(),
+                jobPost.getLocation(),
+                jobPost.getJobDescription(),
+                jobPost.getCompanyName(),
+                jobPost.getCompanyWebsite(),
+                jobPost.getCompanyDescription(),
+                jobPost.getRequiredSkills(),
+                jobPost.getExperienceLevel(),
+                jobPost.getEducationLevel(),
+                jobPost.getSalaryMini(),
+                jobPost.getSalaryMax(),
+                jobPost.getBenefits(),
+                jobPost.getApplicationEmail(),
+                jobPost.getApplicationDeadline(),
+                jobPost.getApplicationInstructions(),
+                jobPost.getCategoryId(),
+                jobPost.getStatus(),
+                jobPost.getId(),
+                jobPost.getOwnerId()
+            );
+
+            return result > 0;
+        } catch (Exception e) {
+            System.err.println("Error updating job post: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean deleteJobPost(Integer jobId, Integer ownerId) {
+        try {
+            String sql = "DELETE FROM job_post WHERE id = ? AND owner_id = ?";
+            int result = jdbcTemplate.update(sql, jobId, ownerId);
+            return result > 0;
+        } catch (Exception e) {
+            System.err.println("Error deleting job post: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public List<JobPostBean> findByOwnerId(Integer ownerId) {
+        String sql = "SELECT * FROM job_post WHERE owner_id = ? AND status = 'ACTIVE'";
+        return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
     }
     
 }

@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
@@ -235,6 +236,7 @@
             text-align: center;
             flex: 1;
             position: relative;
+            cursor: pointer;
         }
         
         .step:not(:last-child)::after {
@@ -371,9 +373,10 @@
     </div>
 
     <!-- Main Content -->
-<div class="sticky-top bg-white shadow-sm">
-    <div th:replace="ownerheader :: owner-header"></div>
-</div>    <div class="container my-4">
+    <div class="sticky-top bg-white shadow-sm">
+        <div th:replace="ownerheader :: owner-header"></div>
+    </div>
+    <div class="container my-4">
     
         <div class="job-posting-container">
             <!-- Header -->
@@ -435,7 +438,7 @@
                         </div>
                     </div>
                     
-                    <!-- Category Selection - ADDED THIS SECTION -->
+                    <!-- Category Selection -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="categoryId" class="form-label">Job Category *</label>
@@ -480,7 +483,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="companyName" class="form-label">Company Name *</label>
-                            <input type="text" class="form-control" id="companyName" th:value="${owner.companyName}" >
+                            <input type="text" class="form-control" id="companyName" th:value="${owner.companyName}" readonly>
                             <input type="hidden" name="companyName" th:value="${owner.companyName}">
                         </div>
                         <div class="col-md-6 mb-3">
@@ -491,7 +494,7 @@
                     
                     <div class="mb-3">
                         <label for="companyDescription" class="form-label">Company Description</label>
-                        <textarea class="form-control" id="companyDescription"  th:text="${owner.description}"></textarea>
+                        <textarea class="form-control" id="companyDescription" th:text="${owner.description}"></textarea>
                         <input type="hidden" name="companyDescription" th:value="${owner.description}">
                     </div>
                     
@@ -537,6 +540,9 @@
                     <div class="form-navigation">
                         <button type="button" class="btn btn-outline-secondary" id="prev2">
                             <i class="bi bi-arrow-left me-1"></i> Previous
+                        </button>
+                         <button type="button" class="btn btn-outline-secondary" id="saveDraft">
+                            <i class="bi bi-file-earmark me-1"></i> Save as Draft
                         </button>
                         <button type="button" class="btn btn-primary" id="next2">Next <i class="bi bi-arrow-right ms-1"></i></button>
                     </div>
@@ -694,6 +700,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Clear any saved draft when page loads
+            localStorage.removeItem('jobDraft');
+            
             // Multi-step form navigation
             let currentStep = 1;
             const totalSteps = 5;
@@ -734,6 +743,33 @@
                 // Update progress bar
                 const progress = ((step - 1) / (totalSteps - 1)) * 100;
                 document.getElementById('progressBar').style.width = `${progress}%`;
+            }
+            
+            // Step navigation functionality - Click on any step to jump to it
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.addEventListener('click', function() {
+                    const stepNumber = index + 1;
+                    
+                    // Don't allow jumping to future steps without validation
+                    if (stepNumber > currentStep && !validateAllPreviousSteps(stepNumber)) {
+                        return;
+                    }
+                    
+                    currentStep = stepNumber;
+                    showStep(currentStep);
+                });
+            });
+            
+            // Validate all steps up to the target step
+            function validateAllPreviousSteps(targetStep) {
+                for (let i = 1; i < targetStep; i++) {
+                    if (!validateStep(i)) {
+                        // Show which step has validation issues
+                        alert(`Please complete step ${i} before jumping to step ${targetStep}`);
+                        return false;
+                    }
+                }
+                return true;
             }
             
             // Navigation event listeners
@@ -795,7 +831,7 @@
                     const jobType = document.getElementById('jobType').value;
                     const location = document.getElementById('location').value.trim();
                     const jobDescription = document.getElementById('jobDescription').value.trim();
-                    const categoryId = document.getElementById('categoryId').value; // Add category validation
+                    const categoryId = document.getElementById('categoryId').value;
                     
                     if (!jobTitle) {
                         alert('Please enter a job title.');
@@ -821,7 +857,7 @@
                         return false;
                     }
                     
-                    if (!categoryId) { // Validate category
+                    if (!categoryId) {
                         alert('Please select a job category.');
                         document.getElementById('categoryId').focus();
                         return false;
@@ -1006,7 +1042,7 @@
                 const jobType = document.getElementById('jobType').value;
                 const location = document.getElementById('location').value.trim();
                 const jobDescription = document.getElementById('jobDescription').value.trim();
-                const categoryId = document.getElementById('categoryId').value; // Validate category
+                const categoryId = document.getElementById('categoryId').value;
                 
                 if (!jobTitle) {
                     e.preventDefault();
@@ -1036,7 +1072,7 @@
                     return false;
                 }
                 
-                if (!categoryId) { // Validate category
+                if (!categoryId) {
                     e.preventDefault();
                     alert('Please select a job category.');
                     document.getElementById('categoryId').focus();
@@ -1066,7 +1102,7 @@
                 const formData = {
                     jobTitle: document.getElementById('jobTitle').value,
                     jobType: document.getElementById('jobType').value,
-                    categoryId: document.getElementById('categoryId').value, // Save category
+                    categoryId: document.getElementById('categoryId').value,
                     department: document.getElementById('department').value,
                     location: document.getElementById('location').value,
                     jobDescription: document.getElementById('jobDescription').value,
@@ -1078,7 +1114,8 @@
                     applicationDeadline: document.getElementById('applicationDeadline').value,
                     applicationInstructions: document.getElementById('applicationInstructions').value,
                     requiredSkills: requiredSkillsInput.value,
-                    benefits: benefitsInput.value
+                    benefits: benefitsInput.value,
+                    currentStep: currentStep
                 };
                 
                 localStorage.setItem('jobDraft', JSON.stringify(formData));
@@ -1089,6 +1126,13 @@
                 toast.show();
             });
             
+            // Auto-update preview when form changes
+            const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
+            formElements.forEach(element => {
+                element.addEventListener('input', updatePreview);
+                element.addEventListener('change', updatePreview);
+            });
+            
             // Load draft if exists
             const savedDraft = localStorage.getItem('jobDraft');
             if (savedDraft) {
@@ -1097,7 +1141,7 @@
                     
                     document.getElementById('jobTitle').value = draft.jobTitle || '';
                     document.getElementById('jobType').value = draft.jobType || '';
-                    document.getElementById('categoryId').value = draft.categoryId || ''; // Load category
+                    document.getElementById('categoryId').value = draft.categoryId || '';
                     document.getElementById('department').value = draft.department || '';
                     document.getElementById('location').value = draft.location || '';
                     document.getElementById('jobDescription').value = draft.jobDescription || '';
@@ -1111,8 +1155,7 @@
                     
                     // Load skills
                     if (draft.requiredSkills) {
-                        const skills = draft.requiredSkills.split(',');
-                        skills.forEach(skill => {
+                        draft.requiredSkills.split(',').forEach(skill => {
                             if (skill.trim()) {
                                 addSkill(skill.trim());
                             }
@@ -1128,20 +1171,17 @@
                         updateBenefits();
                     }
                     
-                    updatePreview();
+                    // Navigate to saved step
+                    if (draft.currentStep && draft.currentStep > 1) {
+                        currentStep = draft.currentStep;
+                        showStep(currentStep);
+                    }
                     
                     console.log('Draft loaded successfully');
                 } catch (error) {
                     console.error('Error loading draft:', error);
                 }
             }
-            
-            // Auto-update preview when form changes
-            const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
-            formElements.forEach(element => {
-                element.addEventListener('input', updatePreview);
-                element.addEventListener('change', updatePreview);
-            });
             
             // Initialize preview
             updatePreview();

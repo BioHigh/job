@@ -2,6 +2,7 @@ package com.springboot.Job.repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,4 +147,10 @@ public class OwnerRepository {
             return null;
         }
     }
+    
+    public List<Owner> findAllCompanies() {
+        String sql = "SELECT * FROM owner WHERE status = 'active' ORDER BY company_name";
+        return jdbcTemplate.query(sql, new OwnerRowMapper());
+    }
+    
 }

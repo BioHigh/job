@@ -1,6 +1,7 @@
 package com.springboot.Job.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,5 +86,9 @@ public class OwnerService {
 
     public byte[] getProfilePhoto(int ownerId) {
         return ownerRepository.getProfilePhotoById(ownerId);
+    }
+    
+    public List<Owner> getAllCompanies() {
+        return ownerRepository.findAllCompanies();
     }
 }

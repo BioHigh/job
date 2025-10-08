@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jobs - HireHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+      <link rel="stylesheet" th:href="@{/css/footer.css}">
+    
+    <style>
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .job-card {
+            transition: transform 0.2s;
+        }
+        .job-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="ownerheader :: owner-header"></div>
+
+    <div class="container mt-4">
+        <!-- Toast notifications -->
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div th:if="${success}" class="toast align-items-center text-white bg-success border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body" th:text="${success}"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+            <div th:if="${error}" class="toast align-items-center text-white bg-danger border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body" th:text="${error}"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>My Job Postings</h2>
+                <p class="text-muted" th:text="'Total jobs: ' + ${#lists.size(jobs)}">Total jobs: 0</p>
+            </div>
+            <div>
+                <a th:href="@{/owner/dashboard}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <a th:href="@{/owner/job/post}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Post New Job
+                </a>
+            </div>
+        </div>
+
+        <!-- Jobs List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(jobs)}" class="text-center py-5">
+                            <i class="bi bi-briefcase display-1 text-muted"></i>
+                            <h4 class="text-muted mt-3">No jobs posted yet</h4>
+                            <p class="text-muted">Start by posting your first job opportunity</p>
+                            <a th:href="@{/owner/job/post}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Post Your First Job
+                            </a>
+                        </div>
+
+                        <div th:each="job : ${jobs}" class="card job-card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h5 class="card-title" th:text="${job.jobTitle}">Job Title</h5>
+                                        <p class="card-text">
+                                            <!-- FIXED: Simplified job type badge -->
+                                            <span th:class="'badge ' + (${job.jobType} == 'Full-time' ? 'bg-primary' : (${job.jobType} == 'Part-time' ? 'bg-info' : 'bg-secondary'))" 
+                                                  th:text="${job.jobType}">Full-time</span>
+                                            <span class="badge bg-light text-dark ms-1" th:text="${job.location}">Location</span>
+                                            <!-- FIXED: Simplified status badge -->
+                                            <span th:class="'badge status-badge ms-1 ' + (${job.status} == 'ACTIVE' ? 'bg-success' : (${job.status} == 'PENDING' ? 'bg-warning' : 'bg-secondary'))"
+                                                  th:text="${job.status}">Status</span>
+                                        </p>
+                                        <p class="card-text text-muted mb-1">
+                                            <i class="bi bi-calendar"></i> 
+                                            Posted on 
+                                            <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">Date</span>
+                                            <span th:unless="${job.createdAt}">Date not available</span>
+                                        </p>
+                                        <p class="card-text" th:if="${job.jobDescription != null}">
+                                            <span th:text="${#strings.length(job.jobDescription) > 150} ? 
+                                                          ${#strings.substring(job.jobDescription, 0, 150) + '...'} : 
+                                                          ${job.jobDescription}">Job Description</span>
+                                        </p>
+                                        <p class="card-text" th:if="${job.salaryMini != null and job.salaryMax != null}">
+                                            <strong>Salary: </strong>
+                                            <span th:text="'MMK ' + ${job.salaryMini} + ' - MMK ' + ${job.salaryMax}">Salary range</span>
+                                        </p>
+                                        <p class="card-text" th:unless="${job.salaryMini != null and job.salaryMax != null}">
+                                            <strong>Salary: </strong>
+                                            <span class="text-muted">Not specified</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="btn-group-vertical">
+                                            <a th:href="@{/owner/job/edit/{id}(id=${job.id})}" 
+                                               class="btn btn-outline-primary btn-sm mb-2">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-outline-danger btn-sm mb-2" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal"
+                                                    th:attr="data-bs-jobid=${job.id}, data-bs-jobtitle=${job.jobTitle}">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                            
+                                            <a th:href="@{/owner/job/view/{id}(id=${job.id})}" 
+											   class="btn btn-outline-info btn-sm" 
+											   target="_blank">
+											    <i class="bi bi-eye"></i> View
+											</a>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the job: <strong id="jobTitleToDelete"></strong>?</p>
+                    <p class="text-danger"><small>This action cannot be undone.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post">
+                        <button type="submit" class="btn btn-danger">Delete Job</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="footer :: site-footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+            var toastList = toastElList.map(function(toastEl) {
+                return new bootstrap.Toast(toastEl)
+            })
+            toastList.forEach(toast => toast.show())
+        })
+
+        // Delete modal
+        var deleteModal = document.getElementById('deleteModal')
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            var jobId = button.getAttribute('data-bs-jobid')
+            var jobTitle = button.getAttribute('data-bs-jobtitle')
+            
+            var modalTitle = deleteModal.querySelector('.modal-title')
+            var jobTitleElement = deleteModal.querySelector('#jobTitleToDelete')
+            var deleteForm = deleteModal.querySelector('#deleteForm')
+            
+            jobTitleElement.textContent = jobTitle
+            deleteForm.action = '/owner/job/delete/' + jobId
+        })
+    </script>
+</body>
+</html>

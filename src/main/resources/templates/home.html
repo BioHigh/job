@@ -74,6 +74,7 @@
 
 <body id="top">
 
+
     <div id="overlayer"></div>
     <div class="loader">
         <div class="spinner-border text-primary" role="status">
@@ -82,6 +83,11 @@
     </div>
 
     <div class="site-wrap">
+<!-- Show header when logged in -->
+<div th:if="${sessionUser == null}" th:replace="header :: site-header"></div>
+<div th:if="${sessionUser != null}" th:replace="headerLogin :: profile-header"></div>
+
+<!-- Guest header -->
 
         <div class="site-mobile-menu site-navbar-target">
             <div class="site-mobile-menu-header">
@@ -93,7 +99,6 @@
         </div>
 
         <!-- NAVBAR -->
-        <div th:replace="headerLogin :: profile-header"></div>
 
         <!-- HOME -->
         <section class="home-section section-hero overlay bg-image"

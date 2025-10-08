@@ -1,20 +1,20 @@
 package com.springboot.Job.controller;
 
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.springboot.Job.model.CategoryBean;
 import com.springboot.Job.model.UserBean;
+import com.springboot.Job.repository.CategoryRepository;
 import com.springboot.Job.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -26,56 +26,90 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+    // ---------------- LOGIN & STATIC PAGES ----------------
     @GetMapping("/login")
     public String showLoginPage() {
         return "userlogin";
     }
-    
-    @GetMapping("/index")
-    public String showIndex1() {
-        return "index";
+
+    @GetMapping("/contactus")
+    public String showContactPage() {
+        return "CuBu/contactus";
     }
 
+    @GetMapping("/aboutus")
+    public String showAboutUsPage() {
+        return "CuBu/aboutus";
+    }
+
+    @GetMapping("/contactusLogin")
+    public String showContactPage1() {
+        return "CuBu/contactusLogin";
+    }
+
+    @GetMapping("/aboutusLogin")
+    public String showAboutUsPage1() {
+        return "CuBu/aboutusLogin";
+    }
+
+    // ---------------- AUTHENTICATION ----------------
     @PostMapping("/login")
-    public String loginUser(@RequestParam String gmail, 
-                           @RequestParam String password,
-                           HttpSession session,
-                           RedirectAttributes redirectAttributes) {
+    public String loginUser(@RequestParam String gmail,
+                            @RequestParam String password,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
         Optional<UserBean> user = userService.authenticateUser(gmail, password);
-        
         if (user.isPresent()) {
             session.setAttribute("user", user.get());
             session.setAttribute("userId", user.get().getId());
-            return "redirect:/user/home"; // ✅ redirect fixes the CSS URL issue
+            return "redirect:/user/home";
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password");
             return "redirect:/user/login";
         }
     }
 
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/index";
+    }
+    
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @GetMapping("/by-category")
+    public String getJobsByCategory(Model model) {
+        List<CategoryBean> categories = categoryRepository.findAll();
+        Map<Integer, Integer> jobCounts = categoryRepository.getAllCategoriesWithJobCounts();
+        
+        model.addAttribute("categories", categories);
+        model.addAttribute("jobCounts", jobCounts);
+        return "jobs-by-category";
+    }
+
+
+    // ---------------- HOME & DASHBOARD ----------------
     @GetMapping("/home")
     public String showHome(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/login";
-        }
-        
+        if (userId == null) return "redirect:/user/login";
+
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
-            return "home"; // ✅ this is fine since URL is now /user/home
+            return "home";
         } else {
             return "redirect:/user/login";
         }
     }
 
-
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/login";
-        }
+        if (userId == null) return "redirect:/user/login";
 
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
@@ -91,21 +125,18 @@ public class UserController {
         }
     }
 
+    // ---------------- PROFILE ----------------
     @GetMapping("/profile")
     public String showProfile(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/login";
-        }
+        if (userId == null) return "redirect:/user/login";
 
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
-            // Get profile photo separately
             byte[] profilePhoto = userService.getProfilePhoto(userId);
             if (profilePhoto != null) {
-                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
-                model.addAttribute("profilePhoto", base64Photo);
+                model.addAttribute("profilePhoto", Base64.getEncoder().encodeToString(profilePhoto));
             }
             return "userprofile";
         } else {
@@ -116,9 +147,7 @@ public class UserController {
     @GetMapping("/profile/edit")
     public String showEditProfile(HttpSession session, Model model) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/login";
-        }
+        if (userId == null) return "redirect:/user/login";
 
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {
@@ -131,19 +160,16 @@ public class UserController {
 
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam String name,
-                               @RequestParam Integer age,
-                               @RequestParam String dateOfBirth,
-                               @RequestParam String gender,
-                               @RequestParam String phone,
-                               @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
-                               HttpSession session,
-                               RedirectAttributes redirectAttributes) {
+                                @RequestParam Integer age,
+                                @RequestParam String dateOfBirth,
+                                @RequestParam String gender,
+                                @RequestParam String phone,
+                                @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
         Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/login";
-        }
+        if (userId == null) return "redirect:/user/login";
 
-        // Create UserBean manually
         UserBean user = new UserBean();
         user.setId(userId);
         user.setName(name);
@@ -153,18 +179,16 @@ public class UserController {
         user.setPhone(phone);
 
         boolean isUpdated = userService.updateUserProfile(user, profilePhoto);
-        
         if (isUpdated) {
             redirectAttributes.addFlashAttribute("success", "Profile updated successfully!");
-            Optional<UserBean> updatedUser = userService.getUserById(userId);
-            updatedUser.ifPresent(u -> session.setAttribute("user", u));
+            userService.getUserById(userId).ifPresent(u -> session.setAttribute("user", u));
         } else {
             redirectAttributes.addFlashAttribute("error", "Failed to update profile");
         }
-        
         return "redirect:/user/profile";
     }
 
+    // ---------------- REGISTRATION ----------------
     @GetMapping("/register")
     public String showRegistrationPage(Model model) {
         model.addAttribute("user", new UserBean());
@@ -173,11 +197,10 @@ public class UserController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute UserBean user,
-                              @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
-                              @RequestParam String confirmPassword,
-                              RedirectAttributes redirectAttributes) {
-        
-        // Validation
+                               @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
+                               @RequestParam String confirmPassword,
+                               RedirectAttributes redirectAttributes) {
+
         if (!user.getPassword().equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("error", "Passwords do not match");
             return "redirect:/user/register";
@@ -188,12 +211,9 @@ public class UserController {
             return "redirect:/user/register";
         }
 
-        // Check if phone number already exists
-        if (user.getPhone() != null && !user.getPhone().trim().isEmpty()) {
-            if (userService.isPhoneExists(user.getPhone())) {
-                redirectAttributes.addFlashAttribute("error", "Phone number already exists");
-                return "redirect:/user/register";
-            }
+        if (user.getPhone() != null && !user.getPhone().trim().isEmpty() && userService.isPhoneExists(user.getPhone())) {
+            redirectAttributes.addFlashAttribute("error", "Phone number already exists");
+            return "redirect:/user/register";
         }
 
         boolean isRegistered = userService.registerUser(user, profilePhoto);
@@ -205,10 +225,8 @@ public class UserController {
             return "redirect:/user/register";
         }
     }
+    
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/index";
-    }
+  
+
 }
