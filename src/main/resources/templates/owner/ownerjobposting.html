@@ -7,339 +7,15 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --light: #f8f9fa;
-            --dark: #212529;
-        }
-        
-        body {
-            background-color: #f5f7fb;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .job-posting-container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        
-        .posting-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 2rem;
-        }
-        
-        .form-section {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid #eaeaea;
-            display: none;
-        }
-        
-        .form-section.active {
-            display: block;
-        }
-        
-        .section-title {
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-        }
-        
-        .section-title i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .form-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #495057;
-        }
-        
-        .form-control, .form-select {
-            padding: 0.75rem;
-            border: 1px solid #dce1e6;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            border-radius: 8px;
-        }
-        
-        .btn-primary:hover {
-            background-color: var(--secondary);
-            border-color: var(--secondary);
-        }
-        
-        .btn-outline-secondary {
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-        }
-        
-        .preview-card {
-            border: 1px solid #eaeaea;
-            border-radius: 8px;
-            padding: 1.5rem;
-            background: #fafbfc;
-            margin-top: 1rem;
-        }
-        
-        .preview-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--dark);
-            margin-bottom: 0.5rem;
-        }
-        
-        .preview-company {
-            color: #6c757d;
-            margin-bottom: 1rem;
-        }
-        
-        .preview-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .preview-detail {
-            display: flex;
-            align-items: center;
-            color: #495057;
-        }
-        
-        .preview-detail i {
-            margin-right: 5px;
-            color: var(--primary);
-        }
-        
-        .preview-description {
-            color: #495057;
-            line-height: 1.6;
-        }
-        
-        .tag {
-            display: inline-block;
-            background: #e9ecef;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1055;
-        }
-        
-        .toast {
-            width: 350px;
-            max-width: 100%;
-            font-size: 0.875rem;
-            background-color: rgba(255, 255, 255, 0.95);
-            background-clip: padding-box;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border-radius: 0.375rem;
-        }
-        
-        .toast-success {
-            border-left: 4px solid #198754;
-        }
-        
-        .toast-error {
-            border-left: 4px solid #dc3545;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1060;
-            display: none;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .skill-tag {
-            display: inline-flex;
-            align-items: center;
-            background: #e9ecef;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .skill-tag .btn-close {
-            font-size: 0.6rem;
-            margin-left: 0.5rem;
-        }
-        
-        /* Multi-step progress indicator */
-        .progress-container {
-            margin-bottom: 2rem;
-            padding: 0 2rem;
-        }
-        
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-        
-        .step {
-            text-align: center;
-            flex: 1;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .step:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 15px;
-            right: -50%;
-            width: 100%;
-            height: 2px;
-            background-color: #e9ecef;
-            z-index: 1;
-        }
-        
-        .step.active:not(:last-child)::after {
-            background-color: var(--primary);
-        }
-        
-        .step.completed:not(:last-child)::after {
-            background-color: var(--primary);
-        }
-        
-        .step-circle {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 0.5rem;
-            position: relative;
-            z-index: 2;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .step.active .step-circle {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .step.completed .step-circle {
-            background-color: var(--success);
-            color: white;
-        }
-        
-        .step-label {
-            font-size: 0.875rem;
-            color: #6c757d;
-        }
-        
-        .step.active .step-label {
-            color: var(--primary);
-            font-weight: 500;
-        }
-        
-        .step.completed .step-label {
-            color: var(--success);
-        }
-        
-        .progress {
-            height: 4px;
-        }
-        
-        .progress-bar {
-            background-color: var(--primary);
-            transition: width 0.3s ease;
-        }
-        
-        .form-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 2rem;
-        }
-        
-        @media (max-width: 768px) {
-            .job-posting-container {
-                margin: 1rem;
-            }
-            
-            .form-section {
-                padding: 1rem;
-            }
-            
-            .posting-header {
-                padding: 1.5rem;
-            }
-            
-            .progress-container {
-                padding: 0 1rem;
-            }
-            
-            .step-indicator {
-                font-size: 0.8rem;
-            }
-            
-            .step:not(:last-child)::after {
-                right: -40%;
-            }
-        }
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+        <link rel="stylesheet" th:href="@{/css/jobposting.css}">
+   
+   <style>
+    
     </style>
 </head>
 <body>
+     <div th:replace="ownerheader :: owner-header"></div>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -373,8 +49,8 @@
     </div>
 
     <!-- Main Content -->
+    
     <div class="sticky-top bg-white shadow-sm">
-        <div th:replace="ownerheader :: owner-header"></div>
     </div>
     <div class="container my-4">
     
@@ -469,10 +145,14 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-outline-secondary" id="saveDraft">
-                            <i class="bi bi-file-earmark me-1"></i> Save as Draft
-                        </button>
-                        <button type="button" class="btn btn-primary" id="next1">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        <div class="navigation-left">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraft1">
+                                <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                            </button>
+                        </div>
+                        <div class="navigation-right">
+                            <button type="button" class="btn btn-primary" id="next1">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -538,13 +218,17 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-outline-secondary" id="prev2">
-                            <i class="bi bi-arrow-left me-1"></i> Previous
-                        </button>
-                         <button type="button" class="btn btn-outline-secondary" id="saveDraft">
-                            <i class="bi bi-file-earmark me-1"></i> Save as Draft
-                        </button>
-                        <button type="button" class="btn btn-primary" id="next2">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        <div class="navigation-left">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraft2">
+                                <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                            </button>
+                        </div>
+                        <div class="navigation-right">
+                            <button type="button" class="btn btn-outline-secondary" id="prev2">
+                                <i class="bi bi-arrow-left me-1"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-primary" id="next2">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -605,10 +289,17 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-outline-secondary" id="prev3">
-                            <i class="bi bi-arrow-left me-1"></i> Previous
-                        </button>
-                        <button type="button" class="btn btn-primary" id="next3">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        <div class="navigation-left">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraft3">
+                                <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                            </button>
+                        </div>
+                        <div class="navigation-right">
+                            <button type="button" class="btn btn-outline-secondary" id="prev3">
+                                <i class="bi bi-arrow-left me-1"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-primary" id="next3">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -633,10 +324,17 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-outline-secondary" id="prev4">
-                            <i class="bi bi-arrow-left me-1"></i> Previous
-                        </button>
-                        <button type="button" class="btn btn-primary" id="next4">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        <div class="navigation-left">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraft4">
+                                <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                            </button>
+                        </div>
+                        <div class="navigation-right">
+                            <button type="button" class="btn btn-outline-secondary" id="prev4">
+                                <i class="bi bi-arrow-left me-1"></i> Previous
+                            </button>
+                            <button type="button" class="btn btn-primary" id="next4">Next <i class="bi bi-arrow-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -680,10 +378,15 @@
                     </div>
                     
                     <div class="form-navigation">
-                        <button type="button" class="btn btn-outline-secondary" id="prev5">
-                            <i class="bi bi-arrow-left me-1"></i> Previous
-                        </button>
-                        <div>
+                        <div class="navigation-left">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraft5">
+                                <i class="bi bi-file-earmark me-1"></i> Save as Draft
+                            </button>
+                        </div>
+                        <div class="navigation-right">
+                            <button type="button" class="btn btn-outline-secondary" id="prev5">
+                                <i class="bi bi-arrow-left me-1"></i> Previous
+                            </button>
                             <button type="button" class="btn btn-outline-primary me-2" id="previewBtn">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Refresh Preview
                             </button>
@@ -1026,6 +729,44 @@
                 updatePreviewBenefits();
             }
             
+            // Save draft functionality for all sections
+            function setupSaveDraftButtons() {
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`saveDraft${i}`).addEventListener('click', function() {
+                        saveDraft();
+                    });
+                }
+            }
+            
+            function saveDraft() {
+                // Save form data to localStorage
+                const formData = {
+                    jobTitle: document.getElementById('jobTitle').value,
+                    jobType: document.getElementById('jobType').value,
+                    categoryId: document.getElementById('categoryId').value,
+                    department: document.getElementById('department').value,
+                    location: document.getElementById('location').value,
+                    jobDescription: document.getElementById('jobDescription').value,
+                    companyWebsite: document.getElementById('companyWebsite').value,
+                    experienceLevel: document.getElementById('experienceLevel').value,
+                    educationLevel: document.getElementById('educationLevel').value,
+                    salaryMin: document.getElementById('salaryMin').value,
+                    salaryMax: document.getElementById('salaryMax').value,
+                    applicationDeadline: document.getElementById('applicationDeadline').value,
+                    applicationInstructions: document.getElementById('applicationInstructions').value,
+                    requiredSkills: requiredSkillsInput.value,
+                    benefits: benefitsInput.value,
+                    currentStep: currentStep
+                };
+                
+                localStorage.setItem('jobDraft', JSON.stringify(formData));
+                
+                // Show success message
+                const toast = new bootstrap.Toast(document.getElementById('successToast'));
+                document.querySelector('#successToast .toast-body').textContent = 'Draft saved successfully!';
+                toast.show();
+            }
+            
             // Form validation and submission
             document.getElementById('jobPostingForm').addEventListener('submit', function(e) {
                 // Validate required skills
@@ -1096,36 +837,6 @@
                 return true;
             });
             
-            // Save draft functionality
-            document.getElementById('saveDraft').addEventListener('click', function() {
-                // Save form data to localStorage
-                const formData = {
-                    jobTitle: document.getElementById('jobTitle').value,
-                    jobType: document.getElementById('jobType').value,
-                    categoryId: document.getElementById('categoryId').value,
-                    department: document.getElementById('department').value,
-                    location: document.getElementById('location').value,
-                    jobDescription: document.getElementById('jobDescription').value,
-                    companyWebsite: document.getElementById('companyWebsite').value,
-                    experienceLevel: document.getElementById('experienceLevel').value,
-                    educationLevel: document.getElementById('educationLevel').value,
-                    salaryMin: document.getElementById('salaryMin').value,
-                    salaryMax: document.getElementById('salaryMax').value,
-                    applicationDeadline: document.getElementById('applicationDeadline').value,
-                    applicationInstructions: document.getElementById('applicationInstructions').value,
-                    requiredSkills: requiredSkillsInput.value,
-                    benefits: benefitsInput.value,
-                    currentStep: currentStep
-                };
-                
-                localStorage.setItem('jobDraft', JSON.stringify(formData));
-                
-                // Show success message
-                const toast = new bootstrap.Toast(document.getElementById('successToast'));
-                document.querySelector('#successToast .toast-body').textContent = 'Draft saved successfully!';
-                toast.show();
-            });
-            
             // Auto-update preview when form changes
             const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
             formElements.forEach(element => {
@@ -1182,6 +893,9 @@
                     console.error('Error loading draft:', error);
                 }
             }
+            
+            // Setup save draft buttons
+            setupSaveDraftButtons();
             
             // Initialize preview
             updatePreview();

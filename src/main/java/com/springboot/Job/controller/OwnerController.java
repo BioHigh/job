@@ -1,11 +1,8 @@
 package com.springboot.Job.controller;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +36,7 @@ public class OwnerController {
     
     @Autowired
     private CategoryRepository categoryRepo;
-
+    
     @GetMapping("/login")
     public String showLoginPage() {
         return "owner/ownerlogin";
@@ -541,117 +538,4 @@ public class OwnerController {
             return "redirect:/owner/jobs";
         }
     }
-    
-    @GetMapping("/companies")
-    public String showAllCompanies(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        
-        List<Owner> companies = ownerService.getAllCompanies();
-        
-        // Create a list to store companies with their profile photos
-        List<Map<String, Object>> companiesWithPhotos = new ArrayList<>();
-        
-        for (Owner company : companies) {
-            Map<String, Object> companyMap = new HashMap<>();
-            companyMap.put("company", company);
-            
-            // Fetch and add profile photo as base64
-            byte[] profilePhoto = ownerService.getProfilePhoto(company.getId());
-            if (profilePhoto != null) {
-                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
-                companyMap.put("profilePhotoBase64", base64Photo);
-            } else {
-                companyMap.put("profilePhotoBase64", null);
-            }
-            
-            companiesWithPhotos.add(companyMap);
-        }
-        
-        model.addAttribute("companiesWithPhotos", companiesWithPhotos);
-        
-        if (ownerId != null) {
-            Optional<Owner> owner = ownerService.getOwnerById(ownerId);
-            owner.ifPresent(o -> {
-                model.addAttribute("owner", o);
-                byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
-                if (profilePhoto != null) {
-                    String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
-                    model.addAttribute("profilePhoto", base64Photo);
-                }
-            });
-        }
-        return "owner/companies";
-    }
-    
-    @GetMapping("/company/{id}")
-    public String viewCompanyJobs(@PathVariable("id") Integer companyId,
-                                HttpSession session,
-                                Model model,
-                                RedirectAttributes redirectAttributes) {
-        
-        Optional<Owner> company = ownerService.getOwnerById(companyId);
-        if (company.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Company not found");
-            return "redirect:/owner/companies";
-        }
-        
-        List<JobPostBean> companyJobs = jobPostService.findJobsByCompanyId(companyId);
-        
-        model.addAttribute("company", company.get());
-        model.addAttribute("companyJobs", companyJobs);
-        
-        byte[] profilePhoto = ownerService.getProfilePhoto(companyId);
-        if (profilePhoto != null) {
-            String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
-            model.addAttribute("companyProfilePhoto", base64Photo);
-        }
-        
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId != null) {
-            Optional<Owner> loggedInOwner = ownerService.getOwnerById(ownerId);
-            loggedInOwner.ifPresent(o -> {
-                model.addAttribute("owner", o);
-                byte[] ownerProfilePhoto = ownerService.getProfilePhoto(ownerId);
-                if (ownerProfilePhoto != null) {
-                    String base64OwnerPhoto = Base64.getEncoder().encodeToString(ownerProfilePhoto);
-                    model.addAttribute("profilePhoto", base64OwnerPhoto);
-                }
-            });
-        }
-        
-        return "owner/company-jobs";
-    }
-    
-    @GetMapping("/user_companies")
-    public String showUserCompanies(HttpSession session, Model model) {
-        List<Owner> companies = ownerService.getAllCompanies();
-        
-        List<Map<String, Object>> companiesWithPhotos = new ArrayList<>();
-        
-        for (Owner company : companies) {
-            Map<String, Object> companyMap = new HashMap<>();
-            companyMap.put("company", company);
-            
-            byte[] profilePhoto = ownerService.getProfilePhoto(company.getId());
-            if (profilePhoto != null) {
-                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
-                companyMap.put("profilePhotoBase64", base64Photo);
-            } else {
-                companyMap.put("profilePhotoBase64", null);
-            }
-            
-            companiesWithPhotos.add(companyMap);
-        }
-        
-        model.addAttribute("companiesWithPhotos", companiesWithPhotos);
-        
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId != null) {
-           
-        }
-        
-        return "owner/companies";
-    }
-    
-    
 }

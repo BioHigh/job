@@ -19,6 +19,7 @@ import com.springboot.Job.model.LoginBean;
 import com.springboot.Job.repository.AdminLoginRepository;
 import com.springboot.Job.repository.CategoryRepository;
 import com.springboot.Job.repository.JobPVByAdmRepository;
+import com.springboot.Job.repository.JobPostRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -33,6 +34,9 @@ public class AdminController {
 
     @Autowired
     private JobPVByAdmRepository jobPVByAdmRepo;
+    
+    @Autowired
+    private JobPostRepository jobPostRepository;
 
     // =================== LOGIN ====================
     @GetMapping("/admin")
@@ -195,18 +199,18 @@ public class AdminController {
 
     @GetMapping("/admin/job/reject/{id}")
     public String rejectJob(@PathVariable("id") Integer id, RedirectAttributes ra) {
-        try {
-            boolean updated = jobPVByAdmRepo.updateJobStatus(id, "REJECTED");
-            if (updated) {
-                ra.addFlashAttribute("jobMsg", "Job rejected successfully!");
-            } else {
-                ra.addFlashAttribute("jobErrorMsg", "Failed to reject job!");
-            }
-        } catch (Exception e) {
-            ra.addFlashAttribute("jobErrorMsg", "Error rejecting job: " + e.getMessage());
+        boolean updated = jobPostRepository.updateJobStatus(id, "REJECTED"); // ✅ correct usage
+
+        if (updated) {
+            ra.addFlashAttribute("jobMsg", "Job rejected successfully!");
+        } else {
+            ra.addFlashAttribute("jobErrorMsg", "Failed to reject job!");
         }
+
         return "redirect:/admin/joblistings#joblistings-section";
     }
+
+
 
     @GetMapping("/admin/job/delete/{id}")
     public String deleteJob(@PathVariable("id") Long id, RedirectAttributes ra) {

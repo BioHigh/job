@@ -32,17 +32,18 @@ public class UserRepository {
             user.setPhone(rs.getString("phone"));
             user.setUserType(rs.getString("user_type"));
             user.setStatus(rs.getString("status"));
-            
-            // Handle created_at - get as timestamp and convert to LocalDateTime
+
+            // Handle created_at as LocalDateTime
             java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
             if (createdAt != null) {
                 user.setCreatedAt(createdAt.toLocalDateTime());
             }
-            
+
             return user;
         }
     }
 
+    // =================== FIND METHODS ===================
     public Optional<UserBean> findByEmailAndPassword(String email, String password) {
         try {
             String sql = "SELECT * FROM user WHERE gmail = ? AND password = ? AND status = 'active'";
@@ -73,57 +74,6 @@ public class UserRepository {
         }
     }
 
-    public boolean updateUser(UserBean user, byte[] profilePhoto) {
-        String sql = "UPDATE user SET name = ?, age = ?, date_of_birth = ?, gender = ?, phone = ?, profile_photo = ? WHERE id = ?";
-        int result = jdbcTemplate.update(sql, 
-            user.getName(),
-            user.getAge(),
-            user.getDateOfBirth(),
-            user.getGender(),
-            user.getPhone(),
-            profilePhoto,
-            user.getId()
-        );
-        return result > 0;
-    }
-
-    public boolean updateUserWithoutPhoto(UserBean user) {
-        String sql = "UPDATE user SET name = ?, age = ?, date_of_birth = ?, gender = ?, phone = ? WHERE id = ?";
-        int result = jdbcTemplate.update(sql, 
-            user.getName(),
-            user.getAge(),
-            user.getDateOfBirth(),
-            user.getGender(),
-            user.getPhone(),
-            user.getId()
-        );
-        return result > 0;
-    }
-
-    public boolean createUser(UserBean user, byte[] profilePhoto) {
-        String sql = "INSERT INTO user (name, age, date_of_birth, password, gmail, gender, phone, profile_photo, user_type, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'USER', 'active', CURRENT_TIMESTAMP)";
-        int result = jdbcTemplate.update(sql,
-            user.getName(),
-            user.getAge(),
-            user.getDateOfBirth(),
-            user.getPassword(),
-            user.getGmail(),
-            user.getGender(),
-            user.getPhone(),
-            profilePhoto
-        );
-        return result > 0;
-    }
-
-    public byte[] getProfilePhotoById(int userId) {
-        try {
-            String sql = "SELECT profile_photo FROM user WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, byte[].class, userId);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-    
     public Optional<UserBean> findByPhone(String phone) {
         try {
             String sql = "SELECT * FROM user WHERE phone = ?";
@@ -133,5 +83,64 @@ public class UserRepository {
             return Optional.empty();
         }
     }
-    
+
+    // =================== CREATE/UPDATE METHODS ===================
+    public boolean createUser(UserBean user, byte[] profilePhoto) {
+        String sql = "INSERT INTO user (name, age, date_of_birth, password, gmail, gender, phone, profile_photo, user_type, status, created_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'USER', 'active', CURRENT_TIMESTAMP)";
+        int result = jdbcTemplate.update(sql,
+                user.getName(),
+                user.getAge(),
+                user.getDateOfBirth(),
+                user.getPassword(),
+                user.getGmail(),
+                user.getGender(),
+                user.getPhone(),
+                profilePhoto
+        );
+        return result > 0;
+    }
+
+    public boolean updateUser(UserBean user, byte[] profilePhoto) {
+        String sql = "UPDATE user SET name = ?, age = ?, date_of_birth = ?, gender = ?, phone = ?, profile_photo = ? WHERE id = ?";
+        int result = jdbcTemplate.update(sql,
+                user.getName(),
+                user.getAge(),
+                user.getDateOfBirth(),
+                user.getGender(),
+                user.getPhone(),
+                profilePhoto,
+                user.getId()
+        );
+        return result > 0;
+    }
+
+    public boolean updateUserWithoutPhoto(UserBean user) {
+        String sql = "UPDATE user SET name = ?, age = ?, date_of_birth = ?, gender = ?, phone = ? WHERE id = ?";
+        int result = jdbcTemplate.update(sql,
+                user.getName(),
+                user.getAge(),
+                user.getDateOfBirth(),
+                user.getGender(),
+                user.getPhone(),
+                user.getId()
+        );
+        return result > 0;
+    }
+
+    public boolean updatePassword(String email, String newPassword) {
+        String sql = "UPDATE user SET password = ? WHERE gmail = ?";
+        int result = jdbcTemplate.update(sql, newPassword, email);
+        return result > 0;
+    }
+
+    // =================== PROFILE PHOTO ===================
+    public byte[] getProfilePhotoById(int userId) {
+        try {
+            String sql = "SELECT profile_photo FROM user WHERE id = ?";
+            return jdbcTemplate.queryForObject(sql, byte[].class, userId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
 }

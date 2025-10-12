@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <div th:fragment="owner-header">
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top custom-header">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
     <div class="container-fluid px-4">
 
       <!-- Logo -->
@@ -20,7 +20,7 @@
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/dashboard}">Dashboard</a></li>
           <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/profile}">Profile</a></li>
-          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/jobs}">View JobPost</a></li>
+          <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/jobs}">My JobPost</a></li>
           <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/companies}">My</a></li>         
           <li class="nav-item"><a class="nav-link fw-semibold px-3" th:href="@{/owner/contact}">Support</a></li>
         </ul>
@@ -39,6 +39,9 @@
       </div>
     </div>
   </nav>
+
+  <!-- Spacer div to avoid content hidden behind navbar -->
+  <div style="height: 70px;"></div>
 </div>
 </body>
 </html>

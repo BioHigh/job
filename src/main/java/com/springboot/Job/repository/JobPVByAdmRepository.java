@@ -71,7 +71,7 @@ public class JobPVByAdmRepository {
     // Count methods for dashboard statistics
     public int countJobSeekers() {
         try {
-            String sql = "SELECT COUNT(*) FROM job_seeker"; // Adjust table name as needed
+            String sql = "SELECT COUNT(*) FROM user"; // Adjust table name as needed
             return jdbcTemplate.queryForObject(sql, Integer.class);
         } catch (Exception e) {
             System.err.println("Error counting job seekers: " + e.getMessage());
@@ -81,7 +81,7 @@ public class JobPVByAdmRepository {
 
     public int countEmployers() {
         try {
-            String sql = "SELECT COUNT(*) FROM employer"; // Adjust table name as needed
+            String sql = "SELECT COUNT(*) FROM owner"; // Adjust table name as needed
             return jdbcTemplate.queryForObject(sql, Integer.class);
         } catch (Exception e) {
             System.err.println("Error counting employers: " + e.getMessage());

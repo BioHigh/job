@@ -6,25 +6,46 @@
     <title th:text="${job.jobTitle} + ' - HireHub'">View Job - HireHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+          <link rel="stylesheet" th:href="@{/css/footer.css}">
+    
     <style>
+        /* Job Header */
         .job-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 2rem;
+            border-radius: 12px;
             margin-bottom: 2rem;
         }
+        .job-header img {
+            border: 5px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Cards */
         .card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
             border: none;
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+        }
+        .card-header {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+
+        /* Job Description */
+        .job-description {
+            background-color: #f8f9fa;
+            padding: 1rem;
             border-radius: 10px;
+            white-space: pre-line;
         }
-        .job-detail-item {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e3e6f0;
-        }
-        .job-detail-item:last-child {
-            border-bottom: none;
-        }
+
+        /* Badges & Tags */
         .tag {
             display: inline-block;
             background: #e9ecef;
@@ -34,12 +55,28 @@
             margin-right: 0.5rem;
             margin-bottom: 0.5rem;
         }
-        .company-logo {
-            border: 5px solid white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .badge.bg-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
         }
-        .job-description {
-            white-space: pre-line;
+
+        /* Sidebar Sticky */
+        .position-sticky {
+            top: 20px;
+        }
+
+        /* Action Buttons Responsive */
+        .action-buttons a, .action-buttons button {
+            flex-grow: 1;
+        }
+
+        @media (max-width: 576px) {
+            .job-header h1 {
+                font-size: 1.5rem;
+            }
+            .job-header h4 {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
@@ -48,19 +85,23 @@
 
     <div class="container mt-4">
         <!-- Job Header -->
-        <div class="job-header">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <p class="lead mb-2" th:text="${job.companyName}">Company Name</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span th:class="'badge ' + (${job.jobType} == 'full-time' ? 'bg-primary' : (${job.jobType} == 'part-time' ? 'bg-info' : 'bg-secondary'))" 
-                                  th:text="${#strings.toUpperCase(#strings.substring(job.jobType, 0, 1)) + #strings.substring(job.jobType, 1)}">Full-time</span>
-                            <span class="badge bg-light text-dark" th:text="${job.location}">Location</span>
-                            <span th:class="'badge ' + (${job.status} == 'ACTIVE' ? 'bg-success' : (${job.status} == 'PENDING' ? 'bg-warning' : 'bg-secondary'))"
-                                  th:text="${job.status}">Status</span>
-                        </div>
-                    </div>
+        <div class="job-header d-flex align-items-center gap-3">
+            <div>
+                <img th:if="${profilePhoto}" th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
+                     class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
+                <img th:unless="${profilePhoto}" src="/images/default-company.png" 
+                     class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
+            </div>
+            <div>
+                
+                <h2 class="mb-1" th:text="${job.companyName}">Company Name</h2>
+                <h4 class="mb-1" th:text="${job.jobTitle}">Job Title</h4>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                    <span th:class="'badge ' + (${job.jobType} == 'full-time' ? 'bg-primary' : (${job.jobType} == 'part-time' ? 'bg-info' : 'bg-secondary'))" 
+                          th:text="${job.jobType}">Full-time</span>
+                    <span class="badge bg-light text-dark" th:text="${job.location}">Location</span>
+                    <span th:class="'badge ' + (${job.status} == 'ACTIVE' ? 'bg-success' : (${job.status} == 'PENDING' ? 'bg-warning' : 'bg-secondary'))"
+                          th:text="${job.status}">Status</span>
                 </div>
             </div>
         </div>
@@ -103,7 +144,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="job-detail-item" th:if="${job.requiredSkills}">
                             <strong>Required Skills:</strong><br>
                             <div class="mt-2">
@@ -130,7 +171,7 @@
                                 Not specified
                             </span>
                         </div>
-                        
+
                         <div class="job-detail-item" th:if="${job.benefits}">
                             <strong>Benefits:</strong><br>
                             <div class="mt-2">
@@ -144,73 +185,63 @@
 
             <!-- Sidebar -->
             <div class="col-lg-4">
-                <!-- Company Info -->
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <div th:if="${profilePhoto}">
-                            <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
-                                 class="img-fluid rounded-circle mb-3 company-logo" 
-                                 style="width: 100px; height: 100px; object-fit: cover;">
+                <div class="position-sticky">
+                    <!-- Company Info -->
+                    <div class="card mb-4 text-center">
+                        <div class="card-body">
+                            <h5 th:text="${job.companyName}">Company Name</h5>
+                            <p class="text-muted" th:if="${job.companyDescription}" th:text="${job.companyDescription}">
+                                Company description
+                            </p>
                         </div>
-                        <div th:unless="${profilePhoto}">
-                            <img src="/images/default-company.png" 
-                                 class="img-fluid rounded-circle mb-3 company-logo" 
-                                 style="width: 100px; height: 100px; object-fit: cover;">
-                        </div>
-                        <h5 th:text="${job.companyName}">Company Name</h5>
-                        <p class="text-muted" th:if="${job.companyDescription}" th:text="${job.companyDescription}">
-                            Company description
-                        </p>
                     </div>
-                </div>
 
-                <!-- Job Details -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Job Details</h6>
+                    <!-- Job Details -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Job Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="job-detail-item">
+                                <strong><i class="bi bi-briefcase me-2"></i>Department:</strong><br>
+                                <span th:text="${job.department ?: 'Not specified'}">Not specified</span>
+                            </div>
+                            <div class="job-detail-item">
+                                <strong><i class="bi bi-geo-alt me-2"></i>Location:</strong><br>
+                                <span th:text="${job.location}">Location</span>
+                            </div>
+                            <div class="job-detail-item">
+                                <strong><i class="bi bi-calendar me-2"></i>Posted Date:</strong><br>
+                                <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">
+                                    Date
+                                </span>
+                                <span th:unless="${job.createdAt}">Not available</span>
+                            </div>
+                            <div class="job-detail-item" th:if="${job.applicationDeadline}">
+                                <strong><i class="bi bi-clock me-2"></i>Application Deadline:</strong><br>
+                                <span th:text="${job.applicationDeadline}">Deadline</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="job-detail-item">
-                            <strong><i class="bi bi-briefcase me-2"></i>Department:</strong><br>
-                            <span th:text="${job.department ?: 'Not specified'}">Not specified</span>
-                        </div>
-                        <div class="job-detail-item">
-                            <strong><i class="bi bi-geo-alt me-2"></i>Location:</strong><br>
-                            <span th:text="${job.location}">Location</span>
-                        </div>
-                        <div class="job-detail-item">
-                            <strong><i class="bi bi-calendar me-2"></i>Posted Date:</strong><br>
-                            <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">
-                                Date
-                            </span>
-                            <span th:unless="${job.createdAt}">Not available</span>
-                        </div>
-                        <div class="job-detail-item" th:if="${job.applicationDeadline}">
-                            <strong><i class="bi bi-clock me-2"></i>Application Deadline:</strong><br>
-                            <span th:text="${job.applicationDeadline}">Deadline</span>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Application Information -->
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-send me-2"></i>Application Information</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="job-detail-item">
-                            <strong><i class="bi bi-envelope me-2"></i>Application Email:</strong><br>
-                            <span th:text="${job.applicationEmail}">email@example.com</span>
+                    <!-- Application Information -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-send me-2"></i>Application Information</h6>
                         </div>
-                        <div class="job-detail-item" th:if="${job.companyWebsite}">
-                            <strong><i class="bi bi-globe me-2"></i>Company Website:</strong><br>
-                            <a th:href="${job.companyWebsite}" th:text="${job.companyWebsite}" target="_blank">
-                                Website
-                            </a>
-                        </div>
-                        <div class="job-detail-item" th:if="${job.applicationInstructions}">
-                            <strong><i class="bi bi-list-ol me-2"></i>Application Instructions:</strong><br>
-                            <span th:text="${job.applicationInstructions}">Instructions</span>
+                        <div class="card-body">
+                            <div class="job-detail-item">
+                                <strong><i class="bi bi-envelope me-2"></i>Email:</strong><br>
+                                <span th:text="${job.applicationEmail}">email@example.com</span>
+                            </div>
+                            <div class="job-detail-item" th:if="${job.companyWebsite}">
+                                <strong><i class="bi bi-globe me-2"></i>Website:</strong><br>
+                                <a th:href="${job.companyWebsite}" th:text="${job.companyWebsite}" target="_blank">Website</a>
+                            </div>
+                            <div class="job-detail-item" th:if="${job.applicationInstructions}">
+                                <strong><i class="bi bi-list-ol me-2"></i>Instructions:</strong><br>
+                                <span th:text="${job.applicationInstructions}">Instructions</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -219,20 +250,18 @@
 
         <!-- Action Buttons -->
         <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <a th:href="@{/owner/job/edit/{id}(id=${job.id})}" class="btn btn-primary me-2">
-                            <i class="bi bi-pencil me-1"></i> Edit Job
-                        </a>
-                        <a th:href="@{/owner/jobs}" class="btn btn-outline-secondary me-2">
-                            <i class="bi bi-arrow-left me-1"></i> Back to Jobs
-                        </a>
-                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                            <i class="bi bi-trash me-1"></i> Delete Job
-                        </button>
-                    </div>
-                </div>
+            <div class="col-12 d-flex flex-wrap gap-2 justify-content-center action-buttons">
+                <a th:href="@{/owner/jobs}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Jobs
+                </a>
+               
+                <a th:href="@{/owner/job/edit/{id}(id=${job.id})}" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit Job
+                </a>
+               
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="bi bi-trash me-1"></i> Delete Job
+                </button>
             </div>
         </div>
     </div>
@@ -257,7 +286,8 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div><br><br>
+    <div th:replace="footer :: site-footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

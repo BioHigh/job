@@ -4,7 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -66,7 +68,7 @@ public class JobPostRepository {
                         ps.setDate(16, java.sql.Date.valueOf(jobPost.getApplicationDeadline()));
                     } else {
                         ps.setNull(16, Types.DATE);
-                    }                      
+                    }                     
                     ps.setString(17, jobPost.getApplicationInstructions());
                     ps.setInt(18, jobPost.getOwnerId());
                     ps.setString(19, "PENDING");
@@ -105,7 +107,7 @@ public class JobPostRepository {
 
     public long countActiveJobsByOwner(Integer ownerId) {
         try {
-            String sql = "SELECT COUNT(*) FROM job_post WHERE owner_id = ? AND status = 'ACTIVE'";
+            String sql = "SELECT COUNT(*) FROM job_post WHERE owner_id = ? AND status = 'APPROVED'";
             return jdbcTemplate.queryForObject(sql, Long.class, ownerId);
         } catch (Exception e) {
             System.err.println("Error counting active jobs: " + e.getMessage());
@@ -205,9 +207,69 @@ public class JobPostRepository {
         }
     }
     
+    // fix in 11.10.2025
     public List<JobPostBean> findByOwnerId(Integer ownerId) {
-        String sql = "SELECT * FROM job_post WHERE owner_id = ? AND status = 'ACTIVE'";
-        return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
+        try {
+            String sql = "SELECT * FROM job_post WHERE owner_id = ? AND status = 'APPROVED'";
+            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+        } catch (Exception e) {
+            System.err.println("Error finding jobs by owner: " + e.getMessage());
+            return List.of();
+        }
     }
     
+  //8.10.2025
+    public Optional<JobPostBean> findJobById(Integer jobId) {
+        try {
+            String sql = "SELECT * FROM job_post WHERE id = ?";
+            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(JobPostBean.class), jobId);
+            return Optional.ofNullable(jobPost);
+        } catch (Exception e) {
+            System.err.println("Error finding job by ID: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+    
+    public boolean updateJobStatus(Integer jobId, String status) {
+        try {
+            String sql = "UPDATE job_post SET status = ? WHERE id = ?";
+            int rows = jdbcTemplate.update(sql, status, jobId);
+            return rows > 0; // returns true if at least 1 row was updated
+        } catch (Exception e) {
+            System.err.println("Error updating job status: " + e.getMessage());
+            return false;
+        }
+    }
+ 
+    //10.10.2025
+    public long countAllJobs() {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_post WHERE status = 'APPROVED'";
+            return jdbcTemplate.queryForObject(sql, Long.class);
+        } catch (Exception e) {
+            System.err.println("Error counting all jobs: " + e.getMessage());
+            return 0;
+        }
+    }
+    
+    // 11.10.2025
+    public List<Map<String, Object>> findActiveJobsWithOwners(int limit, int offset) {
+        try {
+            String sql = "SELECT jp.id, jp.job_title as jobTitle, jp.job_type as jobType, " +
+                        "jp.location, jp.company_name as companyName, jp.department, " +
+                        "jp.experience_level as experienceLevel, jp.created_at as createdAt, " +
+                        "o.profile_photo as profilePhoto, o.company_name as ownerCompanyName " +
+                        "FROM job_post jp " +
+                        "LEFT JOIN owner o ON jp.owner_id = o.id " +
+                        "WHERE jp.status = 'APPROVED' " +
+                        "ORDER BY jp.created_at DESC " +
+                        "LIMIT ? OFFSET ?";
+            
+            return jdbcTemplate.queryForList(sql, limit, offset);
+        } catch (Exception e) {
+            System.err.println("Error finding active jobs with owners: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
+    }
 }

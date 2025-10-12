@@ -6,7 +6,6 @@
     <title>User Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <link rel="shortcut icon" href="ftco-32x32.png">
     <style>
         .registration-header {
@@ -202,25 +201,50 @@
             font-size: 0.8rem;
         }
         .form-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.form-header h2 {
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.form-header p {
-  color: #7f8c8d;
-  margin-bottom: 1rem;
-}
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .form-header h2 {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .form-header p {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+        .field-error {
+            border-color: #dc3545 !important;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .dob-age-row {
+            display: flex;
+            gap: 15px;
+        }
+        .dob-age-row .col-md-6 {
+            flex: 1;
+        }
+        .age-input-group {
+            position: relative;
+        }
+        .age-readonly-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body class="bg-light">
     <div th:replace="header :: site-header"></div>
     <!-- Header Section -->
-   <br><br><br><br>
+    <br><br><br><br>
 
     <div class="container">
         <div class="row justify-content-center">
@@ -290,36 +314,32 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="row">
+                                    <!-- Date of Birth and Age in one row -->
+                                    <div class="dob-age-row mb-3">
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="age" class="form-label">
-                                                    <i class="bi bi-calendar3 me-2"></i>Age
-                                                </label>
-                                                <input type="number" class="form-control" id="age" name="age" 
-                                                       th:value="${user?.age}" placeholder="Age" min="16" max="100">
+                                            <label for="dateOfBirth" class="form-label">
+                                                <i class="bi bi-calendar-date me-2"></i>Date of Birth
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-light">
+                                                    <i class="bi bi-calendar-date"></i>
+                                                </span>
+                                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                                                       th:value="${user?.dateOfBirth}" required>
+                                            </div>
+                                            <div id="dobValidationError" class="error-message">
+                                                <i class="bi bi-exclamation-circle me-1"></i>
+                                                <span id="dobValidationErrorText"></span>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="dateOfBirth" class="form-label" >
-    <i class="bi bi-calendar-date me-2"></i>Date of Birth
-    
-</label>
-                                               <div class="input-group">
-    <span class="input-group-text bg-light">
-        <i class="bi bi-calendar-date"></i>
-    </span>
-    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
-           th:value="${user?.dateOfBirth}" required>
-</div>
+                                            <label for="age" class="form-label">
+                                                <i class="bi bi-calendar3 me-2"></i>Age
+                                            </label>
+                                            <div class="age-input-group">
+                                                <input type="number" class="form-control" id="age" name="age" 
+                                                       th:value="${user?.age}" placeholder="Age" min="14" max="100" readonly>
                                                 
-                                                
-                                                <!-- Client-side validation error -->
-                                                <div id="dobValidationError" class="dob-error">
-                                                    <i class="bi bi-exclamation-circle me-1"></i>
-                                                    <span id="dobValidationErrorText"></span>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -342,11 +362,11 @@
                                 <div class="col-lg-6">
                                     <!-- Gender Selection -->
                                     <div class="mb-4">
-                                      <div class="form-header">
-    <h2>Create Your Account</h2>
-    <p>Tell us a bit about yourself</p>
-  </div>
-  <div class="border-top border-2 mb-4"></div>
+                                        <div class="form-header">
+                                            <h2>Create Your Account</h2>
+                                            <p>Tell us a bit about yourself</p>
+                                        </div>
+                                        <div class="border-top border-2 mb-4"></div>
                                         <label class="form-label">
                                             <i class="bi bi-gender-ambiguous me-2"></i>Gender
                                         </label>
@@ -388,13 +408,13 @@
                                         
                                         <!-- Phone Error Message - Will be shown for duplicate phone numbers -->
                                         <div th:if="${error != null and #strings.contains(error, 'Phone number')}" 
-                                             class="phone-error d-block">
+                                             class="phone-error d-block error-message">
                                             <i class="bi bi-exclamation-circle me-1"></i>
                                             <span th:text="${error}">Phone number already exists</span>
                                         </div>
                                         
                                         <!-- Client-side validation error -->
-                                        <div id="phoneValidationError" class="phone-error">
+                                        <div id="phoneValidationError" class="error-message">
                                             <i class="bi bi-exclamation-circle me-1"></i>
                                             <span id="phoneValidationErrorText"></span>
                                         </div>
@@ -676,21 +696,31 @@
         dobInput.addEventListener('blur', function() {
             const dob = this.value.trim();
             
+            if (dob === '') {
+                hideDobValidationError();
+                return;
+            }
             
-            
-            // Validate that date is not in the future
+            // Validate year is reasonable (not before 1900 or after current year)
             const selectedDate = new Date(dob);
-            const today = new Date();
-            if (selectedDate > today) {
+            const currentYear = new Date().getFullYear();
+            const selectedYear = selectedDate.getFullYear();
+            
+            if (selectedYear < 1900) {
+                showDobValidationError('Please enter a valid year (1900 or later)');
+                return;
+            }
+            
+            if (selectedYear > currentYear) {
                 showDobValidationError('Date of Birth cannot be in the future');
                 return;
             }
             
-            // Validate minimum age (16 years)
+            // Validate minimum age (14 years)
             const minAgeDate = new Date();
-            minAgeDate.setFullYear(minAgeDate.getFullYear() - 16);
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 14);
             if (selectedDate > minAgeDate) {
-                showDobValidationError('You must be at least 16 years old');
+                showDobValidationError('You must be at least 14 years old');
                 return;
             }
             
@@ -707,6 +737,30 @@
             dobValidationError.style.display = 'none';
             dobInput.classList.remove('field-error');
         }
+        
+        // Auto-calculate age when Date of Birth is selected
+        dobInput.addEventListener('change', function() {
+            const dobValue = this.value;
+            if (!dobValue) return;
+
+            const dobDate = new Date(dobValue);
+            const today = new Date();
+
+            let age = today.getFullYear() - dobDate.getFullYear();
+            const monthDiff = today.getMonth() - dobDate.getMonth();
+
+            // Adjust if birthday hasn't occurred yet this year
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+
+            // Set age input value
+            const ageInput = document.getElementById('age');
+            ageInput.value = age;
+            
+            // Trigger validation
+            dobInput.dispatchEvent(new Event('blur'));
+        });
 
         // Form validation
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
@@ -742,22 +796,31 @@
                 return;
             }
             
-            // Validate date is not in future
+            // Validate year is reasonable (not before 1900 or after current year)
             const selectedDate = new Date(dob);
-            const today = new Date();
-            if (selectedDate > today) {
+            const currentYear = new Date().getFullYear();
+            const selectedYear = selectedDate.getFullYear();
+            
+            if (selectedYear < 1900) {
+                e.preventDefault();
+                showDobValidationError('Please enter a valid year (1900 or later)');
+                dobInput.focus();
+                return;
+            }
+            
+            if (selectedYear > currentYear) {
                 e.preventDefault();
                 showDobValidationError('Date of Birth cannot be in the future');
                 dobInput.focus();
                 return;
             }
             
-            // Validate minimum age
+            // Validate minimum age (14 years)
             const minAgeDate = new Date();
-            minAgeDate.setFullYear(minAgeDate.getFullYear() - 16);
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 14);
             if (selectedDate > minAgeDate) {
                 e.preventDefault();
-                showDobValidationError('You must be at least 16 years old');
+                showDobValidationError('You must be at least 14 years old');
                 dobInput.focus();
                 return;
             }

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${job.jobTitle} + ' at ' + ${company.companyName} + ' - JobJump'">Job Detail - JobJump</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+          <link rel="stylesheet" th:href="@{/css/footer.css}">
+    
+    <style>
+        :root {
+            --primary-color: #89ba16;
+            --primary-dark: #6ea012;
+            --secondary-color: #6c757d;
+            --accent-color: #ff6b35;
+            --light-bg: #f8f9fa;
+            --card-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            --hover-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            --gradient-primary: linear-gradient(135deg, #89ba16, #6ea012);
+            --gradient-accent: linear-gradient(45deg, #ff6b35, #ff8e35);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .job-hero {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(137, 186, 22, 0.15);
+        }
+
+        .job-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><path d="M0,70 Q250,30 500,70 T1000,70 L1000,100 L0,100 Z"/></svg>') no-repeat bottom;
+            background-size: cover;
+        }
+
+        .company-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid rgba(255,255,255,0.9);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .company-logo:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        .job-title-main {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #e8f5e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 0.5rem;
+        }
+
+        .job-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            background: white;
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+
+        .job-card:hover {
+            box-shadow: var(--hover-shadow);
+            transform: translateY(-8px);
+        }
+
+        .feature-badge {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 12px 20px;
+            color: white;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            margin: 0.25rem;
+        }
+
+        .feature-badge:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feature-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .salary-badge {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .description-content {
+            line-height: 1.8;
+            white-space: pre-line;
+            color: #555;
+            font-size: 1.05rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .info-item i {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(137, 186, 22, 0.3);
+        }
+
+        .apply-btn {
+            background: var(--gradient-accent);
+            border: none;
+            padding: 14px 32px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apply-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .apply-btn:hover::before {
+            left: 100%;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 107, 53, 0.5);
+        }
+
+        .back-btn {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 14px 32px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .back-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(137, 186, 22, 0.3);
+        }
+
+        .section-title {
+            position: relative;
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+            font-weight: 800;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 70px;
+            height: 5px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 10px 20px;
+            margin: 6px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .skill-tag:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .floating-action .btn {
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Compact Company Info Styles */
+        .compact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .compact-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .compact-item:hover {
+            background: #e9ecef;
+            transform: translateX(2px);
+        }
+
+        .compact-item i {
+            width: 20px;
+            margin-right: 8px;
+            font-size: 0.7rem;
+        }
+
+        .compact-text {
+            flex: 1;
+            font-size: 0.75rem;
+            color: #495057;
+            line-height: 1.3;
+        }
+
+        .compact-link {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-decoration: none;
+            line-height: 1.3;
+        }
+
+        .compact-link:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+
+        .company-description {
+            border-top: 1px solid #e9ecef;
+            padding-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .job-hero {
+                border-radius: 0;
+                margin: 0 -1rem 2rem -1rem;
+            }
+            
+            .company-logo {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .job-title-main {
+                font-size: 2rem;
+            }
+            
+            .floating-action {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .feature-badge {
+                min-width: 120px;
+                padding: 10px 16px;
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="headerLogin :: profile-header"></div>
+
+    <!-- Main Content -->
+    <div class="container-fluid" style="margin-top: 80px;">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                
+                <!-- Job Hero Section -->
+                <div class="job-hero p-5 mb-5 animate__animated animate__fadeIn">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-start mb-4">
+                                <!-- Company Logo -->
+                                <th:block th:if="${companyProfilePhoto != null}">
+                                    <img th:src="'data:image/jpeg;base64,' + ${companyProfilePhoto}" 
+                                         class="company-logo me-4 animate__animated animate__zoomIn" 
+                                         th:alt="${company.companyName} + ' logo'">
+                                </th:block>
+                                <th:block th:unless="${companyProfilePhoto != null}">
+                                    <div class="company-logo bg-light d-flex align-items-center justify-content-center me-4 animate__animated animate__zoomIn">
+                                        <i class="bi bi-building" style="font-size: 2.5rem; color: #89ba16;"></i>
+                                    </div>
+                                </th:block>
+                                <div class="flex-grow-1">
+                                    <h1 class="job-title-main animate__animated animate__fadeInRight" th:text="${job.jobTitle}"></h1>
+                                    <h4 class="mb-4 opacity-90 animate__animated animate__fadeInRight animate__delay-1s" th:text="${company.companyName}"></h4>
+                                    
+                                    <!-- Enhanced Feature Badges -->
+                                    <div class="d-flex flex-wrap animate__animated animate__fadeInUp animate__delay-2s">
+                                        <div class="feature-badge">
+                                            <div class="feature-icon">
+                                                <i class="bi bi-briefcase"></i>
+                                            </div>
+                                            <div class="feature-content">
+                                                <div class="feature-label">Job Type</div>
+                                                <div class="feature-value" th:text="${job.jobType}"></div>
+                                            </div>
+                                        </div>
+                                        <div class="feature-badge">
+                                            <div class="feature-icon">
+                                                <i class="bi bi-geo-alt"></i>
+                                            </div>
+                                            <div class="feature-content">
+                                                <div class="feature-label">Location</div>
+                                                <div class="feature-value" th:text="${job.location}"></div>
+                                            </div>
+                                        </div>
+                                        <div th:if="${job.experienceLevel}" class="feature-badge">
+                                            <div class="feature-icon">
+                                                <i class="bi bi-graph-up"></i>
+                                            </div>
+                                            <div class="feature-content">
+                                                <div class="feature-label">Experience</div>
+                                                <div class="feature-value" th:text="${job.experienceLevel}"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end animate__animated animate__fadeInLeft">
+                            <div class="mb-4">
+                                <span class="salary-badge d-inline-block pulse-animation" 
+                                      th:if="${job.salaryMini != null and job.salaryMax != null}">
+                                    $<span th:text="${#numbers.formatInteger(job.salaryMini, 1)}"></span> - $<span th:text="${#numbers.formatInteger(job.salaryMax, 1)}"></span>
+                                </span>
+                                <span class="salary-badge d-inline-block" th:if="${job.salaryMini == null or job.salaryMax == null}">
+                                    Salary: Negotiable
+                                </span>
+                            </div>
+                            <div th:if="${job.applicationDeadline}" class="text-light mt-3">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <i class="bi bi-clock me-2 fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold">Apply before</div>
+                                        <div class="fs-6" th:text="${job.applicationDeadline}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Main Job Content -->
+                    <div class="col-lg-8">
+                        <!-- Job Description -->
+                        <div class="card job-card mb-4 animate__animated animate__fadeInUp">
+                            <div class="card-body p-4">
+                                <h3 class="section-title">📝 Job Description</h3>
+                                <div class="description-content" th:text="${job.jobDescription}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Required Skills -->
+                        <div class="card job-card mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                            <div class="card-body p-4">
+                                <h3 class="section-title">💼 Required Skills & Qualifications</h3>
+                                <div th:if="${job.requiredSkills}">
+                                    <div th:each="skill : ${#strings.arraySplit(job.requiredSkills, ',')}">
+                                        <span class="skill-tag" th:text="${skill.trim()}"></span>
+                                    </div>
+                                </div>
+                                <div th:unless="${job.requiredSkills}" class="text-muted text-center py-4">
+                                    <i class="bi bi-info-circle display-4 text-muted mb-3"></i>
+                                    <p class="fs-5">No specific skills required</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Benefits -->
+                        <div th:if="${job.benefits}" class="card job-card animate__animated animate__fadeInUp animate__delay-2s">
+                            <div class="card-body p-4">
+                                <h3 class="section-title">🎁 Benefits & Perks</h3>
+                                <div class="description-content" th:text="${job.benefits}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Application CTA - Enhanced Version -->
+                        <div class="card job-card mt-4 animate__animated animate__fadeInUp animate__delay-3s">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h4 class="fw-bold mb-2 text-primary">🚀 Ready to Apply?</h4>
+                                        <p class="text-muted mb-3" th:if="${job.applicationInstructions}">
+                                            <i class="bi bi-info-circle me-2"></i>
+                                            <span th:text="${job.applicationInstructions}"></span>
+                                        </p>
+                                        <p class="text-muted mb-3" th:unless="${job.applicationInstructions}">
+                                            <i class="bi bi-rocket-takeoff me-2"></i>
+                                            Send your application and launch your career journey with us!
+                                        </p>
+                                        <div class="d-flex align-items-center text-muted">
+                                            <i class="bi bi-envelope me-2"></i>
+                                            <small>Send your application to: <strong th:text="${job.applicationEmail}"></strong></small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="d-flex flex-column gap-3">
+                                            <a th:href="'mailto:' + ${job.applicationEmail} + '?subject=Application for ' + ${job.jobTitle} + '&body=Dear Hiring Manager,%0D%0A%0D%0AI am excited to apply for the ' + ${job.jobTitle} + ' position at ' + ${company.companyName} + '. Please find my application attached.%0D%0A%0D%0ABest regards,'" 
+                                               class="btn apply-btn">
+                                                <i class="bi bi-send me-2"></i>Apply Now
+                                            </a>
+                                            <a th:href="@{/user/user_companies}" class="btn back-btn">
+                                                <i class="bi bi-arrow-left me-2"></i>Back to Companies
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- Quick Info -->
+                        <div class="card job-card mb-4 animate__animated animate__fadeInRight">
+                            <div class="card-body p-4">
+                                <h4 class="section-title">📋 Job Overview</h4>
+                                
+                                <div class="info-item">
+                                    <i class="bi bi-briefcase"></i>
+                                    <div>
+                                        <strong>Job Type</strong>
+                                        <div th:text="${job.jobType}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <div>
+                                        <strong>Location</strong>
+                                        <div th:text="${job.location}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${job.department}" class="info-item">
+                                    <i class="bi bi-building"></i>
+                                    <div>
+                                        <strong>Department</strong>
+                                        <div th:text="${job.department}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${job.experienceLevel}" class="info-item">
+                                    <i class="bi bi-graph-up"></i>
+                                    <div>
+                                        <strong>Experience Level</strong>
+                                        <div th:text="${job.experienceLevel}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${job.educationLevel}" class="info-item">
+                                    <i class="bi bi-mortarboard"></i>
+                                    <div>
+                                        <strong>Education</strong>
+                                        <div th:text="${job.educationLevel}"></div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${job.createdAt}" class="info-item">
+                                    <i class="bi bi-calendar"></i>
+                                    <div>
+                                        <strong>Posted Date</strong>
+                                        <div th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Info - Compact Version -->
+                        <div class="card job-card animate__animated animate__fadeInRight animate__delay-1s">
+                            <div class="card-body p-3">
+                                <h5 class="section-title mb-3" style="font-size: 1rem;">🏢 Company Info</h5>
+                                
+                                <div class="text-center mb-3">
+                                    <th:block th:if="${companyProfilePhoto != null}">
+                                        <img th:src="'data:image/jpeg;base64,' + ${companyProfilePhoto}" 
+                                             class="company-logo mb-2" 
+                                             style="width: 50px; height: 50px; border-radius: 12px;"
+                                             th:alt="${company.companyName} + ' logo'">
+                                    </th:block>
+                                    <h6 th:text="${company.companyName}" class="fw-bold mb-2" style="font-size: 0.9rem;"></h6>
+                                </div>
+                                
+                                <!-- Compact Info Items -->
+                                <div class="compact-info">
+                                    <div class="compact-item">
+                                        <i class="bi bi-envelope-fill text-primary"></i>
+                                        <span class="compact-text" th:text="${job.applicationEmail}"></span>
+                                    </div>
+                                    
+                                    <div th:if="${company.address}" class="compact-item">
+                                        <i class="bi bi-geo-alt-fill text-success"></i>
+                                        <span class="compact-text" th:text="${company.address}"></span>
+                                    </div>
+                                    
+                                    <div th:if="${company.companyPhone}" class="compact-item">
+                                        <i class="bi bi-telephone-fill text-info"></i>
+                                        <span class="compact-text" th:text="${company.companyPhone}"></span>
+                                    </div>
+                                    
+                                    <div th:if="${job.companyWebsite}" class="compact-item">
+                                        <i class="bi bi-globe text-warning"></i>
+                                        <a th:href="${job.companyWebsite}" target="_blank" class="compact-link" th:text="${job.companyWebsite}"></a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Description (collapsible if too long) -->
+                                <div th:if="${company.description}" class="mt-3">
+                                    <div class="company-description">
+                                        <p class="small text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;" 
+                                           th:text="${#strings.length(company.description) > 100 ? #strings.substring(company.description, 0, 100) + '...' : company.description}">
+                                        </p>
+                                        <a th:if="${#strings.length(company.description) > 100}" href="#" class="text-primary small" style="font-size: 0.7rem;">
+                                            Read more
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action">
+        <a th:href="'mailto:' + ${job.applicationEmail} + '?subject=Application for ' + ${job.jobTitle}" 
+           class="btn apply-btn">
+            <i class="bi bi-send me-2"></i>Quick Apply
+        </a>
+    </div> <br>
+		
+    <!-- Footer --> 
+    <div th:replace="footer :: site-footer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Enhanced animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add intersection observer for scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all job cards for scroll animations
+            document.querySelectorAll('.job-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                observer.observe(card);
+            });
+
+            // Add click animation to skill tags
+            document.querySelectorAll('.skill-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-3px) scale(1.05)';
+                    }, 150);
+                });
+            });
+
+            // Add parallax effect to hero section
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const hero = document.querySelector('.job-hero');
+                if (hero) {
+                    hero.style.transform = `translateY(${scrolled * 0.1}px)`;
+                }
+            });
+
+            // Read more functionality for company description
+            document.querySelectorAll('.company-description a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const description = this.previousElementSibling;
+                    const fullDescription = this.getAttribute('data-full') || description.textContent;
+                    
+                    if (this.textContent === 'Read more') {
+                        description.textContent = fullDescription;
+                        this.textContent = 'Read less';
+                    } else {
+                        description.textContent = fullDescription.substring(0, 100) + '...';
+                        this.textContent = 'Read more';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

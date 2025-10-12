@@ -1,6 +1,7 @@
 package com.springboot.Job.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,5 +54,26 @@ public class JobPostService {
     
     public List<JobPostBean> findJobsByCompanyId(Integer companyId) {
         return jobPostRepository.findByOwnerId(companyId);
+    }
+    
+  //8.10.2025
+    public Optional<JobPostBean> findJobById(Integer jobId) {
+        return jobPostRepository.findJobById(jobId);
+    }
+    
+  //10.10.2025
+    public long countAllJobs() {
+        return jobPostRepository.countAllJobs();
+    }
+  
+  //11.10.2025
+    public List<Map<String, Object>> getActiveJobsWithOwners(int page, int size) {
+        int offset = (page - 1) * size;
+        return jobPostRepository.findActiveJobsWithOwners(size, offset);
+    }
+
+    public int getTotalPages(int pageSize) {
+        long totalJobs = countAllJobs();
+        return (int) Math.ceil((double) totalJobs / pageSize);
     }
 }

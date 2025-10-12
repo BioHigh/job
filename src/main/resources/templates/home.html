@@ -18,6 +18,7 @@
     <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
     <link rel="stylesheet" th:href="@{/css/animate.min.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+      <link rel="stylesheet" th:href="@{/css/footer.css}">
 
     <style>
         .foot {
@@ -84,8 +85,7 @@
 
     <div class="site-wrap">
 <!-- Show header when logged in -->
-<div th:if="${sessionUser == null}" th:replace="header :: site-header"></div>
-<div th:if="${sessionUser != null}" th:replace="headerLogin :: profile-header"></div>
+<div th:replace="headerLogin :: profile-header"></div>
 
 <!-- Guest header -->
 
@@ -165,7 +165,6 @@
 
     <!-- SCRIPTS -->
     <script th:src="@{/js/jquery.min.js}"></script>
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/js/isotope.pkgd.min.js}"></script>
     <script th:src="@{/js/stickyfill.min.js}"></script>
     <script th:src="@{/js/jquery.fancybox.min.js}"></script>

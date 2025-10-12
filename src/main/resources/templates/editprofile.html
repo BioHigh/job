@@ -257,6 +257,33 @@
             border-color: #4e73df;
             color: white;
         }
+        .field-error {
+            border-color: #dc3545 !important;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .dob-age-row {
+            display: flex;
+            gap: 15px;
+        }
+        .dob-age-row .col-md-6 {
+            flex: 1;
+        }
+        .age-input-group {
+            position: relative;
+        }
+        .age-readonly-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
         @media (max-width: 768px) {
             .photo-comparison {
                 gap: 1rem;
@@ -270,14 +297,14 @@
 </head>
 <body>
 <br>
+
+   <div th:replace="headerLogin :: profile-header"></div>
+
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-xl-10">
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="h1 mb-0"><i class="bi bi-person-gear me-2"></i>Profile Details</h2>
-                        <p class="mb-0 opacity-75">Update your information below</p>
-                    </div>
+                   
                     <div class="card-body p-4 p-md-5">
                         <!-- Alert Messages -->
                         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -350,33 +377,32 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="row">
+                                    <!-- Date of Birth and Age in one row -->
+                                    <div class="dob-age-row mb-3">
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="age" class="form-label">
-                                                    <i class="bi bi-calendar3 me-2"></i>Age
-                                                </label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text">
-                                                        <i class="bi bi-calendar3"></i>
-                                                    </span>
-                                                    <input type="number" class="form-control" id="age" name="age" 
-                                                           th:value="${user.age}" placeholder="Age" min="16" max="100">
-                                                </div>
+                                            <label for="dateOfBirth" class="form-label">
+                                                <i class="bi bi-calendar-date me-2"></i>Date of Birth
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="bi bi-calendar-date"></i>
+                                                </span>
+                                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
+                                                       th:value="${user.dateOfBirth}">
+                                            </div>
+                                            <div id="dobValidationError" class="error-message">
+                                                <i class="bi bi-exclamation-circle me-1"></i>
+                                                <span id="dobValidationErrorText"></span>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div class="mb-3">
-                                                <label for="dateOfBirth" class="form-label">
-                                                    <i class="bi bi-calendar-date me-2"></i>Date of Birth
-                                                </label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text">
-                                                        <i class="bi bi-calendar-date"></i>
-                                                    </span>
-                                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" 
-                                                           th:value="${user.dateOfBirth}">
-                                                </div>
+                                            <label for="age" class="form-label">
+                                                <i class="bi bi-calendar3 me-2"></i>Age
+                                            </label>
+                                            <div class="age-input-group">
+                                                <input type="number" class="form-control" id="age" name="age" 
+                                                       th:value="${user.age}" placeholder="Age" min="14" max="100" readonly>
+                                                <span class="age-readonly-text">Auto-calculated</span>
                                             </div>
                                         </div>
                                     </div>
@@ -450,7 +476,9 @@
         const uploadContainer = document.getElementById('uploadContainer');
         const removePhotoBtn = document.getElementById('removePhoto');
         const fileInfo = document.getElementById('file-info');
-        const currentPhotoDisplay = document.getElementById('currentPhotoDisplay');
+        const dobInput = document.getElementById('dateOfBirth');
+        const dobValidationError = document.getElementById('dobValidationError');
+        const dobValidationErrorText = document.getElementById('dobValidationErrorText');
 
         // Click on upload container to trigger file input
         uploadContainer.addEventListener('click', function(e) {
@@ -525,6 +553,76 @@
             }
         });
 
+        // Date of Birth validation
+        dobInput.addEventListener('blur', function() {
+            const dob = this.value.trim();
+            
+            if (dob === '') {
+                hideDobValidationError();
+                return;
+            }
+            
+            // Validate year is reasonable (not before 1900 or after current year)
+            const selectedDate = new Date(dob);
+            const currentYear = new Date().getFullYear();
+            const selectedYear = selectedDate.getFullYear();
+            
+            if (selectedYear < 1900) {
+                showDobValidationError('Please enter a valid year (1900 or later)');
+                return;
+            }
+            
+            if (selectedYear > currentYear) {
+                showDobValidationError('Date of Birth cannot be in the future');
+                return;
+            }
+            
+            // Validate minimum age (14 years)
+            const minAgeDate = new Date();
+            minAgeDate.setFullYear(minAgeDate.getFullYear() - 14);
+            if (selectedDate > minAgeDate) {
+                showDobValidationError('You must be at least 14 years old');
+                return;
+            }
+            
+            hideDobValidationError();
+        });
+
+        function showDobValidationError(message) {
+            dobValidationErrorText.textContent = message;
+            dobValidationError.style.display = 'block';
+            dobInput.classList.add('field-error');
+        }
+
+        function hideDobValidationError() {
+            dobValidationError.style.display = 'none';
+            dobInput.classList.remove('field-error');
+        }
+        
+        // Auto-calculate age when Date of Birth is selected
+        dobInput.addEventListener('change', function() {
+            const dobValue = this.value;
+            if (!dobValue) return;
+
+            const dobDate = new Date(dobValue);
+            const today = new Date();
+
+            let age = today.getFullYear() - dobDate.getFullYear();
+            const monthDiff = today.getMonth() - dobDate.getMonth();
+
+            // Adjust if birthday hasn't occurred yet this year
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+            }
+
+            // Set age input value
+            const ageInput = document.getElementById('age');
+            ageInput.value = age;
+            
+            // Trigger validation
+            dobInput.dispatchEvent(new Event('blur'));
+        });
+
         // Form validation
         document.getElementById('editProfileForm').addEventListener('submit', function(e) {
             const name = document.getElementById('name').value.trim();
@@ -535,13 +633,54 @@
                 return;
             }
             
+            // Check Date of Birth
+            const dob = document.getElementById('dateOfBirth').value.trim();
+            if (dob !== '') {
+                // Validate year is reasonable (not before 1900 or after current year)
+                const selectedDate = new Date(dob);
+                const currentYear = new Date().getFullYear();
+                const selectedYear = selectedDate.getFullYear();
+                
+                if (selectedYear < 1900) {
+                    e.preventDefault();
+                    showDobValidationError('Please enter a valid year (1900 or later)');
+                    dobInput.focus();
+                    return;
+                }
+                
+                if (selectedYear > currentYear) {
+                    e.preventDefault();
+                    showDobValidationError('Date of Birth cannot be in the future');
+                    dobInput.focus();
+                    return;
+                }
+                
+                // Validate minimum age (14 years)
+                const minAgeDate = new Date();
+                minAgeDate.setFullYear(minAgeDate.getFullYear() - 14);
+                if (selectedDate > minAgeDate) {
+                    e.preventDefault();
+                    showDobValidationError('You must be at least 14 years old');
+                    dobInput.focus();
+                    return;
+                }
+            }
+            
             // Additional validation can be added here
             const age = document.getElementById('age').value;
-            if (age && (age < 16 || age > 100)) {
+            if (age && (age < 14 || age > 100)) {
                 e.preventDefault();
-                alert('Please enter a valid age between 16 and 100.');
+                alert('Please enter a valid age between 14 and 100.');
                 document.getElementById('age').focus();
                 return;
+            }
+        });
+
+        // Initialize age calculation if date of birth is already set
+        document.addEventListener('DOMContentLoaded', function() {
+            const dobValue = document.getElementById('dateOfBirth').value;
+            if (dobValue) {
+                dobInput.dispatchEvent(new Event('change'));
             }
         });
     </script>

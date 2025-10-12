@@ -10,17 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController {
 	
-	@GetMapping("/")
-	public String showIndex() {
 	
-		return "index";
-	}
-	
-	@GetMapping("/index")
-	public String showIndex1() {
-	
-		return "index";
-	}
 	
 	@GetMapping("/home")
 	public String showIndex2() {
