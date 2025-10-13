@@ -221,10 +221,9 @@
 
     <!-- Main Content -->
  <!-- Show header when logged in -->
-<div th:if="${session.user != null}" th:replace="headerLogin :: profile-header"></div>
+<div th:replace="ownerheader :: owner-header"></div>
 
-<!-- Show normal header when not logged in -->
-<div th:if="${session.user == null}" th:replace="header :: site-header"></div>    
+  
 <div class="container my-4">
     
         <div class="job-edit-container">

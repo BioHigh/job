@@ -31,4 +31,10 @@ public class JobPostBean {
     private Integer adminId;
     private String status;
     private LocalDateTime createdAt;
+    
+    // Archive fields
+    private Boolean isArchived = false;
+    private LocalDateTime archivedAt;
+    private String archivedBy; // "OWNER" or "ADMIN"
+    private String archiveReason;
 }

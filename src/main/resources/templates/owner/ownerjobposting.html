@@ -7,15 +7,59 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-        <link rel="stylesheet" th:href="@{/css/jobposting.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/jobposting.css}">
    
-   <style>
-    
+    <style>
+        .draft-options {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .draft-card {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .draft-card:hover {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        .draft-card.selected {
+            border-color: #007bff;
+            background-color: #e7f3ff;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
-     <div th:replace="ownerheader :: owner-header"></div>
+    <div th:replace="ownerheader :: owner-header"></div>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -23,19 +67,19 @@
     </div>
 
     <!-- Toast Notifications -->
-    <div class="toast-container">
-        <div id="successToast" class="toast toast-success" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <i class="bi bi-check-circle text-success me-2"></i>
                 <strong class="me-auto">Success</strong>
                 <small>Just now</small>
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
-            <div class="toast-body">
+            <div class="toast-body" id="successToastBody">
                 Job posted successfully!
             </div>
         </div>
-        <div id="errorToast" class="toast toast-error" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <i class="bi bi-exclamation-triangle text-danger me-2"></i>
                 <strong class="me-auto">Error</strong>
@@ -49,11 +93,7 @@
     </div>
 
     <!-- Main Content -->
-    
-    <div class="sticky-top bg-white shadow-sm">
-    </div>
     <div class="container my-4">
-    
         <div class="job-posting-container">
             <!-- Header -->
             <div class="posting-header">
@@ -61,8 +101,40 @@
                 <p class="mb-0">Fill in the details below to create your job posting</p>
             </div>
 
+            <!-- Draft Selection (Show only if draft exists) -->
+            <div class="draft-options" id="draftOptions" style="display: none;">
+                <h5 class="mb-3"><i class="bi bi-file-earmark me-2"></i>Continue with saved draft?</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="draft-card" id="newJobCard" onclick="selectOption('new')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-plus-circle fs-4 text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Start New Job Post</h6>
+                                    <p class="text-muted mb-0">Create a fresh job posting from scratch</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="draft-card" id="draftCard" onclick="selectOption('draft')">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark fs-4 text-warning me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Continue with Draft</h6>
+                                    <p class="text-muted mb-0" id="draftInfo">Use your saved draft</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary" id="confirmSelection" disabled>Continue</button>
+                </div>
+            </div>
+
             <!-- Progress Indicator -->
-            <div class="progress-container">
+            <div class="progress-container" id="progressContainer">
                 <div class="step-indicator">
                     <div class="step active" id="step1">
                         <div class="step-circle">1</div>
@@ -92,6 +164,9 @@
 
             <!-- Job Posting Form -->
             <form th:action="@{/owner/job/post}" method="post" id="jobPostingForm">
+                <!-- Hidden field to track if using draft -->
+                <input type="hidden" id="useDraft" name="useDraft" value="false">
+                
                 <!-- Job Details -->
                 <div class="form-section active" id="section1">
                     <h3 class="section-title"><i class="bi bi-briefcase"></i> Job Details</h3>
@@ -146,7 +221,7 @@
                     
                     <div class="form-navigation">
                         <div class="navigation-left">
-                            <button type="button" class="btn btn-outline-secondary" id="saveDraft1">
+                            <button type="button" class="btn btn-outline-warning" id="saveDraft1">
                                 <i class="bi bi-file-earmark me-1"></i> Save as Draft
                             </button>
                         </div>
@@ -174,7 +249,7 @@
                     
                     <div class="mb-3">
                         <label for="companyDescription" class="form-label">Company Description</label>
-                        <textarea class="form-control" id="companyDescription" th:text="${owner.description}"></textarea>
+                        <textarea class="form-control" id="companyDescription" th:text="${owner.description}" readonly></textarea>
                         <input type="hidden" name="companyDescription" th:value="${owner.description}">
                     </div>
                     
@@ -219,7 +294,7 @@
                     
                     <div class="form-navigation">
                         <div class="navigation-left">
-                            <button type="button" class="btn btn-outline-secondary" id="saveDraft2">
+                            <button type="button" class="btn btn-outline-warning" id="saveDraft2">
                                 <i class="bi bi-file-earmark me-1"></i> Save as Draft
                             </button>
                         </div>
@@ -290,7 +365,7 @@
                     
                     <div class="form-navigation">
                         <div class="navigation-left">
-                            <button type="button" class="btn btn-outline-secondary" id="saveDraft3">
+                            <button type="button" class="btn btn-outline-warning" id="saveDraft3">
                                 <i class="bi bi-file-earmark me-1"></i> Save as Draft
                             </button>
                         </div>
@@ -325,7 +400,7 @@
                     
                     <div class="form-navigation">
                         <div class="navigation-left">
-                            <button type="button" class="btn btn-outline-secondary" id="saveDraft4">
+                            <button type="button" class="btn btn-outline-warning" id="saveDraft4">
                                 <i class="bi bi-file-earmark me-1"></i> Save as Draft
                             </button>
                         </div>
@@ -379,7 +454,7 @@
                     
                     <div class="form-navigation">
                         <div class="navigation-left">
-                            <button type="button" class="btn btn-outline-secondary" id="saveDraft5">
+                            <button type="button" class="btn btn-outline-warning" id="saveDraft5">
                                 <i class="bi bi-file-earmark me-1"></i> Save as Draft
                             </button>
                         </div>
@@ -390,7 +465,7 @@
                             <button type="button" class="btn btn-outline-primary me-2" id="previewBtn">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Refresh Preview
                             </button>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-success">
                                 <i class="bi bi-send me-1"></i> Post Job
                             </button>
                         </div>
@@ -403,13 +478,197 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Clear any saved draft when page loads
-            localStorage.removeItem('jobDraft');
-            
             // Multi-step form navigation
             let currentStep = 1;
             const totalSteps = 5;
+            let selectedOption = '';
+            let hasShownDraftOptions = false;
+
+            // Skills functionality
+            const skillInput = document.getElementById('skillInput');
+            const skillsContainer = document.getElementById('skillsContainer');
+            const previewSkills = document.getElementById('previewSkills');
+            const requiredSkillsInput = document.getElementById('requiredSkills');
             
+            // Benefits functionality
+            const benefitCheckboxes = document.querySelectorAll('.benefit-checkbox');
+            const benefitsInput = document.getElementById('benefits');
+
+            // Check for existing draft and show options
+            function checkForDraft() {
+                const savedDraft = localStorage.getItem('jobDraft');
+                if (savedDraft && !hasShownDraftOptions) {
+                    try {
+                        const draft = JSON.parse(savedDraft);
+                        if (draft.jobTitle || draft.jobType || draft.location) {
+                            showDraftOptions(draft);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing draft:', error);
+                    }
+                }
+            }
+
+            function showDraftOptions(draft) {
+                const draftOptions = document.getElementById('draftOptions');
+                const progressContainer = document.getElementById('progressContainer');
+                const formSections = document.querySelectorAll('.form-section');
+                
+                // Hide form and progress initially
+                progressContainer.style.display = 'none';
+                formSections.forEach(section => section.style.display = 'none');
+                
+                // Update draft info
+                const draftInfo = document.getElementById('draftInfo');
+                const draftTitle = draft.jobTitle || 'Untitled Draft';
+                const draftStep = draft.currentStep || 1;
+                draftInfo.textContent = `${draftTitle} (Step ${draftStep}/5)`;
+                
+                // Show draft options
+                draftOptions.style.display = 'block';
+                hasShownDraftOptions = true;
+            }
+
+            function selectOption(option) {
+                selectedOption = option;
+                
+                // Update UI
+                document.getElementById('newJobCard').classList.toggle('selected', option === 'new');
+                document.getElementById('draftCard').classList.toggle('selected', option === 'draft');
+                document.getElementById('confirmSelection').disabled = false;
+            }
+
+            function confirmSelection() {
+                const draftOptions = document.getElementById('draftOptions');
+                const progressContainer = document.getElementById('progressContainer');
+                const formSections = document.querySelectorAll('.form-section');
+                
+                if (selectedOption === 'new') {
+                    // Clear draft and start fresh
+                    localStorage.removeItem('jobDraft');
+                    document.getElementById('useDraft').value = 'false';
+                    
+                    // Reset form
+                    document.getElementById('jobPostingForm').reset();
+                    skillsContainer.innerHTML = '';
+                    updateRequiredSkills();
+                    updatePreview();
+                    
+                    // Show form
+                    draftOptions.style.display = 'none';
+                    progressContainer.style.display = 'block';
+                    formSections.forEach((section, index) => {
+                        section.style.display = index === 0 ? 'block' : 'none';
+                    });
+                    
+                } else if (selectedOption === 'draft') {
+                    // Load draft
+                    document.getElementById('useDraft').value = 'true';
+                    loadDraft();
+                    
+                    // Show form
+                    draftOptions.style.display = 'none';
+                    progressContainer.style.display = 'block';
+                    formSections.forEach(section => section.style.display = 'block');
+                    
+                    // Show success message
+                    showToast('Draft loaded successfully!', 'success');
+                }
+            }
+
+            // Enhanced save draft function
+            function saveDraft() {
+                const formData = {
+                    jobTitle: document.getElementById('jobTitle').value,
+                    jobType: document.getElementById('jobType').value,
+                    categoryId: document.getElementById('categoryId').value,
+                    department: document.getElementById('department').value,
+                    location: document.getElementById('location').value,
+                    jobDescription: document.getElementById('jobDescription').value,
+                    companyWebsite: document.getElementById('companyWebsite').value,
+                    experienceLevel: document.getElementById('experienceLevel').value,
+                    educationLevel: document.getElementById('educationLevel').value,
+                    salaryMin: document.getElementById('salaryMin').value,
+                    salaryMax: document.getElementById('salaryMax').value,
+                    applicationDeadline: document.getElementById('applicationDeadline').value,
+                    applicationInstructions: document.getElementById('applicationInstructions').value,
+                    requiredSkills: requiredSkillsInput.value,
+                    benefits: benefitsInput.value,
+                    currentStep: currentStep,
+                    lastSaved: new Date().toISOString()
+                };
+                
+                localStorage.setItem('jobDraft', JSON.stringify(formData));
+                showToast('Draft saved successfully!', 'success');
+            }
+
+            // Enhanced load draft function
+            function loadDraft() {
+                const savedDraft = localStorage.getItem('jobDraft');
+                if (savedDraft) {
+                    try {
+                        const draft = JSON.parse(savedDraft);
+                        
+                        // Load form data
+                        document.getElementById('jobTitle').value = draft.jobTitle || '';
+                        document.getElementById('jobType').value = draft.jobType || '';
+                        document.getElementById('categoryId').value = draft.categoryId || '';
+                        document.getElementById('department').value = draft.department || '';
+                        document.getElementById('location').value = draft.location || '';
+                        document.getElementById('jobDescription').value = draft.jobDescription || '';
+                        document.getElementById('companyWebsite').value = draft.companyWebsite || '';
+                        document.getElementById('experienceLevel').value = draft.experienceLevel || '';
+                        document.getElementById('educationLevel').value = draft.educationLevel || '';
+                        document.getElementById('salaryMin').value = draft.salaryMin || '';
+                        document.getElementById('salaryMax').value = draft.salaryMax || '';
+                        document.getElementById('applicationDeadline').value = draft.applicationDeadline || '';
+                        document.getElementById('applicationInstructions').value = draft.applicationInstructions || '';
+                        
+                        // Load skills
+                        skillsContainer.innerHTML = '';
+                        if (draft.requiredSkills) {
+                            draft.requiredSkills.split(',').forEach(skill => {
+                                if (skill.trim()) {
+                                    addSkill(skill.trim());
+                                }
+                            });
+                        }
+                        
+                        // Load benefits
+                        if (draft.benefits) {
+                            const benefits = draft.benefits.split(',');
+                            benefitCheckboxes.forEach(checkbox => {
+                                checkbox.checked = benefits.includes(checkbox.value);
+                            });
+                            updateBenefits();
+                        }
+                        
+                        // Navigate to saved step
+                        if (draft.currentStep && draft.currentStep > 1) {
+                            currentStep = draft.currentStep;
+                            showStep(currentStep);
+                        }
+                        
+                        updatePreview();
+                        
+                    } catch (error) {
+                        console.error('Error loading draft:', error);
+                        showToast('Error loading draft. Starting fresh.', 'error');
+                    }
+                }
+            }
+
+            // Toast notification function
+            function showToast(message, type) {
+                const toast = new bootstrap.Toast(document.getElementById('successToast'));
+                const toastBody = document.getElementById('successToastBody');
+                
+                if (type === 'success') {
+                    toastBody.textContent = message;
+                    toast.show();
+                }
+            }
+
             // Navigation functions
             function showStep(step) {
                 // Hide all sections
@@ -571,11 +830,6 @@
             }
             
             // Skills functionality
-            const skillInput = document.getElementById('skillInput');
-            const skillsContainer = document.getElementById('skillsContainer');
-            const previewSkills = document.getElementById('previewSkills');
-            const requiredSkillsInput = document.getElementById('requiredSkills');
-            
             skillInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -642,9 +896,6 @@
             }
             
             // Benefits functionality
-            const benefitCheckboxes = document.querySelectorAll('.benefit-checkbox');
-            const benefitsInput = document.getElementById('benefits');
-            
             benefitCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', updateBenefits);
             });
@@ -728,8 +979,11 @@
                 updatePreviewSkills();
                 updatePreviewBenefits();
             }
+
+            // Setup event listeners for draft functionality
+            document.getElementById('confirmSelection').addEventListener('click', confirmSelection);
             
-            // Save draft functionality for all sections
+            // Enhanced save draft buttons setup
             function setupSaveDraftButtons() {
                 for (let i = 1; i <= 5; i++) {
                     document.getElementById(`saveDraft${i}`).addEventListener('click', function() {
@@ -737,37 +991,8 @@
                     });
                 }
             }
-            
-            function saveDraft() {
-                // Save form data to localStorage
-                const formData = {
-                    jobTitle: document.getElementById('jobTitle').value,
-                    jobType: document.getElementById('jobType').value,
-                    categoryId: document.getElementById('categoryId').value,
-                    department: document.getElementById('department').value,
-                    location: document.getElementById('location').value,
-                    jobDescription: document.getElementById('jobDescription').value,
-                    companyWebsite: document.getElementById('companyWebsite').value,
-                    experienceLevel: document.getElementById('experienceLevel').value,
-                    educationLevel: document.getElementById('educationLevel').value,
-                    salaryMin: document.getElementById('salaryMin').value,
-                    salaryMax: document.getElementById('salaryMax').value,
-                    applicationDeadline: document.getElementById('applicationDeadline').value,
-                    applicationInstructions: document.getElementById('applicationInstructions').value,
-                    requiredSkills: requiredSkillsInput.value,
-                    benefits: benefitsInput.value,
-                    currentStep: currentStep
-                };
-                
-                localStorage.setItem('jobDraft', JSON.stringify(formData));
-                
-                // Show success message
-                const toast = new bootstrap.Toast(document.getElementById('successToast'));
-                document.querySelector('#successToast .toast-body').textContent = 'Draft saved successfully!';
-                toast.show();
-            }
-            
-            // Form validation and submission
+
+            // Enhanced form submission
             document.getElementById('jobPostingForm').addEventListener('submit', function(e) {
                 // Validate required skills
                 const skills = requiredSkillsInput.value.trim();
@@ -830,77 +1055,29 @@
                     return false;
                 }
                 
+                // Clear draft after successful submission
+                localStorage.removeItem('jobDraft');
+                
                 // Show loading overlay
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 
-                // Allow form to submit normally
                 return true;
             });
-            
+
             // Auto-update preview when form changes
             const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
             formElements.forEach(element => {
                 element.addEventListener('input', updatePreview);
                 element.addEventListener('change', updatePreview);
             });
-            
-            // Load draft if exists
-            const savedDraft = localStorage.getItem('jobDraft');
-            if (savedDraft) {
-                try {
-                    const draft = JSON.parse(savedDraft);
-                    
-                    document.getElementById('jobTitle').value = draft.jobTitle || '';
-                    document.getElementById('jobType').value = draft.jobType || '';
-                    document.getElementById('categoryId').value = draft.categoryId || '';
-                    document.getElementById('department').value = draft.department || '';
-                    document.getElementById('location').value = draft.location || '';
-                    document.getElementById('jobDescription').value = draft.jobDescription || '';
-                    document.getElementById('companyWebsite').value = draft.companyWebsite || '';
-                    document.getElementById('experienceLevel').value = draft.experienceLevel || '';
-                    document.getElementById('educationLevel').value = draft.educationLevel || '';
-                    document.getElementById('salaryMin').value = draft.salaryMin || '';
-                    document.getElementById('salaryMax').value = draft.salaryMax || '';
-                    document.getElementById('applicationDeadline').value = draft.applicationDeadline || '';
-                    document.getElementById('applicationInstructions').value = draft.applicationInstructions || '';
-                    
-                    // Load skills
-                    if (draft.requiredSkills) {
-                        draft.requiredSkills.split(',').forEach(skill => {
-                            if (skill.trim()) {
-                                addSkill(skill.trim());
-                            }
-                        });
-                    }
-                    
-                    // Load benefits
-                    if (draft.benefits) {
-                        const benefits = draft.benefits.split(',');
-                        benefitCheckboxes.forEach(checkbox => {
-                            checkbox.checked = benefits.includes(checkbox.value);
-                        });
-                        updateBenefits();
-                    }
-                    
-                    // Navigate to saved step
-                    if (draft.currentStep && draft.currentStep > 1) {
-                        currentStep = draft.currentStep;
-                        showStep(currentStep);
-                    }
-                    
-                    console.log('Draft loaded successfully');
-                } catch (error) {
-                    console.error('Error loading draft:', error);
-                }
-            }
-            
-            // Setup save draft buttons
+
+            // Initialize
+            checkForDraft();
             setupSaveDraftButtons();
-            
-            // Initialize preview
             updatePreview();
             
-            // Make removeSkill function globally available
+            // Make functions globally available
+            window.selectOption = selectOption;
             window.removeSkill = removeSkill;
         });
     </script>

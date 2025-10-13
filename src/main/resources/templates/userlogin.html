@@ -85,6 +85,27 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                                     </div>
                                     
+                                    <div th:if="${param.error == 'please_login_as_user'}" class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <strong>Please login first!</strong> You need to login as a Job Seeker to access this page.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<div th:if="${param.error == 'switch_to_user_first'}" class="alert alert-info alert-dismissible fade show" role="alert">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Role Switch Detected!</strong> Please login as a Job Seeker to continue. Don't copy URLs between different roles.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<div th:if="${param.error == 'role_conflict_blocked'}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-shield-exclamation me-2"></i>
+    <strong>Security Notice!</strong> Multiple role access detected. Please use only one role per browser session.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+                                    
+                                    
+                                    
+                                    
                                     <form th:action="@{/user/login}" method="post" class="user">
                                         <div class="mb-3">
                                             <label for="gmail" class="form-label">

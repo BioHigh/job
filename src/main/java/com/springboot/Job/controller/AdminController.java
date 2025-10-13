@@ -20,6 +20,7 @@ import com.springboot.Job.repository.AdminLoginRepository;
 import com.springboot.Job.repository.CategoryRepository;
 import com.springboot.Job.repository.JobPVByAdmRepository;
 import com.springboot.Job.repository.JobPostRepository;
+import com.springboot.Job.util.SecurityUtil;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -48,6 +49,17 @@ public class AdminController {
     public String dologin(@ModelAttribute("admlogin") LoginBean obj,
                           HttpSession session,
                           RedirectAttributes ra) {
+        
+        // Check for role conflict first
+        if (SecurityUtil.hasRoleConflict(session)) {
+            ra.addFlashAttribute("msg", "Role conflict detected. Please use only one role per browser session.");
+            SecurityUtil.clearAllSessions(session);
+            return "redirect:/admin";
+        }
+        
+        // Clear any existing sessions first
+        SecurityUtil.clearAllSessions(session);
+        
         List<AdminLoginBean> adm = adminRepo.loginAdmin(obj);
 
         if (adm.isEmpty()) {
@@ -57,39 +69,52 @@ public class AdminController {
             AdminLoginBean admin = adm.get(0);
             session.setAttribute("loginadm", admin);
             session.setAttribute("adminName", admin.getName());
+            // Clear any role conflict flag on successful login
+            SecurityUtil.setRoleConflict(session, false);
             return "redirect:/admin/dashboard";
         }
     }
 
     @GetMapping("/admin/dashboard")
-    public String showDashboard(Model model) {
+    public String showDashboard(HttpSession session, Model model) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
         addDashboardStats(model);
         model.addAttribute("activeSection", "dashboard");
-        return "admin/admdashboard";
+        return "admin/admdashboard"; // FIXED: Match actual file name
     }
 
     @GetMapping("/admin/logout")
     public String adminLogout(HttpSession session) {
+        SecurityUtil.clearAllSessions(session);
         session.invalidate();
         return "redirect:/admin";
     }
 
     // =================== CATEGORY MANAGEMENT ====================
     @GetMapping("/admin/category")
-    public String showCategoryPage(Model model) {
+    public String showCategoryPage(HttpSession session, Model model) {
+        // Security handled by interceptor - directly get admin
+        AdminLoginBean admin = SecurityUtil.getCurrentAdmin(session).get();
+        
         if (!model.containsAttribute("category")) {
             model.addAttribute("category", new CategoryBean());
         }
         model.addAttribute("categories", categoryRepo.findAll());
         model.addAttribute("activeSection", "categories");
+        model.addAttribute("admin", admin);
         addDashboardStats(model);
-        return "admin/admdashboard";
+        return "admin/admdashboard"; // FIXED: Match actual file name
     }
 
     @PostMapping("/admin/category/save")
     public String saveCategory(@ModelAttribute("category") CategoryBean category,
                                HttpSession session,
                                RedirectAttributes ra) {
+
+        // Security handled by interceptor - directly get admin
+        AdminLoginBean admin = SecurityUtil.getCurrentAdmin(session).get();
 
         System.out.println("DEBUG: Starting saveCategory method");
         System.out.println("DEBUG: Category ID: " + category.getId());
@@ -111,17 +136,8 @@ public class AdminController {
             return "redirect:/admin/category#category-section";
         }
 
-        AdminLoginBean admin = (AdminLoginBean) session.getAttribute("loginadm");
-        System.out.println("DEBUG: Admin from session: " + admin);
-        
-        if (admin != null) {
-            System.out.println("DEBUG: Admin ID: " + admin.getId());
-            category.setAdminId(admin.getId());
-        } else {
-            System.out.println("DEBUG: No admin found in session! Redirecting to login.");
-            ra.addFlashAttribute("errorMsg", "You must be logged in to manage categories!");
-            return "redirect:/admin";
-        }
+        System.out.println("DEBUG: Admin ID: " + admin.getId());
+        category.setAdminId(admin.getId());
 
         try {
             if (category.getId() == 0) {
@@ -154,7 +170,12 @@ public class AdminController {
     }
 
     @GetMapping("/admin/category/edit/{id}")
-    public String editCategory(@PathVariable("id") int id, RedirectAttributes ra) {
+    public String editCategory(@PathVariable("id") int id, 
+                             HttpSession session,
+                             RedirectAttributes ra) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
         ra.addFlashAttribute("category", categoryRepo.findById(id).orElse(new CategoryBean()));
         ra.addFlashAttribute("categories", categoryRepo.findAll());
         ra.addFlashAttribute("activeSection", "categories");
@@ -162,7 +183,12 @@ public class AdminController {
     }
 
     @GetMapping("/admin/category/delete/{id}")
-    public String deleteCategory(@PathVariable("id") int id, RedirectAttributes ra) {
+    public String deleteCategory(@PathVariable("id") int id, 
+                               HttpSession session,
+                               RedirectAttributes ra) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
         categoryRepo.delete(id);
         
         ra.addFlashAttribute("msg", "Category deleted successfully!");
@@ -174,16 +200,25 @@ public class AdminController {
 
     // =================== JOB LISTINGS MANAGEMENT ====================
     @GetMapping("/admin/joblistings")
-    public String showJobListings(Model model) {
+    public String showJobListings(HttpSession session, Model model) {
+        // Security handled by interceptor - directly get admin
+        AdminLoginBean admin = SecurityUtil.getCurrentAdmin(session).get();
+        
         List<JobPostBean> jobListings = jobPVByAdmRepo.findAll();
         model.addAttribute("jobListings", jobListings);
         model.addAttribute("activeSection", "joblistings");
+        model.addAttribute("admin", admin);
         addDashboardStats(model);
-        return "admin/admdashboard";
+        return "admin/admdashboard"; // FIXED: Match actual file name
     }
 
     @GetMapping("/admin/job/approve/{id}")
-    public String approveJob(@PathVariable("id") Integer id, RedirectAttributes ra) {
+    public String approveJob(@PathVariable("id") Integer id, 
+                           HttpSession session,
+                           RedirectAttributes ra) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
         try {
             boolean updated = jobPVByAdmRepo.updateJobStatus(id, "APPROVED");
             if (updated) {
@@ -198,8 +233,13 @@ public class AdminController {
     }
 
     @GetMapping("/admin/job/reject/{id}")
-    public String rejectJob(@PathVariable("id") Integer id, RedirectAttributes ra) {
-        boolean updated = jobPostRepository.updateJobStatus(id, "REJECTED"); // ✅ correct usage
+    public String rejectJob(@PathVariable("id") Integer id, 
+                          HttpSession session,
+                          RedirectAttributes ra) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
+        boolean updated = jobPostRepository.updateJobStatus(id, "REJECTED");
 
         if (updated) {
             ra.addFlashAttribute("jobMsg", "Job rejected successfully!");
@@ -210,10 +250,13 @@ public class AdminController {
         return "redirect:/admin/joblistings#joblistings-section";
     }
 
-
-
     @GetMapping("/admin/job/delete/{id}")
-    public String deleteJob(@PathVariable("id") Long id, RedirectAttributes ra) {
+    public String deleteJob(@PathVariable("id") Long id, 
+                          HttpSession session,
+                          RedirectAttributes ra) {
+        // Security handled by interceptor - directly get admin
+        SecurityUtil.getCurrentAdmin(session).get();
+        
         try {
             boolean deleted = jobPVByAdmRepo.deleteById(id);
             if (deleted) {

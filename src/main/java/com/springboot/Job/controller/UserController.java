@@ -85,13 +85,26 @@ public class UserController {
         }
     }
 
-    // Add this method to handle the home page
+    //==================12.10.2025 ==========================
     @GetMapping("/home")
-    public String showHome(HttpSession session, Model model) {
+    public String showHome(HttpSession session, Model model, @RequestParam(defaultValue = "1") int page) {
         Integer userId = (Integer) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/user/login";
         }
+        
+        // Add job listings for logged-in users
+        int pageSize = 4;
+        long totalJobs = jobPostService.countAllJobs();
+        List<Map<String, Object>> activeJobs = jobPostService.getActiveJobsWithOwners(page, pageSize);
+        int totalPages = jobPostService.getTotalPages(pageSize);
+        
+        model.addAttribute("totalJobs", totalJobs);
+        model.addAttribute("activeJobs", activeJobs);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("hasNext", page < totalPages);
+        model.addAttribute("hasPrev", page > 1);
         
         Optional<UserBean> user = userService.getUserById(userId);
         if (user.isPresent()) {

@@ -18,85 +18,65 @@
             --light: #f8f9fa;
             --dark: #212529;
         }
-        body {
-            background-color: #f5f7fb;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            height: 100vh;
-            position: fixed;
-            width: 250px;
-            transition: all 0.3s;
-            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            padding-top: 20px;
-        }
-        .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            padding: 12px 20px;
-            margin: 5px 10px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
+        body { background-color: #f5f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); color: white; height: 100vh; position: fixed; width: 250px; transition: all 0.3s; box-shadow: 3px 0 10px rgba(0,0,0,0.1); z-index: 1000; padding-top: 20px; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 12px 20px; margin: 5px 10px; border-radius: 8px; transition: all 0.3s; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255,255,255,0.1); }
         .main-content { margin-left: 250px; padding: 20px; }
-        .navbar-custom { background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 15px 20px; }
         .card-dashboard { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .stat-card { text-align: center; padding: 20px; }
         .stat-card i { font-size: 2.5rem; margin-bottom: 15px; opacity: 0.8; }
         .stat-card .count { font-size: 2rem; font-weight: 700; margin: 10px 0; }
         .stat-card .label { font-size: 0.9rem; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; }
-        .bg-primary-light { background-color: rgba(67,97,238,0.1); color: var(--primary); }
-        .bg-success-light { background-color: rgba(76,201,240,0.1); color: var(--success); }
-        .bg-warning-light { background-color: rgba(247,37,133,0.1); color: var(--warning); }
-        .bg-info-light { background-color: rgba(72,149,239,0.1); color: var(--info); }
-        .bg-purple-light { background-color: rgba(157,78,221,0.1); color: #9d4edd; }
         .welcome-banner { background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); color: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+        .section-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
         
-        /* Section styling */
-        .section-container {
-            background: white;
+        /* Enhanced Stats Cards */
+        .stats-card {
+            border: none;
             border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .stats-card .card-body {
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+        }
+        .stats-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        .stats-card .count {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+        .stats-card .label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
         }
         
-        /* Status badges */
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        /* Card-specific gradients */
+        .card-job-seekers {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .status-pending {
-            background-color: #fff3cd;
-            color: #856404;
+        .card-employers {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        .status-approved {
-            background-color: #d1edff;
-            color: #0c5460;
+        .card-active-jobs {
+            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
         }
-        
-        /* Job card styling */
-        .job-card {
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
-        }
-        .job-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        
-        /* Table scroll */
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto;
+        .card-applications {
+            background: linear-gradient(135deg, #f46b45 0%, #eea849 100%);
         }
     </style>
 </head>
@@ -106,8 +86,6 @@
         <div class="text-center mb-4">
             <h4><span class="d-none d-md-inline">JobJump Admin</span></h4>
         </div>
-
-        <!-- Navigation Menu -->
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link" th:classappend="${activeSection == 'dashboard'} ? 'active'" th:href="@{/admin/dashboard}">
@@ -127,381 +105,125 @@
             <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-building"></i> <span>Employers</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-file-alt"></i> <span>Applications</span></a></li>
         </ul>
-
-        <!-- Logout Button -->
         <div class="text-center mt-4">
-            <a th:href="@{/admin/logout}" class="btn btn-light w-75">
-                <i class="fas fa-sign-out-alt me-1"></i> Logout
-            </a>
+            <a th:href="@{/admin/logout}" class="btn btn-light w-75"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Welcome Banner - Always Visible -->
+        <!-- Welcome Banner -->
         <div class="welcome-banner">
-            <h3>
-                Welcome back, <span th:text="${session.adminName != null ? session.adminName : 'Admin'}"></span>!
-            </h3>
             <p class="mb-0">Here's today's overview of the JobJump.</p>
         </div>
 
-        <!-- Stats Cards - Always Visible -->
-        <div class="row mb-4">
+        <!-- Enhanced Stats Cards -->
+        <div class="row g-4 mb-4">
+            <!-- Active Job Seekers -->
             <div class="col-md-3">
-                <div class="card card-dashboard">
-                    <div class="card-body stat-card bg-primary-light">
+                <div class="card stats-card shadow-sm border-0 card-job-seekers">
+                    <div class="card-body">
                         <i class="fas fa-users"></i>
-                        <div class="count" th:text="${jobSeekerCount}">0</div>
-                        <div class="label">Active Job Seekers</div>
+                        <h3 class="count my-2" th:text="${jobSeekerCount}">0</h3>
+                        <small class="label text-uppercase fw-bold">Active Job Seekers</small>
                     </div>
                 </div>
             </div>
+
+            <!-- Verified Employers -->
             <div class="col-md-3">
-                <div class="card card-dashboard">
-                    <div class="card-body stat-card bg-success-light">
+                <div class="card stats-card shadow-sm border-0 card-employers">
+                    <div class="card-body">
                         <i class="fas fa-building"></i>
-                        <div class="count" th:text="${employerCount}">0</div>
-                        <div class="label">Verified Employers</div>
+                        <h3 class="count my-2" th:text="${employerCount}">0</h3>
+                        <small class="label text-uppercase fw-bold">Verified Employers</small>
                     </div>
                 </div>
             </div>
+
+            <!-- Active Jobs -->
             <div class="col-md-3">
-                <div class="card card-dashboard">
-                    <div class="card-body stat-card bg-warning-light">
+                <div class="card stats-card shadow-sm border-0 card-active-jobs">
+                    <div class="card-body">
                         <i class="fas fa-briefcase"></i>
-                        <div class="count" th:text="${activeJobCount}">0</div>
-                        <div class="label">Active Jobs</div>
+                        <h3 class="count my-2" th:text="${activeJobCount}">0</h3>
+                        <small class="label text-uppercase fw-bold">Active Jobs</small>
                     </div>
                 </div>
             </div>
+
+            <!-- Applications -->
             <div class="col-md-3">
-                <div class="card card-dashboard">
-                    <div class="card-body stat-card bg-info-light">
+                <div class="card stats-card shadow-sm border-0 card-applications">
+                    <div class="card-body">
                         <i class="fas fa-file-alt"></i>
-                        <div class="count" th:text="${applicationCount}">0</div>
-                        <div class="label">Applications</div>
+                        <h3 class="count my-2" th:text="${applicationCount}">0</h3>
+                        <small class="label text-uppercase fw-bold">Applications</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Categories Section -->
-        <div th:if="${activeSection == 'categories'}" class="section-container" id="category-section">
-            <h3><i class="fas fa-tags me-2"></i>Manage Categories</h3>
-
-            <!-- Success message -->
-            <div th:if="${msg}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                <span th:text="${msg}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            
-            <!-- Error message for duplicate category -->
-            <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <span th:text="${errorMsg}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <!-- Form -->
-            <form th:action="@{/admin/category/save}" method="post" class="mb-4">
-                <input type="hidden" name="id" th:value="${category != null ? category.id : 0}">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-6">
-                        <label class="form-label">Category Name</label>
-                        <input type="text" class="form-control"
-                               name="catName" th:value="${category != null ? category.catName : ''}"
-                               placeholder="Enter Category Name" required>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-save me-1"></i> Save Category
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Categories Table -->
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th style="width: 80px; text-align: center;">No.</th>
-                            <th>Category Name</th>
-                            <th style="width: 250px; text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="cat, stat : ${categories}">
-                            <td th:text="${stat.count}" style="text-align: center;"></td>
-                            <td th:text="${cat.catName}"></td>
-                            <td>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a th:href="@{'/admin/category/edit/' + ${cat.id}}" 
-                                       class="btn btn-sm btn-warning px-3">
-                                        <i class="fas fa-edit me-1"></i> Edit
-                                    </a>
-                                    <a th:href="@{'/admin/category/delete/' + ${cat.id}}" 
-                                       class="btn btn-sm btn-danger px-3"
-                                       onclick="return confirm('Are you sure you want to delete this category?')">
-                                        <i class="fas fa-trash me-1"></i> Delete
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Dynamic Section -->
+        <div id="dynamic-section">
+            <div th:if="${activeSection == 'categories'}" th:replace="fragments/categories-section :: categories-section"></div>
+            <div th:if="${activeSection == 'joblistings'}" th:replace="fragments/joblistings-section :: joblistings-section"></div>
+            <!-- nothing shows by default -->
         </div>
 
-        <!-- Job Listings Section -->
-        <div th:if="${activeSection == 'joblistings'}" class="section-container" id="joblistings-section">
-            <h3><i class="fas fa-briefcase me-2"></i>Manage Job Listings</h3>
-
-            <!-- Success/Error Messages -->
-            <div th:if="${jobMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                <span th:text="${jobMsg}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            
-            <div th:if="${jobErrorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <span th:text="${jobErrorMsg}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-
-            <!-- Job Listings Table -->
-            <div class="table-responsive table-container">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
-                        <tr>
-                            <th style="width: 60px; text-align: center;">#</th>
-                            <th style="min-width: 200px;">Job Title</th>
-                            <th style="min-width: 150px;">Company</th>
-                            <th style="width: 120px;">Job Type</th>
-                            <th style="width: 120px;">Location</th>
-                            <th style="width: 120px;">Salary Range</th>
-                            <th style="width: 120px;">Status</th>
-                            <th style="width: 120px;">Deadline</th>
-                            <th style="width: 200px; text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="job, stat : ${jobListings}" class="job-card">
-                            <td th:text="${stat.count}" style="text-align: center;"></td>
-                            <td>
-                                <strong th:text="${job.jobTitle}"></strong>
-                                <div th:if="${job.department}" class="text-muted small" th:text="${job.department}"></div>
-                            </td>
-                            <td th:text="${job.companyName}"></td>
-                            <td>
-                                <span class="badge bg-info" th:text="${job.jobType}"></span>
-                            </td>
-                            <td th:text="${job.location}"></td>
-                            <td>
-                                <span th:if="${job.salaryMini != null && job.salaryMax != null}" 
-                                      th:text="'$' + ${job.salaryMini} + ' - $' + ${job.salaryMax}"></span>
-                                <span th:if="${job.salaryMini == null || job.salaryMax == null}" 
-                                      class="text-muted">Not specified</span>
-                            </td>
-                            <td>
-                                <span th:if="${job.status == 'PENDING'}" 
-                                      class="status-badge status-pending">PENDING</span>
-                                <span th:if="${job.status == 'APPROVED'}" 
-                                      class="status-badge status-approved">APPROVED</span>
-                            </td>
-                            <td>
-<span th:text="${#temporals.format(job.applicationDeadline, 'MMM dd, yyyy')}"></span>
-                            </td>
-                          <td>
-    <div class="row g-2 justify-content-center">
-        <!-- View Button -->
-        <div class="col-6 d-flex justify-content-center">
-            <button class="btn btn-info btn-sm" style="width: 140px;"
-                data-bs-toggle="modal"
-                data-bs-target="#jobDetailsModal"
-                th:data-title="${job.jobTitle}"
-                th:data-company="${job.companyName}"
-                th:data-jobtype="${job.jobType}"
-                th:data-location="${job.location}"
-                th:data-department="${job.department}"
-                th:data-experience="${job.experienceLevel}"
-                th:data-education="${job.educationLevel}"
-                th:data-salarymin="${job.salaryMini != null ? job.salaryMini : 'N/A'}"
-                th:data-salarymax="${job.salaryMax != null ? job.salaryMax : 'N/A'}"
-                th:data-description="${job.jobDescription}"
-                th:data-skills="${job.requiredSkills}"
-                th:data-benefits="${job.benefits}"
-                th:data-deadline="${#temporals.format(job.applicationDeadline, 'MMM dd, yyyy')}"
-                th:data-status="${job.status}"
-                onclick="openJobModal(this)">
-                <i class="fas fa-eye me-1"></i> View
-            </button>
-        </div>
-<div class="col-6 d-flex justify-content-center">
-            <a th:href="@{'/admin/job/delete/' + ${job.id}}"
-               class="btn btn-outline-danger btn-sm" style="width: 140px;"
-               onclick="return confirm('Are you sure you want to delete this job posting?')">
-                <i class="fas fa-trash me-1"></i> Delete
-            </a>
-        </div>
-        <!-- Approve Button -->
-        <div class="col-6 d-flex justify-content-center" th:if="${job.status == 'PENDING'}">
-            <a th:href="@{'/admin/job/approve/' + ${job.id}}"
-               class="btn btn-success btn-sm" style="width: 140px;"
-               onclick="return confirm('Approve this job posting?')">
-                <i class="fas fa-check me-1"></i> Approve
-            </a>
-        </div>
-
-        <!-- Reject Button -->
-        <div class="col-6 d-flex justify-content-center" th:if="${job.status == 'PENDING'}">
-            <a th:href="@{'/admin/job/reject/' + ${job.id}}"
-               class="btn btn-danger btn-sm" style="width: 140px;"
-               onclick="return confirm('Reject this job posting?')">
-                <i class="fas fa-times me-1"></i> Reject
-            </a>
-        </div>
-
-        <!-- Delete Button -->
-        
-    </div>
-</td>
-
-
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Job Details Modal -->
-            <div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="jobDetailsModalLabel">Job Details</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="jobDetailsContent">
-                            <!-- Dynamic content will be inserted here -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Auto-scroll to section if hash exists
-        document.addEventListener("DOMContentLoaded", function () {
-            if (window.location.hash) {
-                const section = document.querySelector(window.location.hash);
-                if (section) {
-                    section.scrollIntoView({ behavior: "smooth" });
-                }
-            }
-        });
-
-        // Show job details in modal
+        // Job Details Modal Function
         function showJobDetails(jobTitle, companyName, jobType, location, department, experienceLevel, educationLevel, salaryMini, salaryMax, jobDescription, requiredSkills, benefits, deadline, status) {
             const modalContent = document.getElementById('jobDetailsContent');
             
-            const content = `
+            let statusClass = 'status-pending';
+            if (status === 'APPROVED') statusClass = 'status-approved';
+            else if (status === 'REJECTED') statusClass = 'status-rejected';
+            
+            modalContent.innerHTML = `
                 <div class="row">
                     <div class="col-md-8">
                         <h4>${jobTitle}</h4>
                         <h5 class="text-muted">${companyName}</h5>
                     </div>
                     <div class="col-md-4 text-end">
-                        <span class="status-badge ${status === 'PENDING' ? 'status-pending' : 'status-approved'}">
-                            ${status}
-                        </span>
+                        <span class="status-badge ${statusClass}">${status}</span>
                     </div>
                 </div>
-                
                 <hr>
-                
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-briefcase me-2"></i>Job Type:</strong> ${jobType}
-                    </div>
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-map-marker-alt me-2"></i>Location:</strong> ${location}
-                    </div>
+                    <div class="col-md-6"><strong><i class="fas fa-briefcase me-2"></i>Job Type:</strong> ${jobType}</div>
+                    <div class="col-md-6"><strong><i class="fas fa-map-marker-alt me-2"></i>Location:</strong> ${location}</div>
                 </div>
-                
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-building me-2"></i>Department:</strong> ${department || 'Not specified'}
-                    </div>
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-graduation-cap me-2"></i>Education:</strong> ${educationLevel || 'Not specified'}
-                    </div>
+                    <div class="col-md-6"><strong><i class="fas fa-building me-2"></i>Department:</strong> ${department || 'Not specified'}</div>
+                    <div class="col-md-6"><strong><i class="fas fa-graduation-cap me-2"></i>Education:</strong> ${educationLevel || 'Not specified'}</div>
                 </div>
-                
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-chart-line me-2"></i>Experience:</strong> ${experienceLevel || 'Not specified'}
-                    </div>
-                    <div class="col-md-6">
-                        <strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong> $${salaryMini} - $${salaryMax}
-                    </div>
+                    <div class="col-md-6"><strong><i class="fas fa-chart-line me-2"></i>Experience:</strong> ${experienceLevel || 'Not specified'}</div>
+                    <div class="col-md-6"><strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong> ${salaryMini !== 'N/A' && salaryMax !== 'N/A' ? '$' + salaryMini + ' - $' + salaryMax : 'Not specified'}</div>
                 </div>
-                
-                <div class="row mb-3">
-                    <div class="col-12">
-                        <strong><i class="fas fa-calendar-times me-2"></i>Application Deadline:</strong> ${deadline}
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <strong><i class="fas fa-file-alt me-2"></i>Job Description:</strong>
-                    <p class="mt-2">${jobDescription || 'No description provided.'}</p>
-                </div>
-                
-                <div class="mb-3">
-                    <strong><i class="fas fa-tools me-2"></i>Required Skills:</strong>
-                    <p class="mt-2">${requiredSkills || 'No specific skills required.'}</p>
-                </div>
-                
-                <div class="mb-3">
-                    <strong><i class="fas fa-gift me-2"></i>Benefits:</strong>
-                    <p class="mt-2">${benefits || 'No benefits specified.'}</p>
-                </div>
+                <div class="row mb-3"><div class="col-12"><strong><i class="fas fa-calendar-times me-2"></i>Application Deadline:</strong> ${deadline}</div></div>
+                <div class="mb-3"><strong><i class="fas fa-file-alt me-2"></i>Job Description:</strong><p class="mt-2">${jobDescription || 'No description provided.'}</p></div>
+                <div class="mb-3"><strong><i class="fas fa-tools me-2"></i>Required Skills:</strong><p class="mt-2">${requiredSkills || 'No specific skills required.'}</p></div>
+                <div class="mb-3"><strong><i class="fas fa-gift me-2"></i>Benefits:</strong><p class="mt-2">${benefits || 'No benefits specified.'}</p></div>
             `;
-            
-            modalContent.innerHTML = content;
         }
-    
-function openJobModal(button) {
-    const data = button.dataset;
 
-    showJobDetails(
-        data.title,
-        data.company,
-        data.jobtype,
-        data.location,
-        data.department,
-        data.experience,
-        data.education,
-        data.salarymin,
-        data.salarymax,
-        data.description,
-        data.skills,
-        data.benefits,
-        data.deadline,
-        data.status
-    );
-}
-</script>
-    
+        function openJobModal(button) {
+            const data = button.dataset;
+            showJobDetails(
+                data.title, data.company, data.jobtype, data.location,
+                data.department, data.experience, data.education,
+                data.salarymin, data.salarymax, data.description,
+                data.skills, data.benefits, data.deadline, data.status
+            );
+        }
+    </script>
 </body>
 </html>

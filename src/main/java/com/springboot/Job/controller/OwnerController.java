@@ -21,6 +21,7 @@ import com.springboot.Job.model.Owner;
 import com.springboot.Job.repository.CategoryRepository;
 import com.springboot.Job.service.JobPostService;
 import com.springboot.Job.service.OwnerService;
+import com.springboot.Job.util.SecurityUtil;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -47,11 +48,24 @@ public class OwnerController {
                            @RequestParam String password,
                            HttpSession session,
                            RedirectAttributes redirectAttributes) {
+        
+        // Check for role conflict first
+        if (SecurityUtil.hasRoleConflict(session)) {
+            redirectAttributes.addFlashAttribute("error", "Role conflict detected. Please use only one role per browser session.");
+            SecurityUtil.clearAllSessions(session);
+            return "redirect:/owner/login";
+        }
+        
+        // Clear any existing sessions first
+        SecurityUtil.clearAllSessions(session);
+        
         Optional<Owner> owner = ownerService.authenticateOwner(gmail, password);
         
         if (owner.isPresent()) {
             session.setAttribute("owner", owner.get());
             session.setAttribute("ownerId", owner.get().getId());
+            // Clear any role conflict flag on successful login
+            SecurityUtil.setRoleConflict(session, false);
             return "redirect:/owner/dashboard";
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password");
@@ -61,12 +75,10 @@ public class OwnerController {
 
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
-
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
+        
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
             // Get profile photo separately
@@ -81,28 +93,92 @@ public class OwnerController {
         }
     }
 
-    @GetMapping("/profile")
-    public String showProfile(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
+    
+ // -------------------- ARCHIVE JOB --------------------
+    @PostMapping("/job/archive/{id}")
+    public String archiveJob(@PathVariable("id") Integer jobId,
+                             @RequestParam(required = false) String reason,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
+
+        Optional<JobPostBean> existingJob = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
+        if (existingJob.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Job not found or you don't have permission to archive it.");
+            return "redirect:/owner/jobs";
         }
 
+        boolean isArchived = jobPostService.archiveJobByOwner(jobId, ownerId, reason);
+        if (isArchived) {
+            redirectAttributes.addFlashAttribute("success", "Job archived successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to archive job. Please try again.");
+        }
+        return "redirect:/owner/jobs"; // Redirect to main jobs page
+    }
+
+    // -------------------- RESTORE JOB --------------------
+    @PostMapping("/job/restore/{id}")
+    public String restoreJob(@PathVariable("id") Integer jobId,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
+
+        Optional<JobPostBean> existingJob = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
+        if (existingJob.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Job not found or you don't have permission to restore it.");
+            return "redirect:/owner/jobs"; // Redirect to main jobs page
+        }
+
+        boolean isRestored = jobPostService.restoreJobByOwner(jobId, ownerId);
+        if (isRestored) {
+            redirectAttributes.addFlashAttribute("success", "Job restored successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Failed to restore job. Please try again.");
+        }
+        return "redirect:/owner/jobs"; // Redirect to main jobs page
+    }
+    // -------------------- VIEW ARCHIVED JOBS --------------------
+    @GetMapping("/jobs/archived")
+    public String viewArchivedJobs(HttpSession session, Model model) {
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
+
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
+        if (owner.isPresent()) {
+            List<JobPostBean> archivedJobs = jobPostService.findArchivedJobsByOwner(ownerId);
+            model.addAttribute("jobs", archivedJobs);
+            model.addAttribute("owner", owner.get());
+
+            byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
+            if (profilePhoto != null) {
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                model.addAttribute("profilePhoto", base64Photo);
+            }
+
+            return "owner/archivedjobs";
+        } else {
+            return "redirect:/owner/login";
+        }
+    }
+    
+    @GetMapping("/profile")
+    public String showProfile(HttpSession session, Model model) {
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
+        Optional<Owner> owner = ownerService.getOwnerById(ownerId);
+        
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
             
             List<JobPostBean> recentJobs = jobPostService.findRecentJobsByOwner(ownerId, 5);
             model.addAttribute("recentJobs", recentJobs);
             
-            // Calculate statistics - ADD THIS PART
+            // Calculate statistics
             long activeJobsCount = jobPostService.countActiveJobsByOwner(ownerId);
-            long totalApplications = jobPostService.countTotalApplicationsByOwner(ownerId);
-            long totalInterviews = jobPostService.countTotalInterviewsByOwner(ownerId);
+           
             
             model.addAttribute("activeJobsCount", activeJobsCount);
-            model.addAttribute("totalApplications", totalApplications);
-            model.addAttribute("totalInterviews", totalInterviews);
+            
             
             // Get profile photo separately
             byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
@@ -116,15 +192,12 @@ public class OwnerController {
         }
     }
 
-
     @GetMapping("/profile/edit")
     public String showEditProfile(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
-
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
+        
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
             // Get profile photo for display
@@ -147,10 +220,8 @@ public class OwnerController {
                                @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         Owner owner = new Owner();
         owner.setId(ownerId);
@@ -236,10 +307,8 @@ public class OwnerController {
 
     @GetMapping("/job/post")
     public String showJobPostingPage(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
         
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         if (owner.isPresent()) {
@@ -260,6 +329,7 @@ public class OwnerController {
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
+        SecurityUtil.clearAllSessions(session);
         session.invalidate();
         return "redirect:/owner/login";
     }
@@ -285,13 +355,9 @@ public class OwnerController {
         
         System.out.println("=== JOB POSTING STARTED ===");
         
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
         System.out.println("Owner ID from session: " + ownerId);
-        
-        if (ownerId == null) {
-            System.out.println("No owner ID in session - redirecting to login");
-            return "redirect:/owner/login";
-        }
 
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         if (!owner.isPresent()) {
@@ -348,16 +414,20 @@ public class OwnerController {
     
     @GetMapping("/jobs")
     public String viewAllJobs(HttpSession session, Model model) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         if (owner.isPresent()) {
-            // Get all jobs by this owner
-            List<JobPostBean> jobs = jobPostService.findAllJobsByOwner(ownerId);
-            model.addAttribute("jobs", jobs);
+            // Get active and archived jobs separately
+            List<JobPostBean> activeJobs = jobPostService.findActiveJobsByOwner(ownerId);
+            List<JobPostBean> archivedJobs = jobPostService.findArchivedJobsByOwner(ownerId);
+            
+            // Add both lists to the model with the correct attribute names
+            model.addAttribute("activeJobs", activeJobs);
+            model.addAttribute("archivedJobs", archivedJobs);
+            model.addAttribute("activeJobCount", activeJobs.size());
+            model.addAttribute("archivedJobCount", archivedJobs.size());
             model.addAttribute("owner", owner.get());
             
             // Get profile photo
@@ -378,10 +448,8 @@ public class OwnerController {
                                 HttpSession session,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         // Verify that the job belongs to this owner
         Optional<JobPostBean> jobPost = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
@@ -427,10 +495,8 @@ public class OwnerController {
                            HttpSession session,
                            RedirectAttributes redirectAttributes) {
         
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         Optional<JobPostBean> existingJob = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
         if (existingJob.isEmpty()) {
@@ -486,10 +552,8 @@ public class OwnerController {
     public String deleteJob(@PathVariable("id") Integer jobId,
                            HttpSession session,
                            RedirectAttributes redirectAttributes) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         // Verify ownership before delete
         Optional<JobPostBean> existingJob = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
@@ -514,10 +578,8 @@ public class OwnerController {
                          HttpSession session,
                          Model model,
                          RedirectAttributes redirectAttributes) {
-        Integer ownerId = (Integer) session.getAttribute("ownerId");
-        if (ownerId == null) {
-            return "redirect:/owner/login";
-        }
+        // Security handled by interceptor - directly get owner
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         Optional<JobPostBean> jobPost = jobPostService.findJobByIdAndOwnerId(jobId, ownerId);
         if (jobPost.isPresent()) {

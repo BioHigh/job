@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="joblistings-section">
+    <!-- Job Listings Section -->
+    <div class="section-container" id="joblistings-section" th:if="${activeSection == 'joblistings'}">
+        <h3><i class="fas fa-briefcase me-2"></i>Manage Job Listings</h3>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${jobMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${jobMsg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${jobErrorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${jobErrorMsg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Job Listings Table -->
+        <div class="table-responsive table-container">
+            <table class="table table-bordered table-hover" style="height: 500px; display: block; overflow-y: auto;">
+                <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                    <tr>
+                        <th style="width: 60px; text-align: center;">No.</th>
+                        <th style="min-width: 200px;">Job Title</th>
+                        <th style="min-width: 100px;">Company</th>
+                        <th style="width: 120px;">Job Type</th>
+                        <th style="width: 120px;">Location</th>
+                        <th style="width: 120px;">Salary</th>
+                        <th style="width: 120px;">Status</th>
+                        <th style="width: 120px;">Deadline</th>
+                        <th style="width: 150px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="job, stat : ${jobListings}" class="job-card">
+                        <td th:text="${jobListings.size() - stat.index}" style="text-align: center;"></td>
+                        <td>
+                            <strong th:text="${job.jobTitle}"></strong>
+                            <div th:if="${job.department}" class="text-muted small" th:text="${job.department}"></div>
+                        </td>
+                        <td style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" th:text="${job.companyName}"></td>
+                        <td>
+                            <span class="badge bg-info" th:text="${job.jobType}"></span>
+                        </td>
+                        <td th:text="${job.location}"></td>
+                        <td>
+                            <span th:if="${job.salaryMini != null && job.salaryMax != null}" 
+                                  th:text="'$' + ${job.salaryMini} + ' - $' + ${job.salaryMax}"></span>
+                            <span th:if="${job.salaryMini == null || job.salaryMax == null}" 
+                                  class="text-muted">Not specified</span>
+                        </td>
+                        <td>
+                            <span th:if="${job.status == 'PENDING'}" 
+                                  class="status-badge status-pending">PENDING</span>
+                            <span th:if="${job.status == 'APPROVED'}" 
+                                  class="status-badge status-approved">APPROVED</span>
+                            <span th:if="${job.status == 'REJECTED'}" 
+                                  class="status-badge status-rejected">REJECTED</span>
+                        </td>
+                        <td>
+                            <span th:text="${#temporals.format(job.applicationDeadline, 'MMM dd, yyyy')}"></span>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-nowrap gap-1 justify-content-center">
+                                <!-- View Button -->
+                                <button class="btn btn-outline-info btn-sm px-2"
+                                        style="min-width: 70px;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#jobDetailsModal"
+                                        th:data-title="${job.jobTitle}"
+                                        th:data-company="${job.companyName}"
+                                        th:data-jobtype="${job.jobType}"
+                                        th:data-location="${job.location}"
+                                        th:data-department="${job.department}"
+                                        th:data-experience="${job.experienceLevel}"
+                                        th:data-education="${job.educationLevel}"
+                                        th:data-salarymin="${job.salaryMini != null ? job.salaryMini : 'N/A'}"
+                                        th:data-salarymax="${job.salaryMax != null ? job.salaryMax : 'N/A'}"
+                                        th:data-description="${job.jobDescription}"
+                                        th:data-skills="${job.requiredSkills}"
+                                        th:data-benefits="${job.benefits}"
+                                        th:data-deadline="${#temporals.format(job.applicationDeadline, 'MMM dd, yyyy')}"
+                                        th:data-status="${job.status}"
+                                        onclick="openJobModal(this)">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </button>
+
+                                <!-- Approve Button -->
+                                <a th:if="${job.status == 'PENDING'}"
+                                   th:href="@{'/admin/job/approve/' + ${job.id}}"
+                                   class="btn btn-outline-success btn-sm px-2"
+                                   style="min-width: 70px;"
+                                   onclick="return confirm('Approve this job posting?')">
+                                    <i class="fas fa-check me-1"></i>
+                                </a>
+
+                                <!-- Reject Button -->
+                                <a th:if="${job.status == 'PENDING'}"
+                                   th:href="@{'/admin/job/reject/' + ${job.id}}"
+                                   class="btn btn-outline-danger btn-sm px-2"
+                                   style="min-width: 70px;"
+                                   onclick="return confirm('Reject this job posting?')">
+                                    <i class="fas fa-times me-1"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Job Details Modal -->
+        <div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="jobDetailsModalLabel">Job Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="jobDetailsContent">
+                        <!-- Dynamic content will be inserted here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

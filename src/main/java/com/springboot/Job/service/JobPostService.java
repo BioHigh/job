@@ -1,5 +1,7 @@
 package com.springboot.Job.service;
 
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,24 +58,96 @@ public class JobPostService {
         return jobPostRepository.findByOwnerId(companyId);
     }
     
-  //8.10.2025
+    //8.10.2025
     public Optional<JobPostBean> findJobById(Integer jobId) {
         return jobPostRepository.findJobById(jobId);
     }
     
-  //10.10.2025
+    //10.10.2025
     public long countAllJobs() {
         return jobPostRepository.countAllJobs();
     }
   
-  //11.10.2025
-    public List<Map<String, Object>> getActiveJobsWithOwners(int page, int size) {
-        int offset = (page - 1) * size;
-        return jobPostRepository.findActiveJobsWithOwners(size, offset);
+    public List<Map<String, Object>> getActiveJobsWithOwners(int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        List<Map<String, Object>> jobs = jobPostRepository.findActiveJobsWithOwners(pageSize, offset);
+        
+        for (Map<String, Object> job : jobs) {
+            byte[] profilePhoto = (byte[]) job.get("profilePhoto");
+            if (profilePhoto != null && profilePhoto.length > 0) {
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                job.put("profilePhoto", base64Photo);
+            }
+        }
+        
+        return jobs;
     }
 
     public int getTotalPages(int pageSize) {
         long totalJobs = countAllJobs();
         return (int) Math.ceil((double) totalJobs / pageSize);
+    }
+
+    // ============ ARCHIVE & RESTORE METHODS ============
+
+    public boolean archiveJob(Integer jobId, String archivedBy, String archiveReason) {
+        return jobPostRepository.archiveJob(jobId, archivedBy, archiveReason);
+    }
+
+    public boolean archiveJobByOwner(Integer jobId, Integer ownerId, String archiveReason) {
+        Optional<JobPostBean> jobOpt = jobPostRepository.findByIdAndOwnerId(jobId, ownerId);
+        if (jobOpt.isPresent()) {
+            return jobPostRepository.archiveJob(jobId, "OWNER", archiveReason);
+        }
+        return false;
+    }
+
+    // ADD THIS MISSING METHOD
+    public boolean restoreJob(Integer jobId) {
+        return jobPostRepository.restoreJob(jobId);
+    }
+
+    public boolean restoreJobByOwner(Integer jobId, Integer ownerId) {
+        Optional<JobPostBean> jobOpt = jobPostRepository.findByIdAndOwnerId(jobId, ownerId);
+        if (jobOpt.isPresent() && jobOpt.get().getIsArchived()) {
+            return jobPostRepository.restoreJob(jobId);
+        }
+        return false;
+    }
+
+    public boolean deleteJobPermanently(Integer jobId) {
+        Optional<JobPostBean> jobOpt = jobPostRepository.findJobById(jobId);
+        if (jobOpt.isPresent() && jobOpt.get().getIsArchived()) {
+            return jobPostRepository.deleteJobPost(jobId);
+        }
+        return false;
+    }
+
+    public boolean deleteJobPermanentlyByOwner(Integer jobId, Integer ownerId) {
+        Optional<JobPostBean> jobOpt = jobPostRepository.findByIdAndOwnerId(jobId, ownerId);
+        if (jobOpt.isPresent() && jobOpt.get().getIsArchived()) {
+            return jobPostRepository.deleteJobPost(jobId, ownerId);
+        }
+        return false;
+    }
+
+    public List<JobPostBean> findActiveJobsByOwner(Integer ownerId) {
+        return jobPostRepository.findActiveJobsByOwner(ownerId);
+    }
+
+    public List<JobPostBean> findArchivedJobsByOwner(Integer ownerId) {
+        return jobPostRepository.findArchivedJobsByOwner(ownerId);
+    }
+
+    public long countArchivedJobsByOwner(Integer ownerId) {
+        return jobPostRepository.countArchivedJobsByOwner(ownerId);
+    }
+
+    public List<JobPostBean> findAllArchivedJobs() {
+        return jobPostRepository.findAllArchivedJobs();
+    }
+
+    public long countAllArchivedJobs() {
+        return jobPostRepository.countAllArchivedJobs();
     }
 }
