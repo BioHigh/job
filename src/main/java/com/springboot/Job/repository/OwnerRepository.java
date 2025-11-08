@@ -30,8 +30,10 @@ public class OwnerRepository {
             owner.setCompanyPhone(rs.getString("company_phone"));
             owner.setDescription(rs.getString("description"));
             owner.setAddress(rs.getString("address"));
+            owner.setTownship(rs.getString("township"));
             owner.setStatus(rs.getString("status"));
             owner.setType(rs.getString("type"));
+            owner.setAuthKey(rs.getString("auth_key"));
             
             // Handle profile_photo
             byte[] profilePhoto = rs.getBytes("profile_photo");
@@ -88,12 +90,13 @@ public class OwnerRepository {
     }
 
     public boolean updateOwner(Owner owner, byte[] profilePhoto) {
-        String sql = "UPDATE owner SET company_name = ?, company_phone = ?, description = ?, address = ?, profile_photo = ? WHERE id = ?";
+        String sql = "UPDATE owner SET company_name = ?, company_phone = ?, description = ?, address = ?, township = ?, profile_photo = ? WHERE id = ?";
         int result = jdbcTemplate.update(sql, 
             owner.getCompanyName(),
             owner.getCompanyPhone(),
             owner.getDescription(),
             owner.getAddress(),
+            owner.getTownship(), // township
             profilePhoto,
             owner.getId()
         );
@@ -101,19 +104,20 @@ public class OwnerRepository {
     }
 
     public boolean updateOwnerWithoutPhoto(Owner owner) {
-        String sql = "UPDATE owner SET company_name = ?, company_phone = ?, description = ?, address = ? WHERE id = ?";
+        String sql = "UPDATE owner SET company_name = ?, company_phone = ?, description = ?, address = ?, township = ? WHERE id = ?";
         int result = jdbcTemplate.update(sql, 
             owner.getCompanyName(),
             owner.getCompanyPhone(),
             owner.getDescription(),
             owner.getAddress(),
+            owner.getTownship(), // township
             owner.getId()
         );
         return result > 0;
     }
 
     public boolean createOwner(Owner owner, byte[] profilePhoto) {
-        String sql = "INSERT INTO owner (company_name, password, gmail, company_phone, description, address, profile_photo, status, type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 'COMPANY', CURRENT_TIMESTAMP)";
+        String sql = "INSERT INTO owner (company_name, password, gmail, company_phone, description, address, township, profile_photo, status, type, auth_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 'COMPANY', ?, CURRENT_TIMESTAMP)";
         int result = jdbcTemplate.update(sql,
             owner.getCompanyName(),
             owner.getPassword(),
@@ -121,20 +125,24 @@ public class OwnerRepository {
             owner.getCompanyPhone(),
             owner.getDescription(),
             owner.getAddress(),
-            profilePhoto
+            owner.getTownship(),
+            profilePhoto,
+            owner.getAuthKey()
         );
         return result > 0;
     }
 
     public boolean createOwnerWithoutPhoto(Owner owner) {
-        String sql = "INSERT INTO owner (company_name, password, gmail, company_phone, description, address, status, type, created_at) VALUES (?, ?, ?, ?, ?, ?, 'active', 'COMPANY', CURRENT_TIMESTAMP)";
+        String sql = "INSERT INTO owner (company_name, password, gmail, company_phone, description, address, township, status, type, auth_key, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 'COMPANY', ?, CURRENT_TIMESTAMP)";
         int result = jdbcTemplate.update(sql,
             owner.getCompanyName(),
             owner.getPassword(),
             owner.getGmail(),
             owner.getCompanyPhone(),
             owner.getDescription(),
-            owner.getAddress()
+            owner.getAddress(),
+            owner.getTownship(),
+            owner.getAuthKey()
         );
         return result > 0;
     }
@@ -153,4 +161,78 @@ public class OwnerRepository {
         return jdbcTemplate.query(sql, new OwnerRowMapper());
     }
     
+    public boolean updateAuthKey(String email, String authKey) {
+        String sql = "UPDATE owner SET auth_key = ? WHERE gmail = ?";
+        int result = jdbcTemplate.update(sql, authKey, email);
+        return result > 0;
+    }
+    
+    public Optional<Owner> findByAuthKey(String authKey) {
+        try {
+            String sql = "SELECT * FROM owner WHERE auth_key = ?";
+            Owner owner = jdbcTemplate.queryForObject(sql, new OwnerRowMapper(), authKey);
+            return Optional.ofNullable(owner);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+    
+    public boolean updatePassword(String email, String newPassword) {
+        String sql = "UPDATE owner SET password = ? WHERE gmail = ?";
+        int result = jdbcTemplate.update(sql, newPassword, email);
+        return result > 0;
+    }
+    
+    //4-11-25 Pagination-update
+    
+    public List<Owner> findActiveCompaniesWithPagination(int limit, int offset) {
+        String sql = "SELECT * FROM owner WHERE status = 'active' ORDER BY company_name LIMIT ? OFFSET ?";
+        return jdbcTemplate.query(sql, new OwnerRowMapper(), limit, offset);
+    }
+
+    public int countActiveCompanies() {
+        String sql = "SELECT COUNT(*) FROM owner WHERE status = 'active'";
+        return jdbcTemplate.queryForObject(sql, Integer.class);
+            
+    }
+ // Search methods - Updated to use non-deprecated methods
+    public List<Owner> searchActiveCompanies(String search) {
+        String sql = """
+            SELECT * FROM owner 
+            WHERE status = 'active' 
+            AND (company_name LIKE ? OR description LIKE ? OR address LIKE ? OR gmail LIKE ? OR company_phone LIKE ? OR township LIKE ?)
+            ORDER BY company_name
+            """;
+        
+        String searchPattern = "%" + search + "%";
+        return jdbcTemplate.query(sql, new OwnerRowMapper(), 
+            searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+    
+    public List<Owner> searchActiveCompaniesWithPagination(String search, int limit, int offset) {
+        String sql = """
+            SELECT * FROM owner 
+            WHERE status = 'active' 
+            AND (company_name LIKE ? OR description LIKE ? OR address LIKE ? OR gmail LIKE ? OR company_phone LIKE ? OR township LIKE ?)
+            ORDER BY company_name 
+            LIMIT ? OFFSET ?
+            """;
+        
+        String searchPattern = "%" + search + "%";
+        return jdbcTemplate.query(sql, new OwnerRowMapper(), 
+            searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, limit, offset);
+    }
+    
+    public int countSearchActiveCompanies(String search) {
+        String sql = """
+            SELECT COUNT(*) FROM owner 
+            WHERE status = 'active' 
+            AND (company_name LIKE ? OR description LIKE ? OR address LIKE ? OR gmail LIKE ? OR company_phone LIKE ? OR township LIKE ?)
+            """;
+        
+        String searchPattern = "%" + search + "%";
+        return jdbcTemplate.queryForObject(sql, Integer.class, 
+            searchPattern, searchPattern, searchPattern, searchPattern, searchPattern, searchPattern);
+    }
 }
+    

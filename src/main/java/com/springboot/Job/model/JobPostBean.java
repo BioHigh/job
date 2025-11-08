@@ -23,6 +23,7 @@ public class JobPostBean {
     private String educationLevel;
     private Integer salaryMini;
     private Integer salaryMax;
+    private String negotiable;
     private String benefits;
     private String applicationEmail;
     private LocalDate applicationDeadline; 
@@ -31,6 +32,7 @@ public class JobPostBean {
     private Integer adminId;
     private String status;
     private LocalDateTime createdAt;
+    
     
     // Archive fields
     private Boolean isArchived = false;

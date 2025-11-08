@@ -6,7 +6,7 @@
     <title>Companies - JobJump</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-      <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
     
     <style>
         .company-card {
@@ -42,12 +42,27 @@
             border-color: #89ba16;
             box-shadow: 0 0 0 0.2rem rgba(137, 186, 22, 0.25);
         }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .page-link {
+            color: #007bff;
+        }
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div th:replace="headerLogin :: profile-header"></div>
-
 
     <!-- Main Content -->
     <div class="container-fluid" style="margin-top: 80px;">
@@ -61,115 +76,214 @@
                     </p>
                 </div>
 
+				<!-- Companies Count - UPDATED -->
+				<div class="text-center mb-4">
+				    <span class="badge bg-primary fs-6">
+				        <i class="bi bi-building me-1"></i>
+				        <span th:if="${search == null or search.isEmpty()}">
+				            Total Active Companies: 
+				            <span th:text="${totalActiveCompanies}">0</span>
+				        </span>
+				        <span th:if="${search != null and !search.isEmpty()}">
+				            Search Results: 
+				            <span th:text="${totalFilteredCompanies}">0</span> companies found
+				            (out of <span th:text="${totalActiveCompanies}">0</span> total)
+				        </span>
+				    </span>
+				</div>
+
                 <!-- Search Bar -->
                 <div class="row justify-content-center mb-5">
                     <div class="col-12 col-md-8 col-lg-6">
-                        <div class="input-group">
-                            <input type="text" class="form-control search-box" placeholder="Search companies by name, industry, or location...">
-                            <button class="btn text-white" style="background-color: #89ba16; border-radius: 0 25px 25px 0;">
-                                <i class="bi bi-search"></i>
-                            </button>
+                        <form th:action="@{/user/user_companies}" method="get" id="searchForm">
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control search-box" 
+                                       name="search"
+                                       th:value="${search}"
+                                       placeholder="Search companies by name, industry, or location...">
+                                <input type="hidden" name="page" value="1" id="pageInput">
+                                <button type="submit" class="btn text-white" style="background-color: #89ba16; border-radius: 0 25px 25px 0;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Search Results Info -->
+                <div th:if="${search != null and !search.isEmpty()}" class="text-center mb-4">
+                    <p class="text-muted">
+                        Search results for: "<span th:text="${search}"></span>"
+                        <a th:href="@{/user/user_companies}" class="btn btn-sm btn-outline-secondary ms-2">
+                            <i class="bi bi-x-circle"></i> Clear Search
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Companies Grid -->
+                <div class="row g-4" id="companiesGrid">
+                    <div th:each="companyMap : ${companiesWithPhotos}" class="col-12 col-sm-6 col-lg-4">
+                        <div class="card company-card h-100 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <!-- Company Logo -->
+                                <div class="mb-3">
+                                    <th:block th:if="${companyMap.profilePhotoBase64 != null}">
+                                        <img th:src="'data:image/jpeg;base64,' + ${companyMap.profilePhotoBase64}" 
+                                             class="company-logo" 
+                                             th:alt="${companyMap.company.companyName} + ' logo'">
+                                    </th:block>
+                                    <th:block th:unless="${companyMap.profilePhotoBase64 != null}">
+                                        <div class="company-logo bg-light d-flex align-items-center justify-content-center mx-auto">
+                                            <i class="bi bi-building text-muted" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </th:block>
+                                </div>
+
+                                <!-- Company Name -->
+                                <h5 class="card-title fw-bold text-dark mb-2" th:text="${companyMap.company.companyName}"></h5>
+
+                                <!-- Company Description -->
+                                <p class="card-text text-muted small mb-3" 
+                                   th:text="${companyMap.company.description != null ? (#strings.length(companyMap.company.description) > 100 ? #strings.substring(companyMap.company.description, 0, 100) + '...' : companyMap.company.description) : 'No description available'}">
+                                </p>
+
+                                <!-- Company Details -->
+                                <div class="company-details mb-3">
+                                    <div th:if="${companyMap.company.address}" class="mb-2">
+                                        <i class="bi bi-geo-alt text-muted me-2"></i>
+                                        <small class="text-muted" th:text="${companyMap.company.address}"></small>
+                                    </div>
+                                    <div th:if="${companyMap.company.companyPhone}" class="mb-2">
+                                        <i class="bi bi-telephone text-muted me-2"></i>
+                                        <small class="text-muted" th:text="${companyMap.company.companyPhone}"></small>
+                                    </div>
+                                    <div th:if="${companyMap.company.gmail}">
+                                        <i class="bi bi-envelope text-muted me-2"></i>
+                                        <small class="text-muted" th:text="${companyMap.company.gmail}"></small>
+                                    </div>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div class="mb-3">
+                                    <span class="stats-badge">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        <span th:text="${companyMap.company.status == 'active'} ? 'Active' : 'Inactive'"></span>
+                                    </span>
+                                </div>
+
+                                <!-- View Company Button -->
+                                <a th:href="@{/user/company/{id}(id=${companyMap.company.id})}" 
+                                   class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="bi bi-eye me-1"></i>View Jobs
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Companies Grid -->
-				<div class="row g-4" id="companiesGrid">
-				    <div th:each="companyMap : ${companiesWithPhotos}" class="col-12 col-sm-6 col-lg-4">
-				        <div class="card company-card h-100 shadow-sm">
-				            <div class="card-body text-center p-4">
-				                <!-- Company Logo -->
-				                <div class="mb-3">
-				                    <th:block th:if="${companyMap.profilePhotoBase64 != null}">
-				                        <img th:src="'data:image/jpeg;base64,' + ${companyMap.profilePhotoBase64}" 
-				                             class="company-logo" 
-				                             th:alt="${companyMap.company.companyName} + ' logo'">
-				                    </th:block>
-				                    <th:block th:unless="${companyMap.profilePhotoBase64 != null}">
-				                        <div class="company-logo bg-light d-flex align-items-center justify-content-center mx-auto">
-				                            <i class="bi bi-building text-muted" style="font-size: 2rem;"></i>
-				                        </div>
-				                    </th:block>
-				                </div>
-				
-				                <!-- Company Name -->
-				                <h5 class="card-title fw-bold text-dark mb-2" th:text="${companyMap.company.companyName}"></h5>
-				
-				                <!-- Company Description (truncated) -->
-				                <p class="card-text text-muted small mb-3" 
-				                   th:text="${companyMap.company.description != null ? (#strings.length(companyMap.company.description) > 100 ? #strings.substring(companyMap.company.description, 0, 100) + '...' : companyMap.company.description) : 'No description available'}">
-				                </p>
-				
-				                <!-- Company Details -->
-				                <div class="company-details mb-3">
-				                    <div th:if="${companyMap.company.address}" class="mb-2">
-				                        <i class="bi bi-geo-alt text-muted me-2"></i>
-				                        <small class="text-muted" th:text="${companyMap.company.address}"></small>
-				                    </div>
-				                    <div th:if="${companyMap.company.companyPhone}" class="mb-2">
-				                        <i class="bi bi-telephone text-muted me-2"></i>
-				                        <small class="text-muted" th:text="${companyMap.company.companyPhone}"></small>
-				                    </div>
-				                    <div th:if="${companyMap.company.gmail}">
-				                        <i class="bi bi-envelope text-muted me-2"></i>
-				                        <small class="text-muted" th:text="${companyMap.company.gmail}"></small>
-				                    </div>
-				                </div>
-				
-				                <!-- Status Badge -->
-				                <div class="mb-3">
-				                    <span class="stats-badge">
-				                        <i class="bi bi-check-circle me-1"></i>
-				                        <span th:text="${companyMap.company.status == 'active'} ? 'Active' : 'Inactive'"></span>
-				                    </span>
-				                </div>
-				
-				                <!-- View Company Button -->
-								<a th:href="@{/user/company/{id}(id=${companyMap.company.id})}" 
-								   class="btn btn-outline-primary btn-sm w-100">
-								    <i class="bi bi-eye me-1"></i>View Jobs
-								</a>
-				            </div>
-				        </div>
-				    </div>
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="d-flex justify-content-center mt-5">
+                    <nav aria-label="Company pagination">
+                        <ul class="pagination">
+                            <!-- Previous Page -->
+                            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/user/user_companies(page=${currentPage - 1}, search=${search})}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            
+                            <!-- Page Numbers -->
+                            <li th:each="i : ${#numbers.sequence(1, totalPages)}" 
+                                class="page-item" 
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" 
+                                   th:href="@{/user/user_companies(page=${i}, search=${search})}"
+                                   th:text="${i}"></a>
+                            </li>
+                            
+                            <!-- Next Page -->
+                            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/user/user_companies(page=${currentPage + 1}, search=${search})}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+				<!-- Page Info - UPDATED -->
+				<div class="text-center mt-3 text-muted">
+				    <span th:if="${search == null or search.isEmpty()}">
+				        Showing page <span th:text="${currentPage}"></span> of <span th:text="${totalPages}"></span>
+				        - Total <span th:text="${totalActiveCompanies}"></span> active companies
+				    </span>
+				    <span th:if="${search != null and !search.isEmpty()}">
+				        Showing page <span th:text="${currentPage}"></span> of <span th:text="${totalPages}"></span>
+				        - <span th:text="${totalFilteredCompanies}"></span> companies matching your search
+				    </span>
 				</div>
-				
-				<!-- No Companies Message -->
-				<div th:if="${#lists.isEmpty(companiesWithPhotos)}" class="text-center py-5">
-				    <i class="bi bi-building display-1 text-muted mb-3"></i>
-				    <h3 class="text-muted">No Companies Found</h3>
-				    <p class="text-muted">There are currently no companies registered on the platform.</p>
-				</div></div></div></div>
-				
+
+                <!-- No Companies Message -->
+                <div th:if="${#lists.isEmpty(companiesWithPhotos)}" class="text-center py-5">
+                    <i class="bi bi-building display-1 text-muted mb-3"></i>
+                    <h3 class="text-muted" th:text="${search != null} ? 'No Companies Found' : 'No Companies Available'"></h3>
+                    <p class="text-muted" th:text="${search != null} ? 'No companies match your search criteria.' : 'There are currently no companies registered on the platform.'"></p>
+                    <div th:if="${search != null}">
+                        <a th:href="@{/user/user_companies}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> View All Companies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><br>
+
     <!-- Footer -->
-    <div th:replace="footer :: site-footer"></div>
+    <div th:replace="footerLogin :: inside-footer"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Simple search functionality
         document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('searchForm');
+            const pageInput = document.getElementById('pageInput');
+            
+            // Reset to page 1 when searching
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    pageInput.value = 1;
+                });
+            }
+
+     /*   ///     Simple client-side search (optional - remove if using server-side search only)
             const searchInput = document.querySelector('.search-box');
             const companyCards = document.querySelectorAll('.company-card');
             
-            searchInput.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                
-                companyCards.forEach(card => {
-                    const companyName = card.querySelector('.card-title').textContent.toLowerCase();
-                    const companyDesc = card.querySelector('.card-text').textContent.toLowerCase();
-                    const companyLocation = card.querySelector('.company-details')?.textContent.toLowerCase() || '';
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
                     
-                    if (companyName.includes(searchTerm) || 
-                        companyDesc.includes(searchTerm) || 
-                        companyLocation.includes(searchTerm)) {
-                        card.parentElement.style.display = 'block';
-                    } else {
-                        card.parentElement.style.display = 'none';
-                    }
+                    companyCards.forEach(card => {
+                        const companyName = card.querySelector('.card-title').textContent.toLowerCase();
+                        const companyDesc = card.querySelector('.card-text').textContent.toLowerCase();
+                        const companyLocation = card.querySelector('.company-details')?.textContent.toLowerCase() || '';
+                        
+                        if (companyName.includes(searchTerm) || 
+                            companyDesc.includes(searchTerm) || 
+                            companyLocation.includes(searchTerm)) {
+                            card.parentElement.style.display = 'block';
+                        } else {
+                            card.parentElement.style.display = 'none';
+                        }
+                    });
                 });
-            });
+            }*/
         });
     </script>
 </body>

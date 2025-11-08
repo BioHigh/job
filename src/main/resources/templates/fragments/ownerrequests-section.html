@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:fragment="ownerrequests-section">
+    <!-- Only render when activeSection == 'ownerrequests' -->
+    <div class="section-container" id="ownerrequests-section" th:if="${activeSection == 'ownerrequests'}">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="section-title mb-0">
+                <i class="fas fa-building me-2"></i>Owner Registration Requests
+                <span class="badge count-badge ms-2" th:text="${totalItems}"></span>
+            </h3>
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Server-side Filter Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="filterDropdown" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-filter me-1"></i>
+                        <span id="filterText">
+                            <th:block th:switch="${statusFilter}">
+                                <span th:case="'pending'">Pending</span>
+                                <span th:case="'approved'">Approved</span>
+                                <span th:case="'rejected'">Rejected</span>
+                                <span th:case="*">All Requests</span>
+                            </th:block>
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                        <li><a class="dropdown-item" th:href="@{/admin/owner-requests(page=1, size=${pageSize})}">All Requests</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/owner-requests(page=1, size=${pageSize}, status='pending')}">Pending</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/owner-requests(page=1, size=${pageSize}, status='approved')}">Approved</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/owner-requests(page=1, size=${pageSize}, status='rejected')}">Rejected</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success message -->
+        <div th:if="${msg}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${msg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <!-- Error message -->
+        <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${errorMsg}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Status Filter Summary -->
+        <div th:if="${statusFilter}" class="mb-4">
+            <div class="info-card d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <small>
+                        Showing: 
+                        <th:block th:switch="${statusFilter}">
+                            <span th:case="'pending'">Pending</span>
+                            <span th:case="'approved'">Approved</span>
+                            <span th:case="'rejected'">Rejected</span>
+                        </th:block>
+                        | Total: <span th:text="${totalItems}">0</span> requests
+                    </small>
+                </div>
+                <a th:href="@{/admin/owner-requests(page=1, size=${pageSize})}" class="btn-close" aria-label="Clear filter"></a>
+            </div>
+        </div>
+
+        <!-- Owner Requests Table -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header card-header-custom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Owner Requests</h5>
+                    <div class="text-muted small">
+                        Showing <span th:text="${(currentPage - 1) * pageSize + 1}">1</span> to 
+                        <span th:text="${(currentPage * pageSize) > totalItems ? totalItems : (currentPage * pageSize)}">0</span> of 
+                        <span th:text="${totalItems}">0</span> requests
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive table-container">
+                    <table class="table table-hover mb-0 owner-requests-table" id="ownerRequestsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>No.</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Date & Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="request, stat : ${requests}" 
+                                th:class="${request.status == 'APPROVED'} ? 'table-success' : 
+                                          (${request.status == 'REJECTED'} ? 'table-danger' : '')">
+
+                                <td th:text="${(currentPage - 1) * pageSize + stat.count}" style="text-align: center;"></td>
+
+                                <!-- ✅ FIXED HERE -->
+                                <td th:data-fulltext="${request.companyName}">
+                                    <div class="d-flex align-items-start">
+                                        <div>
+                                            <strong th:text="${request.companyName}" class="d-block"></strong>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- ✅ FIXED HERE -->
+                                <td th:data-fulltext="${request.gmail}" th:text="${request.gmail}"></td>
+
+                                <!-- ✅ FIXED HERE -->
+                                <td th:data-fulltext="${request.companyPhone}" th:text="${request.companyPhone}"></td>
+
+                                <!-- ✅ FIXED HERE -->
+                                <td th:data-fulltext="${request.city + ', ' + request.township}">
+                                    <div>
+                                        <strong th:text="${request.city}" class="d-block"></strong>
+                                        <small class="text-muted" th:text="${request.township}"></small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span th:if="${request.status == 'APPROVED'}" class="status-badge status-approved">
+                                        <i class="fas fa-check me-1"></i>Approved
+                                    </span>
+                                    <span th:if="${request.status == 'REJECTED'}" class="status-badge status-rejected">
+                                        <i class="fas fa-times me-1"></i>Rejected
+                                    </span>
+                                    <span th:if="${request.status == null or request.status == 'PENDING'}" class="status-badge status-pending">
+                                        <i class="fas fa-clock me-1"></i>Pending
+                                    </span>
+                                </td>
+
+                                <!-- ✅ FIXED HERE -->
+                                <td th:data-fulltext="${#temporals.format(request.requestDate, 'dd-MM-yyyy HH:mm')}"
+                                    th:text="${#temporals.format(request.requestDate, 'dd-MM-yyyy HH:mm')}"></td>
+
+                                <td>
+                                    <div class="d-flex flex-nowrap gap-1 justify-content-center">
+                                        <div th:if="${request.status == null or request.status == 'PENDING'}">
+                                            <form th:action="@{'/admin/owner-request/approve/' + ${request.id}}" method="post" class="d-inline">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
+                                                <input type="hidden" name="size" th:value="${pageSize}">
+                                                <input th:if="${statusFilter}" type="hidden" name="status" th:value="${statusFilter}">
+                                                <button type="submit" class="btn btn-success btn-sm px-2 action-btn"
+                                                        style="min-width: 40px;"
+                                                        onclick="return confirm('Are you sure you want to approve this request?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div th:if="${request.status == null or request.status == 'PENDING'}">
+                                            <form th:action="@{'/admin/owner-request/reject/' + ${request.id}}" method="post" class="d-inline">
+                                                <input type="hidden" name="page" th:value="${currentPage}">
+                                                <input type="hidden" name="size" th:value="${pageSize}">
+                                                <input th:if="${statusFilter}" type="hidden" name="status" th:value="${statusFilter}">
+                                                <button type="submit" class="btn btn-danger btn-sm px-2 action-btn"
+                                                        style="min-width: 40px;"
+                                                        onclick="return confirm('Are you sure you want to reject this request?')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <div th:if="${request.status == 'APPROVED' or request.status == 'REJECTED'}">
+                                            <span class="text-muted small d-flex align-items-center">
+                                                <i class="fas fa-check-circle me-1"></i> Processed
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Empty State -->
+                            <tr th:if="${requests == null || requests.empty}">
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="empty-state">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">
+                                            <th:block th:switch="${statusFilter}">
+                                                <span th:case="'pending'">No pending requests</span>
+                                                <span th:case="'approved'">No approved requests</span>
+                                                <span th:case="'rejected'">No rejected requests</span>
+                                                <span th:case="*">No owner requests</span>
+                                            </th:block>
+                                        </h5>
+                                        <p class="text-muted">
+                                            <th:block th:switch="${statusFilter}">
+                                                <span th:case="'pending'">There are no pending owner registration requests.</span>
+                                                <span th:case="'approved'">There are no approved owner registration requests.</span>
+                                                <span th:case="'rejected'">There are no rejected owner registration requests.</span>
+                                                <span th:case="*">There are no owner registration requests to display.</span>
+                                            </th:block>
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="pagination-container">
+            <div class="pagination-info">
+                Page <span th:text="${currentPage}">1</span> of <span th:text="${totalPages}">1</span> 
+                | Showing <span th:text="${(currentPage - 1) * pageSize + 1}">1</span> to 
+                <span th:text="${(currentPage * pageSize) > totalItems ? totalItems : (currentPage * pageSize)}">0</span> of 
+                <span th:text="${totalItems}">0</span> requests
+            </div>
+            
+            <nav aria-label="Owner requests pagination">
+                <ul class="pagination mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                        <a class="page-link" 
+                           th:href="@{/admin/owner-requests(page=1, size=${pageSize}, status=${statusFilter})}" 
+                           aria-label="First">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                        <a class="page-link" 
+                           th:href="@{/admin/owner-requests(page=${currentPage - 1}, size=${pageSize}, status=${statusFilter})}" 
+                           aria-label="Previous">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+
+                    <li th:each="pageNum : ${paginationNumbers}"
+                        class="page-item"
+                        th:classappend="(${pageNum == currentPage} ? 'active' : '') + (${pageNum == '...'} ? ' disabled' : '')">
+                        <a th:if="${pageNum != '...'}" 
+                           class="page-link" 
+                           th:href="@{/admin/owner-requests(page=${pageNum}, size=${pageSize}, status=${statusFilter})}" 
+                           th:text="${pageNum}"></a>
+                        <span th:if="${pageNum == '...'}" class="page-link">...</span>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled' : ''">
+                        <a class="page-link" 
+                           th:href="@{/admin/owner-requests(page=${currentPage + 1}, size=${pageSize}, status=${statusFilter})}" 
+                           aria-label="Next">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled' : ''">
+                        <a class="page-link" 
+                           th:href="@{/admin/owner-requests(page=${totalPages}, size=${pageSize}, status=${statusFilter})}" 
+                           aria-label="Last">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="d-flex align-items-center gap-2">
+                <label for="pageSizeSelect" class="form-label text-muted mb-0">Rows per page:</label>
+                <select id="pageSizeSelect" class="form-select form-select-sm" style="width: auto;" 
+                        onchange="changePageSize(this.value)">
+                    <option value="5" th:selected="${pageSize == 5}">5</option>
+                    <option value="10" th:selected="${pageSize == 10}">10</option>
+                    <option value="20" th:selected="${pageSize == 20}">20</option>
+                    <option value="50" th:selected="${pageSize == 50}">50</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+<script>
+function changePageSize(size) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    let url = '/admin/owner-requests?page=1&size=' + size;
+    if (status) {
+        url += '&status=' + status;
+    }
+    url += '#ownerrequests-section';
+    window.location.href = url;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            if (alert && alert.classList.contains('show')) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 5000);
+    });
+
+    initEnhancedTooltips();
+});
+
+function initEnhancedTooltips() {
+    const tableCells = document.querySelectorAll('.owner-requests-table td[data-fulltext]');
+    
+    tableCells.forEach(cell => {
+        cell.addEventListener('mouseenter', showEnhancedTooltip);
+        cell.addEventListener('mouseleave', hideEnhancedTooltip);
+        cell.addEventListener('mousemove', positionEnhancedTooltip);
+    });
+}
+
+function showEnhancedTooltip(event) {
+    const cell = event.target.closest('td[data-fulltext]');
+    if (!cell) return;
+
+    const fullText = cell.getAttribute('data-fulltext');
+    const headerText = getColumnHeader(cell);
+
+    if (cell._currentTooltip) cell._currentTooltip.remove();
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'enhanced-tooltip';
+
+    let tooltipContent = '';
+
+    if (headerText === 'Company Name') {
+        tooltipContent = `
+            <div class="tooltip-header">Company Details</div>
+            <div class="tooltip-content">
+                <div class="tooltip-field">
+                    <span class="tooltip-label">Name:</span>
+                    <span class="tooltip-value">${fullText}</span>
+                </div>
+            </div>`;
+    } else if (headerText === 'Email') {
+        tooltipContent = `
+            <div class="tooltip-header">Contact Email</div>
+            <div class="tooltip-content">
+                <div class="tooltip-field">
+                    <span class="tooltip-label">Email:</span>
+                    <span class="tooltip-value">${fullText}</span>
+                </div>
+            </div>`;
+    } else if (headerText === 'Phone') {
+        tooltipContent = `
+            <div class="tooltip-header">Phone Number</div>
+            <div class="tooltip-content">
+                <div class="tooltip-field">
+                    <span class="tooltip-label">Phone:</span>
+                    <span class="tooltip-value">${fullText}</span>
+                </div>
+            </div>`;
+    } else if (headerText === 'Location') {
+        const parts = fullText.split(', ');
+        tooltipContent = `
+            <div class="tooltip-header">Location</div>
+            <div class="tooltip-content">
+                <div class="tooltip-field">
+                    <span class="tooltip-label">City:</span>
+                    <span class="tooltip-value">${parts[0] || ''}</span>
+                </div>
+                <div class="tooltip-field">
+                    <span class="tooltip-label">Township:</span>
+                    <span class="tooltip-value">${parts[1] || ''}</span>
+                </div>
+            </div>`;
+    } else if (headerText === 'Date & Time') {
+        tooltipContent = `
+            <div class="tooltip-header">Request Date & Time</div>
+            <div class="tooltip-content">
+                <div class="tooltip-field">
+                    <span class="tooltip-label">Submitted:</span>
+                    <span class="tooltip-value">${fullText}</span>
+                </div>
+            </div>`;
+    } else {
+        tooltipContent = `
+            <div class="tooltip-content">
+                <div class="tooltip-value">${fullText}</div>
+            </div>`;
+    }
+
+    tooltip.innerHTML = tooltipContent;
+    document.body.appendChild(tooltip);
+    cell._currentTooltip = tooltip;
+
+    positionEnhancedTooltip(event);
+}
+
+function positionEnhancedTooltip(event) {
+    const cell = event.target.closest('td[data-fulltext]');
+    if (!cell || !cell._currentTooltip) return;
+
+    const tooltip = cell._currentTooltip;
+    const rect = cell.getBoundingClientRect();
+    const scrollX = window.pageXOffset;
+    const scrollY = window.pageYOffset;
+
+    let left = rect.left + scrollX + rect.width/2 - tooltip.offsetWidth/2;
+    let top = rect.top + scrollY - tooltip.offsetHeight - 10;
+
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+    if (top < 10) top = rect.bottom + scrollY + 10;
+
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+}
+
+function hideEnhancedTooltip(event) {
+    const cell = event.target.closest('td[data-fulltext]');
+    if (cell && cell._currentTooltip) {
+        cell._currentTooltip.remove();
+        cell._currentTooltip = null;
+    }
+}
+
+function getColumnHeader(cell) {
+    const table = cell.closest('table');
+    if (!table) return '';
+    const index = Array.from(cell.parentNode.children).indexOf(cell);
+    const header = table.querySelector('thead tr').children[index];
+    return header ? header.textContent.trim() : '';
+}
+</script>
+
+</div>
+</body>
+</html>

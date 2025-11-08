@@ -20,7 +20,7 @@ public class IndexController {
     
     @GetMapping("/home")
     public String showHome(@RequestParam(defaultValue = "1") int page, Model model) {
-        int pageSize = 4; // Show 4 jobs per page
+        int pageSize = 4; 
         long totalJobs = jobPostService.countAllJobs();
         List<Map<String, Object>> activeJobs = jobPostService.getActiveJobsWithOwners(page, pageSize);
         int totalPages = jobPostService.getTotalPages(pageSize);

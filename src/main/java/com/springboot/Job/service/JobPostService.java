@@ -150,4 +150,53 @@ public class JobPostService {
     public long countAllArchivedJobs() {
         return jobPostRepository.countAllArchivedJobs();
     }
+    
+    
+    // add in 15.10.2025
+    public List<Map<String, Object>> getJobsByCategoryWithOwners(Integer categoryId, int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        List<Map<String, Object>> jobs = jobPostRepository.findJobsByCategoryWithOwners(categoryId, pageSize, offset);
+        
+        for (Map<String, Object> job : jobs) {
+            byte[] profilePhoto = (byte[]) job.get("profilePhoto");
+            if (profilePhoto != null && profilePhoto.length > 0) {
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                job.put("profilePhoto", base64Photo);
+            }
+        }
+        
+        return jobs;
+    }
+
+    public long countJobsByCategory(Integer categoryId) {
+        return jobPostRepository.countJobsByCategory(categoryId);
+    }
+    
+    
+    
+ // Add these methods to your JobPostService class
+
+    public List<Map<String, Object>> getActiveJobsWithSearch(int page, int pageSize, String search, String location, String jobType) {
+        int offset = (page - 1) * pageSize;
+        List<Map<String, Object>> jobs = jobPostRepository.findActiveJobsWithSearch(pageSize, offset, search, location, jobType);
+        
+        for (Map<String, Object> job : jobs) {
+            byte[] profilePhoto = (byte[]) job.get("profilePhoto");
+            if (profilePhoto != null && profilePhoto.length > 0) {
+                String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                job.put("profilePhoto", base64Photo);
+            }
+        }
+        
+        return jobs;
+    }
+
+    public long countActiveJobsWithSearch(String search, String location, String jobType) {
+        return jobPostRepository.countActiveJobsWithSearch(search, location, jobType);
+    }
+
+    public int getTotalPagesWithSearch(int pageSize, String search, String location, String jobType) {
+        long totalJobs = countActiveJobsWithSearch(search, location, jobType);
+        return (int) Math.ceil((double) totalJobs / pageSize);
+    }
 }

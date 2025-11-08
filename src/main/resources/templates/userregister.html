@@ -15,6 +15,7 @@
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
         }
+       
         .card {
             border: none;
             border-radius: 15px;
@@ -242,9 +243,9 @@
     </style>
 </head>
 <body class="bg-light">
-    <div th:replace="header :: site-header"></div>
+    <div th:replace="header :: site-header"></div><br><br><br><br><br>
     <!-- Header Section -->
-    <br><br><br><br>
+    
 
     <div class="container">
         <div class="row justify-content-center">
@@ -403,7 +404,7 @@
                                             </span>
                                             <input type="tel" class="form-control" id="phone" name="phone" 
                                                    th:value="${user?.phone}" placeholder="09*******" 
-                                                   pattern="[0-9]{10,15}" title="Please enter a valid phone number (10-15 digits)">
+                                                   pattern="[0-9]{10,15}" title="Please enter a valid phone number (Myanmar)">
                                         </div>
                                         
                                         <!-- Phone Error Message - Will be shown for duplicate phone numbers -->
@@ -674,7 +675,7 @@
             // Basic phone format validation
             const phoneRegex = /^[0-9]{10,15}$/;
             if (!phoneRegex.test(phone)) {
-                showPhoneValidationError('Please enter a valid phone number (10-15 digits)');
+                showPhoneValidationError('Please enter a valid phone number (Myanmar)');
                 return;
             }
             
@@ -782,7 +783,7 @@
                 const phoneRegex = /^[0-9]{10,15}$/;
                 if (!phoneRegex.test(phone)) {
                     e.preventDefault();
-                    showPhoneValidationError('Please enter a valid phone number (10-15 digits)');
+                    showPhoneValidationError('Please enter a valid phone number (Myanmar)');
                     phoneInput.focus();
                     return;
                 }

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +17,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.springboot.Job.model.JobApplicationBean;
 import com.springboot.Job.model.JobPostBean;
 import com.springboot.Job.model.Owner;
+import com.springboot.Job.model.UserBean;
 import com.springboot.Job.repository.CategoryRepository;
+import com.springboot.Job.repository.JobApplicationRepository;
+import com.springboot.Job.repository.UserRepository;
+import com.springboot.Job.service.FeedBackService;
 import com.springboot.Job.service.JobPostService;
 import com.springboot.Job.service.OwnerService;
+import com.springboot.Job.service.UserService;
 import com.springboot.Job.util.SecurityUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -38,11 +45,43 @@ public class OwnerController {
     @Autowired
     private CategoryRepository categoryRepo;
     
+    @Autowired
+    private  FeedBackService feedbackService ;
+    
+    @Autowired
+    private JobApplicationRepository jobApplicationRepository;
+    
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/login")
     public String showLoginPage() {
         return "owner/ownerlogin";
     }
 
+    @GetMapping("/aboutus")
+   	public String showIndex2() {
+   		return "CuBu/Oaboutus";
+   	}
+       
+    @GetMapping("/contactus")
+   	public String showIndex3() {
+   		return "CuBu/Ocontactus";
+   	}
+       
+    @GetMapping("/contact-us")
+   	public String showIndex5() {
+   		return "CuBu/OcontactusLogin";
+   	}
+       
+    @GetMapping("/about-us")
+    public String showIndex4() {
+   		return "CuBu/OaboutusLogin";
+   	}
+    
     @PostMapping("/login")
     public String loginOwner(@RequestParam String gmail, 
                            @RequestParam String password,
@@ -66,30 +105,62 @@ public class OwnerController {
             session.setAttribute("ownerId", owner.get().getId());
             // Clear any role conflict flag on successful login
             SecurityUtil.setRoleConflict(session, false);
+            
+            // ✅ ADD THIS: Update session notification count after login
+            int newApplicationCount = jobApplicationRepository.countUnseenApplicationsByOwnerId(owner.get().getId());
+            session.setAttribute("newApplicationCount", newApplicationCount);
+            
             return "redirect:/owner/dashboard";
         } else {
             redirectAttributes.addFlashAttribute("error", "Invalid email or password");
             return "redirect:/owner/login";
         }
     }
-
+    
+    //add in 22.10.2025
     @GetMapping("/dashboard")
     public String showDashboard(HttpSession session, Model model) {
-        // Security handled by interceptor - directly get owner
         Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
         
         if (owner.isPresent()) {
             model.addAttribute("owner", owner.get());
-            // Get profile photo separately
+            
             byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
             if (profilePhoto != null) {
                 String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
                 model.addAttribute("profilePhoto", base64Photo);
             }
+            
+            // ✅ KEEP THIS: Additional session update for dashboard
+            int newApplicationCount = jobApplicationRepository.countUnseenApplicationsByOwnerId(ownerId);
+            session.setAttribute("newApplicationCount", newApplicationCount);
+            
+            List<JobApplicationBean> applications = jobApplicationRepository.findByOwnerId(ownerId);
+            model.addAttribute("totalApplications", applications.size());
+            
+            System.out.println("🔔 Dashboard - newApplicationCount: " + newApplicationCount);
+            
             return "owner/ownerdashboard";
         } else {
             return "redirect:/owner/login";
+        }
+    }
+    
+    @ModelAttribute
+    public void updateSessionNotificationCount(HttpSession session) {
+        try {
+            Optional<Integer> ownerIdOpt = SecurityUtil.getCurrentOwnerId(session);
+            if (ownerIdOpt.isPresent()) {
+                Integer ownerId = ownerIdOpt.get();
+                int unseenCount = jobApplicationRepository.countUnseenApplicationsByOwnerId(ownerId);
+                session.setAttribute("newApplicationCount", unseenCount);
+                
+                System.out.println("🔔 Session Updated - newApplicationCount: " + unseenCount);
+            }
+        } catch (Exception e) {
+            System.err.println("Error updating session count: " + e.getMessage());
+            session.setAttribute("newApplicationCount", 0);
         }
     }
 
@@ -176,9 +247,7 @@ public class OwnerController {
             // Calculate statistics
             long activeJobsCount = jobPostService.countActiveJobsByOwner(ownerId);
            
-            
             model.addAttribute("activeJobsCount", activeJobsCount);
-            
             
             // Get profile photo separately
             byte[] profilePhoto = ownerService.getProfilePhoto(ownerId);
@@ -248,7 +317,10 @@ public class OwnerController {
     }
 
     @GetMapping("/register")
-    public String showRegistrationPage(Model model) {
+    public String showRegistrationPage(@RequestParam(required = false) String email, Model model) {
+        if (email != null && !email.trim().isEmpty()) {
+            model.addAttribute("approvedEmail", email);
+        }
         return "owner/ownerregister";
     }
 
@@ -259,6 +331,7 @@ public class OwnerController {
                               @RequestParam(required = false) String companyPhone,
                               @RequestParam(required = false) String description,
                               @RequestParam(required = false) String address,
+                              @RequestParam(required = false) String township, // ADD THIS LINE
                               @RequestParam(value = "profilePhoto", required = false) MultipartFile profilePhoto,
                               @RequestParam String confirmPassword,
                               RedirectAttributes redirectAttributes) {
@@ -289,6 +362,7 @@ public class OwnerController {
         owner.setCompanyPhone(companyPhone);
         owner.setDescription(description);
         owner.setAddress(address);
+        owner.setTownship(township); 
 
         try {
             boolean isRegistered = ownerService.registerOwner(owner, profilePhoto);
@@ -334,6 +408,7 @@ public class OwnerController {
         return "redirect:/owner/login";
     }
     
+    // fix in 16.10.2025
     @PostMapping("/job/post")
     public String postJob(@RequestParam String jobTitle,
                          @RequestParam String jobType,
@@ -349,11 +424,13 @@ public class OwnerController {
                          @RequestParam(required = false) String benefits,
                          @RequestParam(required = false) String applicationDeadline,
                          @RequestParam(required = false) String applicationInstructions,
-                         @RequestParam Integer categoryId, 
+                         @RequestParam Integer categoryId,
+                         @RequestParam String salaryType, 
                          HttpSession session,
                          RedirectAttributes redirectAttributes) {
         
         System.out.println("=== JOB POSTING STARTED ===");
+        System.out.println("Salary Type: " + salaryType);
         
         // Security handled by interceptor - directly get owner
         Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
@@ -369,7 +446,6 @@ public class OwnerController {
         System.out.println("Category ID: " + categoryId);
         
         try {
-            // Create JobPost object
             JobPostBean jobPost = new JobPostBean();
             jobPost.setJobTitle(jobTitle);
             jobPost.setJobType(jobType);
@@ -382,14 +458,29 @@ public class OwnerController {
             jobPost.setRequiredSkills(requiredSkills);
             jobPost.setExperienceLevel(experienceLevel);
             jobPost.setEducationLevel(educationLevel);
-            jobPost.setSalaryMini(salaryMin);
-            jobPost.setSalaryMax(salaryMax);
             jobPost.setBenefits(benefits);
             jobPost.setApplicationEmail(owner.get().getGmail());
-            jobPost.setApplicationDeadline(LocalDate.parse(applicationDeadline));
+            
+            // application deadline
+            if (applicationDeadline != null && !applicationDeadline.trim().isEmpty()) {
+                jobPost.setApplicationDeadline(LocalDate.parse(applicationDeadline));
+            }
+            
             jobPost.setApplicationInstructions(applicationInstructions);
             jobPost.setOwnerId(ownerId);
-            jobPost.setCategoryId(categoryId); // Set the category ID
+            jobPost.setCategoryId(categoryId);
+            
+            System.out.println("Processing salary type: " + salaryType);
+            if ("negotiable".equals(salaryType)) {
+                jobPost.setSalaryMini(null);
+                jobPost.setSalaryMax(null);
+                System.out.println("Salary set as negotiable - min and max set to null");
+            } else {
+                //salary
+                jobPost.setSalaryMini(salaryMin);
+                jobPost.setSalaryMax(salaryMax);
+                System.out.println("Fixed salary - Min: " + salaryMin + ", Max: " + salaryMax);
+            }
 
             System.out.println("Calling jobPostService.createJobPost...");
             boolean isPosted = jobPostService.createJobPost(jobPost);
@@ -397,7 +488,7 @@ public class OwnerController {
             
             if (isPosted) {
                 redirectAttributes.addFlashAttribute("success", "Job posted successfully!");
-                System.out.println("Job posted successfully!");
+                System.out.println("Thank you for submitting your job post! For security and quality control, all new listings undergo admin verification to confirm legitimacy. Your posting will be active after approval, usually within 1 business day.");
             } else {
                 redirectAttributes.addFlashAttribute("error", "Failed to post job. Please try again.");
                 System.out.println("Failed to post job.");
@@ -414,7 +505,6 @@ public class OwnerController {
     
     @GetMapping("/jobs")
     public String viewAllJobs(HttpSession session, Model model) {
-        // Security handled by interceptor - directly get owner
         Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
 
         Optional<Owner> owner = ownerService.getOwnerById(ownerId);
@@ -600,4 +690,81 @@ public class OwnerController {
             return "redirect:/owner/jobs";
         }
     }
+    
+    
+    // For owners to submit feedback
+    @PostMapping("/feedback/submit")
+    public String submitOwnerFeedback(@RequestParam String fbmessage,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        Integer ownerId = (Integer) session.getAttribute("ownerId");
+        if (ownerId == null) {
+            return "redirect:/owner/login";
+        }
+        
+        try {
+            feedbackService.submitOwnerFeedback(fbmessage, ownerId);
+            redirectAttributes.addFlashAttribute("success", "Thank you for your feedback!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to submit feedback: " + e.getMessage());
+        }
+        
+        return "redirect:/owner/dashboard"; // redirect to owner dashboard
+    }
+    
+    // add in 4.11.2025 New Method=========================================================
+    @GetMapping("/messages/user/{userId}")
+    public String userprofileseenbyowner(@PathVariable("userId") Integer userId,
+                                        HttpSession session,
+                                        Model model,
+                                        RedirectAttributes redirectAttributes) {
+        
+        Integer ownerId = SecurityUtil.getCurrentOwnerId(session).get();
+        Optional<Owner> owner = ownerService.getOwnerById(ownerId);
+        
+        if (!owner.isPresent()) {
+            return "redirect:/owner/login";
+        }
+
+        try {
+            Optional<UserBean> user = userRepository.findUserProfileById(userId);
+            
+            if (user.isPresent()) {
+                model.addAttribute("user", user.get());
+                model.addAttribute("owner", owner.get());
+                
+                byte[] profilePhoto = userService.getProfilePhoto(userId);
+                if (profilePhoto != null) {
+                    String base64Photo = Base64.getEncoder().encodeToString(profilePhoto);
+                    model.addAttribute("profilePhoto", base64Photo);
+                }
+                
+                byte[] resume = userService.getResume(userId);
+                if (resume != null) {
+                    String base64Resume = Base64.getEncoder().encodeToString(resume);
+                    model.addAttribute("resume", base64Resume);
+                    model.addAttribute("hasResume", true);
+                } else {
+                    model.addAttribute("hasResume", false);
+                }
+                
+                byte[] ownerProfilePhoto = ownerService.getProfilePhoto(ownerId);
+                if (ownerProfilePhoto != null) {
+                    String base64OwnerPhoto = Base64.getEncoder().encodeToString(ownerProfilePhoto);
+                    model.addAttribute("ownerProfilePhoto", base64OwnerPhoto);
+                }
+                
+                return "owner/userviewprofile";
+            } else {
+                redirectAttributes.addFlashAttribute("error", "User not found.");
+                return "redirect:/owner/messages";
+            }
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error loading user profile: " + e.getMessage());
+            return "redirect:/owner/messages";
+        }
+    }
+    
+    
 }

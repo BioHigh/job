@@ -16,7 +16,7 @@
 
       <!-- Logo --> 
       <a class="navbar-brand fw-bold" th:href="@{/owner/dashboard}" style="font-size: 1.8rem; margin-left:1rem;">
-  <i class="bi bi-building-fill me-1"></i> JobJump
+  JobJump
 </a>
 
 
@@ -29,21 +29,23 @@
       <div class="collapse navbar-collapse" id="ownerNavbar">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" th:href="@{/home}"><i class="bi bi-house-fill"></i> Home</a>
+            <a class="nav-link active" th:href="@{/user/home}"><i class="bi bi-house-fill"></i> Home</a>
           </li>
          <li class="nav-item">
-  <a class="nav-link" th:href="@{/user/resume}">
-    <i class="bi bi-file-person-fill me-1"></i> My Resume
+  <a class="nav-link" th:href="@{/user/user-jobs-by-category}">
+    <i class="bi bi-file-person-fill me-1"></i> Jobs by Category
   </a>
 </li>
 
           <li class="nav-item">
             <a class="nav-link" th:href="@{/user/user_companies}"><i class="bi bi-people-fill me-1"></i> Companies</a>
           </li>
+          
+     <li class="nav-item">
+    <a class="nav-link" th:href="@{/user/resume}"><i class="bi bi-file-earmark-text me-1"></i> My Applications</a>
+</li>
          
-          <li class="nav-item">
-            <a class="nav-link" th:href="@{/user/contact}"><i class="bi bi-headset me-1"></i> Support</a>
-          </li>
+         
         </ul>
 
          <div class="d-flex gap-3">

@@ -40,206 +40,271 @@
             border: 5px solid white;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .avatar-initials {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #4e73df, #2e59d9);
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+        }
+        .alert-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1050;
+            width: 90%;
+            max-width: 400px;
+        }
+        /* ... (keep all your existing CSS styles exactly as they are) ... */
+        
+        /* Dynamic avatar colors based on initial */
+        .avatar-initials[data-initial^="A"] { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .avatar-initials[data-initial^="B"] { background: linear-gradient(135deg, #4834d4, #686de0); }
+        .avatar-initials[data-initial^="C"] { background: linear-gradient(135deg, #00d2d3, #54a0ff); }
+        .avatar-initials[data-initial^="D"] { background: linear-gradient(135deg, #ff9ff3, #f368e0); }
+        .avatar-initials[data-initial^="E"] { background: linear-gradient(135deg, #feca57, #ff9f43); }
+        .avatar-initials[data-initial^="F"] { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .avatar-initials[data-initial^="G"] { background: linear-gradient(135deg, #1dd1a1, #10ac84); }
+        .avatar-initials[data-initial^="H"] { background: linear-gradient(135deg, #ff9f43, #ee5a24); }
+        .avatar-initials[data-initial^="I"] { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .avatar-initials[data-initial^="J"] { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .avatar-initials[data-initial^="K"] { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); }
+        .avatar-initials[data-initial^="L"] { background: linear-gradient(135deg, #dfe6e9, #b2bec3); }
+        .avatar-initials[data-initial^="M"] { background: linear-gradient(135deg, #00b894, #00cec9); }
+        .avatar-initials[data-initial^="N"] { background: linear-gradient(135deg, #0984e3, #74b9ff); }
+        .avatar-initials[data-initial^="O"] { background: linear-gradient(135deg, #e17055, #d63031); }
+        .avatar-initials[data-initial^="P"] { background: linear-gradient(135deg, #e84393, #fd79a8); }
+        .avatar-initials[data-initial^="Q"] { background: linear-gradient(135deg, #00cec9, #81ecec); }
+        .avatar-initials[data-initial^="R"] { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .avatar-initials[data-initial^="S"] { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+        .avatar-initials[data-initial^="T"] { background: linear-gradient(135deg, #00b894, #55efc4); }
+        .avatar-initials[data-initial^="U"] { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .avatar-initials[data-initial^="V"] { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .avatar-initials[data-initial^="W"] { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .avatar-initials[data-initial^="X"] { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .avatar-initials[data-initial^="Y"] { background: linear-gradient(135deg, #00cec9, #81ecec); }
+        .avatar-initials[data-initial^="Z"] { background: linear-gradient(135deg, #ff7675, #d63031); }
     </style>
 </head>
 <body>
-
 <div class="sticky-top bg-white shadow-sm">
     <div th:replace="ownerheader :: owner-header"></div>
-</div>    <div class="container mt-4">
-        <!-- Quick Stats -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Active Jobs
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">8</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-briefcase fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
+    
+    <!-- Alert Container -->
+    <div class="alert-container">
+        <!-- New Applications Notification -->
+        <div th:if="${session.newApplicationCount != null && session.newApplicationCount > 0}" 
+             class="alert alert-warning notification-alert alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-bell-fill me-2 fs-5"></i>
+                <div class="flex-grow-1">
+                    <strong>New Applications!</strong> You have 
+                    <span class="badge bg-danger ms-1" th:text="${session.newApplicationCount}"></span> 
+                    unread application(s) waiting for your review.
+                </div>
+            </div>
+            <div class="mt-2">
+                <a th:href="@{/owner/messages}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-eye me-1"></i> View Applications
+                </a>
+                <form th:action="@{/owner/messages/mark-all-read}" method="post" class="d-inline ms-1">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-check-all me-1"></i> Mark as Read
+                    </button>
+                </form>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Success Message Alert -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Error Message Alert -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+</div>    
+
+<div class="container mt-4">
+  
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <!-- Fixed Profile Photo Section -->
+                    <div th:if="${profilePhoto}">
+					    <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
+					         class="img-fluid rounded-circle mb-3 company-logo" 
+					         style="width: 150px; height: 150px; object-fit: cover;">
+					</div>
+					<div th:unless="${profilePhoto}">
+					    <div class="avatar-initials rounded-circle mx-auto mb-3"
+					         th:attr="data-initial=${owner.companyName != null ? #strings.substring(owner.companyName, 0, 1).toUpperCase() : 'C'}">
+					        <span th:text="${owner.companyName != null ? #strings.substring(owner.companyName, 0, 1).toUpperCase() : 'C'}"></span>
+					    </div>
+					</div>
+                    <h4 th:text="${owner.companyName}">Company Name</h4>
+                    <p class="text-muted" th:text="${owner.type}">Company Type</p>
+                    <span class="badge bg-success" th:text="${owner.status}">Active</span>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <a th:href="@{/owner/profile}" class="btn btn-primary">
+                            <i class="bi bi-building me-1"></i>View Profile
+                        </a>
+                        <a th:href="@{/owner/profile/edit}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>Edit Profile
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    Applications
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
                 </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    Interviews
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">6</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    Profile Views
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">156</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-eye fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a th:href="@{/owner/job/post}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-plus-circle me-2"></i>Post New Job
+                        </a>
+                        <a th:href="@{/owner/messages}" class="list-group-item list-group-item-action position-relative">
+                            <i class="bi bi-people me-2"></i>View Candidates
+                            <span th:if="${session.newApplicationCount > 0}" 
+                                  class="position-absolute top-50 end-0 translate-middle-y badge bg-danger rounded-pill me-2"
+                                  th:text="${session.newApplicationCount}">
+                            </span>
+                        </a>
+                        <a th:href="@{/owner/jobs}" class="list-group-item list-group-item-action">
+                            <i class="bi bi-briefcase me-2"></i>Manage Jobs
+                        </a>
+                       
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <div th:if="${profilePhoto}">
-                            <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
-                                 class="img-fluid rounded-circle mb-3 company-logo" 
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                        <div th:unless="${profilePhoto}">
-                            <img src="/images/default-company.png" 
-                                 class="img-fluid rounded-circle mb-3 company-logo" 
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                        <h4 th:text="${owner.companyName}">Company Name</h4>
-                        <p class="text-muted" th:text="${owner.type}">Company Type</p>
-                        <span class="badge bg-success" th:text="${owner.status}">Active</span>
-                        
-                        <div class="d-grid gap-2 mt-3">
-                            <a th:href="@{/owner/profile}" class="btn btn-primary">
-                                <i class="bi bi-building me-1"></i>View Profile
-                            </a>
-                            <a th:href="@{/owner/profile/edit}" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil me-1"></i>Edit Profile
-                            </a>
-                        </div>
-                    </div>
+        <div class="col-lg-8">
+            <div class="card welcome-card h-100">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>Welcome to Your Employer Dashboard</h4>
                 </div>
-
-                <!-- Quick Actions -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <a th:href="@{/owner/job/post}" class="list-group-item list-group-item-action">
-                                <i class="bi bi-plus-circle me-2"></i>Post New Job
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-people me-2"></i>View Candidates
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-briefcase me-2"></i>Manage Jobs
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-graph-up me-2"></i>Analytics
-                            </a>
+                <div class="card-body">
+                    <h5>Welcome, <span class="text-primary" th:text="${owner.companyName}"></span>!</h5>
+                    <p class="lead">Manage your hiring process efficiently with our employer tools.</p>
+                    
+                    <!-- New Applications Card -->
+                    <div th:if="${session.newApplicationCount > 0}" class="card border-warning mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Action Required: New Applications
+                            </h6>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-8">
-                <div class="card welcome-card h-100">
-                    <div class="card-header">
-                        <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>Welcome to Your Employer Dashboard</h4>
-                    </div>
-                    <div class="card-body">
-                        <h5>Welcome, <span class="text-primary" th:text="${owner.companyName}"></span>!</h5>
-                        <p class="lead">Manage your hiring process efficiently with our employer tools.</p>
-                        
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h6><i class="bi bi-briefcase me-2"></i>Job Management</h6>
-                                        <p class="mb-0">Create and manage job postings</p>
-                                        <a th:href="@{/owner/job/post}" class="btn btn-sm btn-primary mt-2">Post a Job</a>
-                                    </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p class="mb-1">You have <strong th:text="${session.newApplicationCount}"></strong> new application(s) waiting for review.</p>
+                                    <small class="text-muted">Click the button below to review these applications.</small>
                                 </div>
+                                <a th:href="@{/owner/messages}" class="btn btn-primary">
+                                    <i class="bi bi-eye me-1"></i> Review Now
+                                </a>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h6><i class="bi bi-people me-2"></i>Candidates</h6>
-                                        <p class="mb-0">Review applications and schedule interviews</p>
-                                        <a href="#" class="btn btn-sm btn-primary mt-2">View Candidates</a>
-                                    </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-briefcase me-2"></i>Job Management</h6>
+                                    <p class="mb-0">Create and manage job postings</p>
+                                    <a th:href="@{/owner/job/post}" class="btn btn-sm btn-primary mt-2">Post a Job</a>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Recent Activity -->
-                        <div class="mt-4">
-                            <h6><i class="bi bi-clock-history me-2"></i>Recent Activity</h6>
-                            <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <small>3 new applications for Senior Developer</small>
-                                        <small class="text-muted">2 hours ago</small>
-                                    </div>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <small>Job "Frontend Engineer" published</small>
-                                        <small class="text-muted">1 day ago</small>
-                                    </div>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <small>Interview scheduled with John Doe</small>
-                                        <small class="text-muted">2 days ago</small>
-                                    </div>
-                                </a>
+                        <div class="col-md-6">
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6><i class="bi bi-people me-2"></i>Candidates</h6>
+                                    <p class="mb-0">Review applications and schedule interviews</p>
+                                    <a th:href="@{/owner/messages}" class="btn btn-sm btn-primary mt-2 position-relative">
+                                        View Candidates
+                                        <span th:if="${session.newApplicationCount > 0}" 
+                                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                              th:text="${session.newApplicationCount}">
+                                        </span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="alert alert-info mt-4">
-                            <h6><i class="bi bi-info-circle me-2"></i>Quick Tips</h6>
-                            <ul class="mb-0">
-                                <li>Keep your company profile updated to attract better candidates</li>
-                                <li>Use detailed job descriptions to get relevant applications</li>
-                                <li>Respond to candidates within 48 hours for better engagement</li>
-                            </ul>
-                        </div>
+                 
+
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="bi bi-info-circle me-2"></i>Quick Tips</h6>
+                        <ul class="mb-0">
+                            <li>Keep your company profile updated to attract better candidates</li>
+                            <li>Use detailed job descriptions to get relevant applications</li>
+                            <li>Respond to candidates within 48 hours for better engagement</li>
+                            <li th:if="${session.newApplicationCount > 0}">
+                                <strong>Review new applications promptly to avoid missing qualified candidates</strong>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss alerts after 8 seconds (except new application alerts)
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            if (!alert.classList.contains('notification-alert')) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 8000);
+            }
+        });
+        
+        // Auto-refresh dashboard every 60 seconds to check for new applications
+        setInterval(function() {
+            const activeElements = document.activeElement;
+            if (!activeElements || (activeElements.tagName !== 'INPUT' && activeElements.tagName !== 'TEXTAREA' && activeElements.tagName !== 'SELECT')) {
+                console.log('Auto-refreshing dashboard...');
+                location.reload();
+            }
+        }, 30000); // 30 seconds
+        
+        // Add data attribute for dynamic avatar colors
+        const avatarInitials = document.querySelectorAll('.avatar-initials');
+        avatarInitials.forEach(avatar => {
+            const initial = avatar.textContent.trim();
+            avatar.setAttribute('data-initial', initial);
+        });
+    });
+</script>
 </body>
 </html>

@@ -3,13 +3,13 @@ package com.springboot.Job.repository;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.stereotype.Repository;
@@ -21,17 +21,17 @@ public class JobPostRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
+    
     // -------------------- CREATE JOB --------------------
     public boolean createJobPost(JobPostBean jobPost) {
         try {
             String sql = "INSERT INTO job_post (" +
                     "job_title, job_type, department, location, job_description, " +
                     "company_name, company_website, company_description, required_skills, " +
-                    "experience_level, education_level, salary_mini, salary_max, benefits, " +
+                    "experience_level, education_level, salary_mini, salary_max, negotiable, benefits, " +
                     "application_email, application_deadline, application_instructions, " +
                     "owner_id, status, category_id, is_archived" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)";
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)";
 
             int result = jdbcTemplate.update(sql, new PreparedStatementSetter() {
                 @Override
@@ -48,25 +48,34 @@ public class JobPostRepository {
                     ps.setString(10, jobPost.getExperienceLevel());
                     ps.setString(11, jobPost.getEducationLevel());
 
-                    if (jobPost.getSalaryMini() != null) ps.setInt(12, jobPost.getSalaryMini());
-                    else ps.setNull(12, Types.INTEGER);
+                    if (jobPost.getSalaryMini() != null) 
+                        ps.setInt(12, jobPost.getSalaryMini());
+                    else 
+                        ps.setNull(12, Types.INTEGER);
 
-                    if (jobPost.getSalaryMax() != null) ps.setInt(13, jobPost.getSalaryMax());
-                    else ps.setNull(13, Types.INTEGER);
+                    if (jobPost.getSalaryMax() != null) 
+                        ps.setInt(13, jobPost.getSalaryMax());
+                    else 
+                        ps.setNull(13, Types.INTEGER);
 
-                    ps.setString(14, jobPost.getBenefits());
-                    ps.setString(15, jobPost.getApplicationEmail());
+                    ps.setString(14, jobPost.getNegotiable() != null ? jobPost.getNegotiable() : "false");
+
+                    ps.setString(15, jobPost.getBenefits());
+                    ps.setString(16, jobPost.getApplicationEmail());
 
                     if (jobPost.getApplicationDeadline() != null)
-                        ps.setDate(16, java.sql.Date.valueOf(jobPost.getApplicationDeadline()));
-                    else ps.setNull(16, Types.DATE);
+                        ps.setDate(17, java.sql.Date.valueOf(jobPost.getApplicationDeadline()));
+                    else 
+                        ps.setNull(17, Types.DATE);
 
-                    ps.setString(17, jobPost.getApplicationInstructions());
-                    ps.setInt(18, jobPost.getOwnerId());
-                    ps.setString(19, "PENDING");
+                    ps.setString(18, jobPost.getApplicationInstructions());
+                    ps.setInt(19, jobPost.getOwnerId());
+                    ps.setString(20, "PENDING");
 
-                    if (jobPost.getCategoryId() != null) ps.setInt(20, jobPost.getCategoryId());
-                    else ps.setNull(20, Types.INTEGER);
+                    if (jobPost.getCategoryId() != null) 
+                        ps.setInt(21, jobPost.getCategoryId());
+                    else 
+                        ps.setNull(21, Types.INTEGER);
                 }
             });
 
@@ -78,11 +87,12 @@ public class JobPostRepository {
         }
     }
 
+    
     // -------------------- READ JOBS --------------------
     public List<JobPostBean> findByOwnerId(Integer ownerId) {
         try {
             String sql = "SELECT * FROM job_post WHERE owner_id = ? ORDER BY created_at DESC";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+            return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -92,7 +102,7 @@ public class JobPostRepository {
     public List<JobPostBean> findAllJobsByOwner(Integer ownerId) {
         try {
             String sql = "SELECT * FROM job_post WHERE owner_id = ? ORDER BY created_at DESC";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+            return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -102,7 +112,7 @@ public class JobPostRepository {
     public List<JobPostBean> findRecentJobsByOwner(Integer ownerId, int limit) {
         try {
             String sql = "SELECT * FROM job_post WHERE owner_id = ? AND is_archived = FALSE ORDER BY created_at DESC LIMIT ?";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId, limit);
+            return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId, limit);
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -112,7 +122,7 @@ public class JobPostRepository {
     public List<JobPostBean> findActiveJobsByOwner(Integer ownerId) {
         try {
             String sql = "SELECT * FROM job_post WHERE owner_id = ? AND is_archived = FALSE ORDER BY created_at DESC";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+            return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -122,7 +132,7 @@ public class JobPostRepository {
     public List<JobPostBean> findArchivedJobsByOwner(Integer ownerId) {
         try {
             String sql = "SELECT * FROM job_post WHERE owner_id = ? AND is_archived = TRUE ORDER BY archived_at DESC";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class), ownerId);
+            return jdbcTemplate.query(sql, new JobPostRowMapper(), ownerId);
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -132,19 +142,30 @@ public class JobPostRepository {
     public Optional<JobPostBean> findByIdAndOwnerId(Integer jobId, Integer ownerId) {
         try {
             String sql = "SELECT * FROM job_post WHERE id = ? AND owner_id = ?";
-            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(JobPostBean.class), jobId, ownerId);
+            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new JobPostRowMapper(), jobId, ownerId);
             return Optional.ofNullable(jobPost);
         } catch (Exception e) {
             return Optional.empty();
         }
     }
+    
+    public int countActiveJobsByCategory(int categoryId) {
+        String sql = "SELECT COUNT(*) FROM job_post WHERE category_id = ? AND status = 'APPROVED' AND (is_archived = false OR is_archived IS NULL)";
+        return jdbcTemplate.queryForObject(sql, Integer.class, categoryId);
+    }
+    
+    public int countAllJobsByCategory(int categoryId) {
+        String sql = "SELECT COUNT(*) FROM job_post WHERE category_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, categoryId);
+    }
 
     public Optional<JobPostBean> findJobById(Integer jobId) {
         try {
             String sql = "SELECT * FROM job_post WHERE id = ?";
-            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(JobPostBean.class), jobId);
+            JobPostBean jobPost = jdbcTemplate.queryForObject(sql, new JobPostRowMapper(), jobId);
             return Optional.ofNullable(jobPost);
         } catch (Exception e) {
+            System.err.println("Error in findJobById for ID " + jobId + ": " + e.getMessage());
             return Optional.empty();
         }
     }
@@ -298,7 +319,7 @@ public class JobPostRepository {
     public List<JobPostBean> findAllArchivedJobs() {
         try {
             String sql = "SELECT * FROM job_post WHERE is_archived = TRUE ORDER BY archived_at DESC";
-            return jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(JobPostBean.class));
+            return jdbcTemplate.query(sql, new JobPostRowMapper());
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
@@ -310,7 +331,8 @@ public class JobPostRepository {
             String sql = "SELECT jp.id, jp.job_title as jobTitle, jp.job_type as jobType, " +
                     "jp.location, jp.company_name as companyName, jp.department, " +
                     "jp.experience_level as experienceLevel, jp.created_at as createdAt, " +
-                    "o.profile_photo as profilePhoto, o.company_name as ownerCompanyName " +
+                    "o.profile_photo as profilePhoto, o.company_name as ownerCompanyName, " +
+                    "o.company_phone as companyPhone, o.id as ownerId " +  // Added ownerId
                     "FROM job_post jp " +
                     "LEFT JOIN owner o ON jp.owner_id = o.id " +
                     "WHERE jp.status = 'APPROVED' AND jp.is_archived = FALSE " +
@@ -320,6 +342,113 @@ public class JobPostRepository {
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
+        }
+    }
+    
+    //add in 15.10.2025
+    public List<Map<String, Object>> findJobsByCategoryWithOwners(Integer categoryId, int limit, int offset) {
+        try {
+            String sql = "SELECT jp.id, jp.job_title as jobTitle, jp.job_type as jobType, " +
+                    "jp.location, jp.company_name as companyName, jp.department, " +
+                    "jp.experience_level as experienceLevel, jp.created_at as createdAt, " +
+                    "jp.salary_mini, jp.salary_max, " +
+                    "o.profile_photo as profilePhoto, o.company_name as ownerCompanyName " +
+                    "FROM job_post jp " +
+                    "LEFT JOIN owner o ON jp.owner_id = o.id " +
+                    "WHERE jp.category_id = ? AND jp.status = 'APPROVED' AND jp.is_archived = FALSE " +
+                    "ORDER BY jp.created_at DESC " +
+                    "LIMIT ? OFFSET ?";
+            return jdbcTemplate.queryForList(sql, categoryId, limit, offset);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public long countJobsByCategory(Integer categoryId) {
+        try {
+            String sql = "SELECT COUNT(*) FROM job_post WHERE category_id = ? AND status = 'APPROVED' AND is_archived = FALSE";
+            return jdbcTemplate.queryForObject(sql, Long.class, categoryId);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
+    
+    
+    public List<Map<String, Object>> findActiveJobsWithSearch(int limit, int offset, String search, String location, String jobType) {
+        try {
+            StringBuilder sql = new StringBuilder(
+                "SELECT jp.id, jp.job_title as jobTitle, jp.job_type as jobType, " +
+                "jp.location, jp.company_name as companyName, jp.department, " +
+                "jp.experience_level as experienceLevel, jp.created_at as createdAt, " +
+                "o.profile_photo as profilePhoto, o.company_name as ownerCompanyName " +
+                "FROM job_post jp " +
+                "LEFT JOIN owner o ON jp.owner_id = o.id " +
+                "WHERE jp.status = 'APPROVED' AND jp.is_archived = FALSE "
+            );
+
+            List<Object> params = new ArrayList<>();
+
+            // Add search conditions
+            if (search != null && !search.trim().isEmpty()) {
+                sql.append(" AND (jp.job_title LIKE ? OR jp.company_name LIKE ?) ");
+                String searchTerm = "%" + search + "%";
+                params.add(searchTerm);
+                params.add(searchTerm);
+            }
+            if (location != null && !location.trim().isEmpty()) {
+                sql.append(" AND jp.location LIKE ? ");
+                params.add("%" + location + "%");
+            
+            }
+            if (jobType != null && !jobType.trim().isEmpty() && !jobType.equals("Select Job Type")) {
+                sql.append(" AND jp.job_type = ? ");
+                params.add(jobType);
+            }
+
+            sql.append(" ORDER BY jp.created_at DESC LIMIT ? OFFSET ?");
+            params.add(limit);
+            params.add(offset);
+
+            return jdbcTemplate.queryForList(sql.toString(), params.toArray());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+	public long countActiveJobsWithSearch(String search, String location, String jobType) {
+        try {
+            StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM job_post jp " +
+                "WHERE jp.status = 'APPROVED' AND jp.is_archived = FALSE "
+            );
+
+            List<Object> params = new ArrayList<>();
+
+            // Add search conditions
+            if (search != null && !search.trim().isEmpty()) {
+                sql.append(" AND (jp.job_title LIKE ? OR jp.company_name LIKE ?) ");
+                String searchTerm = "%" + search + "%";
+                params.add(searchTerm);
+                params.add(searchTerm);
+            }
+            if (location != null && !location.trim().isEmpty()) {
+                sql.append(" AND jp.location LIKE ? ");
+                params.add("%" + location + "%");
+            }
+            if (jobType != null && !jobType.trim().isEmpty() && !jobType.equals("Select Job Type")) {
+                sql.append(" AND jp.job_type = ? ");
+                params.add(jobType);
+            }
+
+            return jdbcTemplate.queryForObject(sql.toString(), params.toArray(), Long.class);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 }

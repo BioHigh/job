@@ -157,48 +157,31 @@
 </head>
 <body>
     <!-- ===== NAVIGATION BAR (from Employer Portal) ===== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-        <div class="container-fluid px-4">
-            <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="#" style="font-size: 1.8rem;">
-                <i class="fas fa-briefcase me-2"></i> JobJump
-            </a>
+      <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+    <div class="container-fluid px-4">
+        <!-- Logo -->
+        <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #1a73e8; font-size: 2rem;">
+            <i class="bi bi-building-fill me-2"></i> JobJump
+        </a>
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <!-- Menu -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-semibold px-3" th:href="@{/company}" style="color: #1a73e8;">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#pricing">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#testimonials">Testimonials</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#contact">Contact</a>
-                    </li>
-                </ul>
-
-                <!-- Buttons -->
+        <!-- Menu -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Buttons - Aligned to right -->
                 <div class="d-flex gap-2 ms-auto">
-                    <a th:href="@{/owner/login}" class="btn btn-outline-primary fw-semibold">Login</a>
-                    <a th:href="@{/owner/register}" class="btn btn-outline-primary fw-semibold">Become an Employer</a>
-                    <a th:href="@{/index}" class="btn btn-primary fw-semibold">Seekers</a>
-                </div>
-            </div>
+    <a th:href="@{/owner/login}" class="btn btn-outline-primary fw-semibold">Login</a>
+    <a th:href="@{/request/owner}" class="btn btn-outline-primary fw-semibold">Become Employer</a>
+    <a th:href="@{/}" class="btn btn-primary fw-semibold">Seekers</a>
+    <a th:href="@{/company}" class="btn btn-secondary fw-semibold">Back</a>
+</div>
         </div>
-    </nav>
-
+    </div>
+</nav>
     <!-- ===== SUCCESS NOTIFICATION ===== -->
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show alert-notification" role="alert">
         <i class="bi bi-check-circle me-2"></i>
@@ -217,13 +200,10 @@
                                 <!-- Benefits Section -->
                                 <div class="col-lg-6 d-none d-lg-block benefits-section">
                                     <div class="h-100 d-flex flex-column justify-content-center">
-                                        <div class="text-center mb-4">
-                                            <h3 class="h3 text-gray-900 mb-3">
-                                                <i class="bi bi-building me-2"></i>HireHub Business
-                                            </h3>
+                                        <div class="text-center mb-1">
+                                            <h3 class="text-center  fw-bold">Benefits for Employers</h3>
                                         </div>
                                         <hr>
-                                        <h5 class="text-center mb-4 fw-bold">Benefits for Employers</h5>
                                         <ul class="feature-list">
                                             <li><i class="bi bi-check-circle-fill text-success me-2"></i>Post unlimited job listings</li>
                                             <li><i class="bi bi-check-circle-fill text-success me-2"></i>Access qualified candidates</li>
@@ -286,19 +266,14 @@
                                                 </div>
                                             </div>
                                             <div class="mb-4 d-flex justify-content-between align-items-center">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input" id="rememberMe">
-                                                    <label class="form-check-label" for="rememberMe">Remember me</label>
-                                                </div>
-                                                <a href="#" class="text-primary text-decoration-none">Forgot Password?</a>
-                                            </div>
+                                               
+													<a th:href="@{/owner/ownerforgotpassword}" class="float-end">Forgot Password?</a>                                            </div>
                                             <button type="submit" class="btn btn-login text-white w-100 mb-3 py-2">
                                                 <i class="bi bi-box-arrow-in-right me-2"></i>Login as Employer
                                             </button>
                                         </form>
 
                                       
-                                       
                                        
                                     </div>
                                 </div>

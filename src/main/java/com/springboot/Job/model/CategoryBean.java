@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,4 +25,13 @@ public class CategoryBean {
     @Column(name = "admin_id")
     private int adminId;
 
+    // ADD THESE 3 FIELDS:
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private Integer deletedBy;
 }

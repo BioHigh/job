@@ -1,681 +1,400 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
-  <head>
-    <title>JobJump &mdash; Find Your Dream Job</title>
+<head>
+    <title>JobJump</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="JobJump - Find your dream job with thousands of opportunities" />
-    <meta name="keywords" content="jobs, career, employment, job portal" />
-    <meta name="author" content="JobJump" />
-    <link rel="shortcut icon" href="ftco-32x32.png">
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="shortcut icon" href="ftco-32x32.png">
-    <link rel="stylesheet" href="css/custom-bs.css">
-    <link rel="stylesheet" href="css/jquery.fancybox.min.css">
-    <link rel="stylesheet" href="css/bootstrap-select.min.css">
-    <link rel="stylesheet" href="fonts/icomoon/style.css">
-    <link rel="stylesheet" href="fonts/line-icons/style.css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css">
-    <link rel="stylesheet" href="css/animate.min.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    
-    <link rel="stylesheet" href="css/style.css"> 
-      <link rel="stylesheet" th:href="@{/css/footer.css}">
-    
+
+    <link rel="shortcut icon" th:href="@{/ftco-32x32.png}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+
     <style>
-    /* Loading Screen Styles */
-    #loading-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #89ba16, #6b9510);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-    }
-    
-    .loading-content {
-        text-align: center;
-        color: white;
-    }
-    
-    .loading-logo {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        animation: bounce 2s infinite;
-    }
-    
-    .loading-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-    }
-    
-    .loading-text {
-        font-size: 1.2rem;
-        margin-top: 20px;
-        font-weight: 300;
-        letter-spacing: 1px;
-    }
-    
-    .loading-progress {
-        width: 200px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-        margin: 20px auto;
-        overflow: hidden;
-    }
-    
-    .loading-progress-bar {
-        height: 100%;
-        background: white;
-        width: 0%;
-        animation: progress 2s ease-in-out infinite;
-    }
-    
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
+        body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f8fafb; color: #333; }
+        h1,h2,h3,h4,h5 { font-weight: 600; }
+        a { text-decoration: none; transition: all 0.3s ease; }
+
+        .home-section { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; background-size: cover; background-position: center; background-attachment: fixed; }
+        .home-section::after { content:""; position:absolute; inset:0; background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(137,186,22,0.2)); z-index:1; }
+        .home-section .container { position: relative; z-index: 2; }
+        .home-section h1 { font-size:3rem; color:#fff; font-weight:700; line-height:1.3; }
+        .home-section p { color:#f8f9fa; font-size:1.15rem; margin-top:1rem; }
+
+        .search-jobs-form { background: rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); border-radius:16px; padding:1.5rem; margin-top:2.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+        .search-jobs-form input, .search-jobs-form select { border-radius:10px; border:none; box-shadow:0 3px 8px rgba(0,0,0,0.05); }
+        .btn-search {
+            background: linear-gradient(135deg, #89ba16, #6b9a0f);
+            border: none;
+            border-radius: 10px;
+            width: 180px;
+            transition: all 0.3s ease;
         }
-        40% {
-            transform: translateY(-20px);
+        .btn-search:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(137,186,22,0.3); }
+
+        .stats-counter { background: rgba(255,255,255,0.15); border-radius:16px; padding:2rem 1rem; margin-top:3rem; backdrop-filter:blur(8px); box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+        .stat-item { text-align:center; color:white; transition: all 0.3s ease; }
+        .stat-item:hover { transform:translateY(-5px); }
+        .stat-number { font-size:2.5rem; font-weight:800; background:linear-gradient(135deg,#a8e62c,#89ba16); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .stat-label { text-transform:uppercase; font-size:0.85rem; letter-spacing:1px; color:#e6e6e6; }
+
+        .job-listing { border:none; border-radius:14px; overflow:hidden; transition: all 0.35s ease; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,0.05); }
+        .job-listing:hover { transform:translateY(-5px); box-shadow:0 15px 35px rgba(137,186,22,0.2); }
+        .job-listing h5 { font-weight:700; font-size:1.15rem; color:#333; }
+        .badge { border-radius:8px; font-size:0.8rem; padding:6px 10px; }
+        .bg-success { background-color:#89ba16 !important; }
+        .bg-danger { background-color:#dc3545 !important; }
+        .card-footer { background:#f8fafb; color:#000; }
+        .job-listing .mt-2 small { color:#000 !important; }
+
+        .foot { color:#ddd; padding:60px 0 20px; background:#0b0b0b; }
+        footer h4 { color:#fff; font-size:18px; margin-bottom:20px; }
+        footer ul li a:hover { color:#89ba16; }
+        .copy-right { border-top:1px solid #444; text-align:center; padding-top:15px; font-size:14px; color:#aaa; }
+        .search-jobs-form select[name="jobType"] { font-size:1.1rem; }
+
+        .pagination .page-link:hover {
+            background-color: skyblue; 
+            color: #fff;
+            transition: 0.3s;
         }
-        60% {
-            transform: translateY(-10px);
+
+        /* Loading Screen - Updated to match second HTML but with green colors */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #89ba16, #6b9a0f);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
         }
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes progress {
-        0% { width: 0%; }
-        50% { width: 70%; }
-        100% { width: 100%; }
-    }
-    
-    .fade-out {
-        opacity: 0;
-        visibility: hidden;
-    }
-    
-    /* Main Page Styles */
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        opacity: 0;
-        animation: fadeIn 0.5s ease-in 0.5s forwards;
-    }
-    
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
+        
+        .loading-content {
+            text-align: center;
+            color: white;
         }
-    }
-    
-    /* Header Color Override */
-    .navbar-light .navbar-nav .nav-link.active,
-    .btn-primary,
-    .bg-primary {
-        background-color: #89ba16 !important;
-        border-color: #89ba16 !important;
-    }
-    
-    .btn-primary:hover {
-        background-color: #759b12 !important;
-        border-color: #759b12 !important;
-    }
-    
-    .text-primary {
-        color: #89ba16 !important;
-    }
-    
-    .border-primary {
-        border-color: #89ba16 !important;
-    }
-    
-    /* Footer Styles */
-     .footer-modern {
-    background-color: #0f1b33; /* dark background */
-    color: #ccc;
-    padding: 3rem 0 2rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  .footer-modern a {
-    color: #ccc;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-
-  .footer-modern a:hover {
-    color: #4dabf7;
-    text-decoration: underline;
-  }
-
-  .footer-modern h5 {
-    color: #fff;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-
-  .footer-modern ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .footer-modern ul li {
-    margin-bottom: 0.5rem;
-  }
-
-  /* Feedback form styling */
-  .feedback-section {
-    background-color: rgba(255,255,255,0.05);
-    padding: 1rem;
-    border-radius: 10px;
-  }
-
-  .feedback-section .form-control {
-    background-color: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #fff;
-    border-radius: 5px;
-    margin-bottom: 0.5rem;
-  }
-
-  .feedback-section .form-control::placeholder {
-    color: rgba(255,255,255,0.6);
-  }
-
-  .feedback-section .form-control:focus {
-    background-color: rgba(255,255,255,0.15);
-    border-color: #4dabf7;
-    box-shadow: 0 0 0 0.2rem rgba(77,171,247,0.25);
-    color: #fff;
-  }
-
-  .feedback-section .btn-primary {
-    background-color: #4dabf7;
-    border-color: #4dabf7;
-    width: 100%;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-
-  .feedback-section .btn-primary:hover {
-    background-color: #3b99e6;
-    border-color: #3b99e6;
-    transform: translateY(-2px);
-  }
-
-  /* Bottom copyright */
-  .footer-modern .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.2);
-    padding-top: 1rem;
-    margin-top: 2rem;
-    font-size: 0.9rem;
-    color: #ccc;
-  }
-
-  .footer-modern .footer-bottom a {
-    color: #4dabf7;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 992px) {
-    .feedback-section {
-      margin-top: 2rem;
-    }
-  }
-    
-    /* Hero Section Button */
-    .btn-search {
-        background-color: #89ba16 !important;
-        border-color: #89ba16 !important;
-    }
-    
-    .btn-search:hover {
-        background-color: #759b12 !important;
-        border-color: #759b12 !important;
-    }
-    
-    /* Stats Section */
-    .section-counter .number {
-        color: #89ba16;
-    }
-    
-    /* Job Listings */
-    .badge-success {
-        background-color: #89ba16;
-    }
-    
-    /* CTA Section */
-    .bg-warning {
-        background-color: #89ba16 !important;
-        border-color: #89ba16 !important;
-    }
-    
-    .btn-warning {
-        background-color: #89ba16 !important;
-        border-color: #89ba16 !important;
-        color: white;
-    }
-    
-    .btn-warning:hover {
-        background-color: #759b12 !important;
-        border-color: #759b12 !important;
-    }
-    
-    /* Responsive tweak */
-    @media (max-width: 767px) {
-        footer h4 {
-            margin-top: 20px;
-        }
-        .copy-right {
-            font-size: 12px;
-        }
+        
         .loading-logo {
             font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
         }
-    }
-    
-    /* Job Listings Styles */
-	.job-listing-logo img {
-	    border-radius: 8px;
-	    border: 2px solid #e9ecef;
-	    transition: all 0.3s ease;
-	}
-	
-	.job-listing:hover .job-listing-logo img {
-	    border-color: #89ba16;
-	    transform: scale(1.05);
-	}
-	
-	.job-listing {
-	    border-bottom: 1px solid #e9ecef;
-	    transition: all 0.3s ease;
-	}
-	
-	.job-listing:hover {
-	    background-color: #f8f9fa;
-	    transform: translateY(-2px);
-	    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-	}
-	
-	.badge-success {
-	    background-color: #89ba16 !important;
-	}
-	
-	.badge-danger {
-	    background-color: #dc3545 !important;
-	}
-	
-	/* Pagination Styles */
-	.custom-pagination {
-	    display: flex;
-	    align-items: center;
-	    gap: 10px;
-	    justify-content: flex-end;
-	}
-	
-	.custom-pagination a {
-	    padding: 8px 16px;
-	    border: 1px solid #89ba16;
-	    border-radius: 4px;
-	    text-decoration: none;
-	    color: #89ba16;
-	    background-color: white;
-	    transition: all 0.3s ease;
-	    font-weight: 500;
-	}
-	
-	.custom-pagination a:hover {
-	    background-color: #89ba16;
-	    color: white;
-	    border-color: #89ba16;
-	    text-decoration: none;
-	}
-	
-	.custom-pagination .prev i,
-	.custom-pagination .next i {
-	    font-size: 12px;
-	}
-	.btn-signup-anim {
-  background: linear-gradient(135deg, #ff8c00, #ff6600);
-  border: none;
-  border-radius: 50px;
-  color: #fff !important;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  animation: pulseGlow 2.5s infinite;
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background: white;
+            width: 0%;
+            animation: progress 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        /* Main page fade in */
+        body {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        #loading-screen h2 {
+    color: #fff;
 }
-
-/* Soft glowing animation */
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 140, 0, 0.4), 0 0 20px rgba(255, 102, 0, 0.4);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(255, 140, 0, 0.8), 0 0 50px rgba(255, 102, 0, 0.7);
-    transform: scale(1.05);
-  }
-  100% {
-    box-shadow: 0 0 10px rgba(255, 140, 0, 0.4), 0 0 20px rgba(255, 102, 0, 0.4);
-    transform: scale(1);
-  }
-}
-
-/* Hover effect: color pop + bounce */
-.btn-signup-anim:hover {
-  background: linear-gradient(135deg, #ff6600, #ff3300);
-  transform: translateY(-3px) scale(1.08);
-}
-	s
-    </style>  
-  </head>
-  <body id="top">
+        
+    </style>
+</head>
+<body id="top">
 
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loading-content">
             <div class="loading-logo">
-                <i class="fas fa-briefcase"></i>
+                <i class="bi bi-briefcase"></i>
             </div>
             <h2 class="mb-3">JobJump</h2>
             <div class="loading-spinner"></div>
             <div class="loading-progress">
                 <div class="loading-progress-bar"></div>
             </div>
-            <div class="loading-text">Finding Your Dream Job...</div>
+            <div class="loading-text">Loading Amazing Opportunities...</div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div id="main-content" style="display: none;">
-
     <div class="site-wrap">
-
-        <div class="site-mobile-menu site-navbar-target">
-          <div class="site-mobile-menu-header">
-            <div class="site-mobile-menu-close mt-3">
-              <span class="icon-close2 js-menu-toggle"></span>
-            </div>
-          </div>
-          <div class="site-mobile-menu-body"></div>
-        </div> <!-- .site-mobile-menu -->
-        
-
-        <!-- NAVBAR -->
         <div th:replace="header :: site-header"></div>
 
-        <!-- HOME -->
-        <section class="home-section section-hero overlay bg-image" style="background-image: url('images/hero_1.jpg');" id="home-section">
+        <section class="home-section overlay bg-image" th:style="'background-image: url(' + @{/images/hero_1.jpg} + ');'" id="home-section">
+            <div class="container">
+                <div class="row align-items-center justify-content-center text-center">
+                    <div class="col-lg-10 mx-auto">
+                        <h1 class="fw-bold mt-5" data-aos="fade-up" data-aos-delay="200">Find the Fastest Path to Your Dream Job</h1>
+                        <p class="lead mb-4" data-aos="fade-up" data-aos-delay="400" style="width: 100%; max-width: 100%; text-align: center;">
+                            Explore countless opportunities and connect with leading companies.<br>
+                            Confidently advance your career to the next level.
+                        </p>
 
-          <div class="container">
-            <div class="row align-items-center justify-content-center">
-              <div class="col-md-12">
-                <div class="mb-5 text-center">
-      <h1 class="text-white fw-bold">Find the Fastest Path to Your Dream Job</h1>
-      <p class="text-light">
-        Discover thousands of opportunities, connect with top companies, and take the next step in your career with ease.
-      </p>
-    </div>
+                        <!-- Search Form -->
+                        <form class="search-jobs-form" id="searchForm" data-aos="zoom-in" data-aos-delay="600">
+                            <div class="row g-3 align-items-center justify-content-center">
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Job title, Company..." name="search">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Location..." name="location">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select form-select-lg" name="jobType">
+                                        <option value="">Any Type</option>
+                                        <option value="full-time">Full Time</option>
+                                        <option value="part-time">Part Time</option>
+                                        <option value="contract">Contract</option>
+                                        <option value="freelance">Freelance</option>
+                                        <option value="internship">Internship</option>
+                                        <option value="remote">Remote</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-grid">
+                                    <button type="button" class="btn btn-search btn-lg text-white fw-semibold" id="searchBtn">
+                                        <i class="bi bi-search me-1"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
 
-                <form method="post" class="search-jobs-form">
-                  <div class="row mb-5">
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                      <input type="text" class="form-control form-control-lg" placeholder="Job title, Company...">
+                        <div class="row stats-counter mt-5" data-aos="fade-up" data-aos-delay="800">
+                            <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Jobs Available</span></div></div>
+                            <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Companies</span></div></div>
+                            <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Candidates</span></div></div>
+                        </div>
                     </div>
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                      <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Select Region">
-                        <option>Anywhere</option>
-                        <option>San Francisco</option>
-                        <option>Palo Alto</option>
-                        <option>New York</option>
-                        <option>Manhattan</option>
-                        <option>Ontario</option>
-                        <option>Toronto</option>
-                        <option>Kansas</option>
-                        <option>Mountain View</option>
-                      </select>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                      <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%" data-live-search="true" title="Select Job Type">
-                        <option>Part Time</option>
-                        <option>Full Time</option>
-                      </select>
-                    </div>
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                      <button type="submit" class="btn btn-primary btn-lg btn-block text-white btn-search"><span class="icon-search icon mr-2"></span>Search Job</button>
-                    </div>
-                  </div>
-                 
-                </form>
-              </div>
+                </div>
             </div>
-          </div>
-
-          <a href="#next" class="scroll-button smoothscroll">
-            <span class=" icon-keyboard_arrow_down"></span>
-          </a>
-
-        </section>
-        
-        <section class="py-5 bg-image overlay-primary fixed overlay" id="next" style="background-image: url('images/hero_1.jpg');">
-          <div class="container">
-            <div class="row mb-5 justify-content-center">
-              <div class="col-md-7 text-center">
-      <h2 class="section-title mb-2 text-white">JobJump Site Stats</h2>
-      <p class="lead text-white">
-        Explore real-time statistics from our platform, many of jobs posted, active companies hiring, and job seekers finding their dream careers every day.
-      </p>
-    </div>
-
-            </div>
-            <div class="row pb-0 block__19738 section-counter">
-
-              <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                  <strong class="number" data-number="1930">0</strong>
-                </div>
-                <span class="caption">Candidates</span>
-              </div>
-
-              <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                  <strong class="number" data-number="54">0</strong>
-                </div>
-                <span class="caption">Jobs Posted</span>
-              </div>
-
-              <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                  <strong class="number" data-number="120">0</strong>
-                </div>
-                <span class="caption">Jobs Filled</span>
-              </div>
-
-              <div class="col-6 col-md-6 col-lg-3 mb-5 mb-lg-0">
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                  <strong class="number" data-number="550">0</strong>
-                </div>
-                <span class="caption">Companies</span>
-              </div>
-
-                
-            </div>
-          </div>
         </section>
 
-        <!-- Show Jobs -->
-		<section class="site-section">
-		    <div class="container">
-		        
-		        <div class="row mb-5 justify-content-center">
-		            <div class="col-md-7 text-center">
-		                <h2 class="section-title mb-2" th:text="${totalJobs} + ' Active Jobs Available'"></h2>
-		                <p class="lead">Discover your next career opportunity from top companies</p>
-		            </div>
-		        </div>
-		        
-		        <!-- Active Jobs Listings -->
-		        <ul class="job-listings mb-5" th:if="${not #lists.isEmpty(activeJobs)}">
-		            <li th:each="job : ${activeJobs}" 
-		                class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-		                
-		                <div class="job-listing-logo">
-		                    <div class="company-logo-placeholder"
-		                         style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-		                        <i class="fas fa-building text-primary" style="font-size: 24px;"></i>
-		                    </div>
-		                </div>
-		
-		                <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
-		                    <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
-		                        <h2 th:text="${job.jobTitle}">Job Title</h2>
-		                        <strong th:text="${job.companyName}">Company Name</strong>
-		                        <div class="mt-2" th:if="${job.ownerCompanyName != null}">
-		                            <small class="text-muted">
-		                                <i class="bi bi-building"></i>
-		                                <span th:text="${job.ownerCompanyName}">Owner Company</span>
-		                            </small>
-		                        </div>
-		                    </div>
-		                    <div class="job-listing-location mb-3 mb-sm-0 custom-width w-25">
-		                        <span class="icon-room"></span> 
-		                        <span th:text="${job.location}">Location</span>
-		                    </div>
-		                    <div class="job-listing-meta">
-		                        <span th:classappend="${job.jobType == 'Full Time'} ? 'badge badge-success' : 'badge badge-danger'"
-		                              th:text="${job.jobType}">Job Type</span>
-		                    </div>
-		                </div>
-		            </li>
-		        </ul>
-		
-		        <div th:if="${#lists.isEmpty(activeJobs)}" class="text-center py-5">
-		            <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
-		            <h4 class="text-muted">No Active Jobs Available</h4>
-		            <p class="text-muted">Check back later for new job opportunities.</p>
-		        </div>
-		
-		        <!-- Pagination -->
-		        <div class="row pagination-wrap">
-		            <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
-		                <span>
-		                    Page <span th:text="${currentPage}">1</span> of <span th:text="${totalPages}">1</span>
-		                    - Showing <span th:text="${#lists.size(activeJobs)}">0</span> of <span th:text="${totalJobs}">0</span> jobs
-		                </span>
-		            </div>
-		            <div class="col-md-6 text-center text-md-right">
-		                <div class="custom-pagination ml-auto">
-		                    <!-- Previous Button -->
-		                    <a th:if="${hasPrev}" 
-		                       th:href="@{/(page=${currentPage - 1})}" 
-		                       class="prev">
-		                       <i class="fas fa-chevron-left"></i> Previous
-		                    </a>
-		                    
-		                    <!-- Next Button -->
-		                    <a th:if="${hasNext}" 
-		                       th:href="@{/(page=${currentPage + 1})}" 
-		                       class="next">
-		                       Next <i class="fas fa-chevron-right"></i>
-		                    </a>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		</section>
+        <!-- Job Listings Section -->
+        <section class="site-section py-5" id="job-listings">
+            <div class="container">
+                <div class="text-center mb-5" data-aos="fade-up">
+                    <h2 th:text="${totalJobs} + ' Active Jobs Available'">Active Jobs Available</h2>
+                    <p class="lead text-dark">Discover your next career opportunity from top companies</p>
+                </div>
 
-       <section class="py-5 bg-image overlay-primary fixed overlay" style="background-image: url('images/hero_1.jpg');">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <h2 class="text-white">Looking For A Job?</h2>
-        <p class="mb-0 text-white lead">Join thousands of job seekers and find your dream career today.</p>
-      </div>
-      <div class="col-md-3 ml-auto text-center text-md-end">
-        <a th:href="@{/user/register}" class="btn btn-lg btn-block text-white shadow btn-signup-anim">
-  <i class="bi bi-person-plus me-1"></i> Sign Up Now
-</a>
+                <div class="row g-4" th:if="${not #lists.isEmpty(activeJobs)}">
+                    <div class="col-md-6" th:each="job : ${activeJobs}" data-aos="fade-up" data-aos-delay="100">
+                        <a th:href="@{/user/job/detail/} + ${job.id}" class="text-decoration-none">
+                            <div class="job-listing card h-100">
+                                <div class="card-body d-flex">
+                                    <div class="job-listing-logo me-3">
+                                        <div th:if="${job.profilePhoto != null}" style="width:80px;height:80px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                                            <img th:src="'data:image/jpeg;base64,' + ${job.profilePhoto}" alt="Company Logo" style="width:100%;height:100%;object-fit:cover;">
+                                        </div>
+                                        <div th:unless="${job.profilePhoto != null}" class="company-logo-placeholder bg-light d-flex align-items-center justify-content-center" style="width:80px;height:80px;">
+                                            <i class="bi bi-building text-success" style="font-size:28px;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 th:text="${job.jobTitle}">Job Title</h5>
+                                        <strong class="text-success" th:text="${job.companyName}">Company</strong>
+                                        <div class="mt-1" th:if="${job.ownerCompanyName != null}">
+                                            <small><i class="bi bi-building me-1"></i><span th:text="${job.ownerCompanyName}">Owner Company</span></small>
+                                        </div>
+                                        <div class="mt-2 small">
+                                            <i class="bi bi-geo-alt"></i> <span th:text="${job.location}">Location</span>
+                                        </div>
+                                        <span th:classappend="${job.jobType == 'Full Time'} ? 'badge bg-success' : 'badge bg-danger'" th:text="${job.jobType}">Type</span>
+                                    </div>
+                                </div>
+                                <div class="card-footer small">
+                                    <i class="bi bi-clock"></i> <span th:text="${#dates.format(job.createdAt, 'dd MMM, yyyy')}">Date</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
 
+                <div th:if="${#lists.isEmpty(activeJobs)}" class="text-center py-5">
+                    <i class="bi bi-briefcase fs-1 text-muted"></i>
+                    <h4 class="text-muted mt-3">No Active Jobs Available</h4>
+                    <p class="text-muted">Check back later for new job opportunities.</p>
+                </div>
+
+              <div th:if="${totalPages > 1}" class="mt-4">
+    <nav aria-label="Job Listings Pagination">
+        <ul class="pagination justify-content-center">
+
+            <!-- Prev button -->
+            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                <a th:if="${currentPage > 1}" class="page-link"
+                   th:href="@{|/index?page=${currentPage - 1}${search != null ? '&search=' + search : ''}${location != null ? '&location=' + location : ''}${jobType != null ? '&jobType=' + jobType : ''}#job-listings|}">
+                    <i class="bi bi-chevron-left"></i> Prev
+                </a>
+                <span th:if="${currentPage == 1}" class="page-link disabled">
+                    <i class="bi bi-chevron-left"></i> Prev
+                </span>
+            </li>
+
+            <!-- Page numbers (Sliding Window: 3 pages) -->
+            <li th:each="page : ${#numbers.sequence(
+                                currentPage == 1 ? 1 :
+                                currentPage == totalPages ? totalPages - 2 :
+                                currentPage - 1,
+                                
+                                currentPage == 1 ? (totalPages >= 3 ? 3 : totalPages) :
+                                currentPage == totalPages ? totalPages :
+                                currentPage + 1)}"
+                class="page-item"
+                th:classappend="${page == currentPage} ? 'active' : ''">
+
+                <a class="page-link"
+                   th:href="@{|/index?page=${page}${search != null ? '&search=' + search : ''}${location != null ? '&location=' + location : ''}${jobType != null ? '&jobType=' + jobType : ''}#job-listings|}"
+                   th:text="${page}">
+                </a>
+            </li>
+
+            <!-- Next button -->
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled' : ''">
+                <a th:if="${currentPage < totalPages}" class="page-link"
+                   th:href="@{|/index?page=${currentPage + 1}${search != null ? '&search=' + search : ''}${location != null ? '&location=' + location : ''}${jobType != null ? '&jobType=' + jobType : ''}#job-listings|}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+                <span th:if="${currentPage == totalPages}" class="page-link disabled">
+                    Next <i class="bi bi-chevron-right"></i>
+                </span>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+
+            </div>
+        </section>
+
+        <div th:replace="footer :: site-footer"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-warning text-dark">
+            <h5 class="modal-title" id="loginModalLabel"><i class="bi bi-exclamation-triangle me-2"></i> Login Required</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            You need to login first to use job search.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
 
-
-
-        
-        
-
-
-       
-       
-         <!-- Footer -->
-      <div th:replace="footer :: site-footer"></div>
-      
-      </div>
-
-    </div> <!-- End Main Content -->
-
-    <!-- SCRIPTS -->
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/isotope.pkgd.min.js"></script>
-    <script src="js/stickyfill.min.js"></script>
-    <script src="js/jquery.fancybox.min.js"></script>
-    <script src="js/jquery.easing.1.3.js"></script>
-    
-    <script src="js/jquery.waypoints.min.js"></script>
-    <script src="js/jquery.animateNumber.min.js"></script>
-    <script src="js/owl.carousel.min.js"></script>
-    
-    <script src="js/bootstrap-select.min.js"></script>
-    
-    <script src="js/custom.js"></script>
-    
-    <!-- Loading Script -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
     <script>
+        // Initialize AOS
+        AOS.init({ duration: 900, once: true, offset: 100 });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Scroll-to-top button
+        const scrollBtn = document.createElement('button');
+        scrollBtn.textContent = "↑";
+        scrollBtn.style.cssText = `position: fixed; bottom: 30px; right: 30px; padding: 10px 15px; font-size: 18px; border: none; border-radius: 8px; background: #89ba16; color: #fff; cursor: pointer; display: none; z-index: 999;`;
+        document.body.appendChild(scrollBtn);
+        scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        window.addEventListener('scroll', () => { scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+
+        // Search button alert
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            alert("You need to login first to use job search.");
+        });
+
+        // Loading screen with enhanced animation
         document.addEventListener('DOMContentLoaded', function() {
-            // Simulate loading time
             setTimeout(function() {
                 const loadingScreen = document.getElementById('loading-screen');
-                const mainContent = document.getElementById('main-content');
                 
                 // Add fade-out class to loading screen
                 loadingScreen.classList.add('fade-out');
                 
-                // Show main content after a short delay
+                // Remove loading screen from DOM after transition
                 setTimeout(function() {
-                    mainContent.style.display = 'block';
-                    // Remove loading screen from DOM after transition
-                    setTimeout(function() {
-                        loadingScreen.remove();
-                    }, 500);
-                }, 300);
-            }, 2000); // 2 seconds loading time
+                    loadingScreen.remove();
+                }, 500);
+            }, 1500); // 1.5 seconds loading time
         });
     </script>
-
-  </body>
+</body>
 </html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Job Applications</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    
+    <style>
+        :root {
+            --tangerine: #FF6B35;
+            --tangerine-light: #FF8C5A;
+            --cream: #FFF5F0;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --danger: #dc3545;
+        }
+        
+        .application-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        
+        .application-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+       .application-card.pending { border-left-color: var(--warning); }
+.application-card.approved { border-left-color: var(--success); }
+.application-card.rejected { border-left-color: var(--danger); }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+.status-pending { background: #FFF3CD; color: #856404; }
+.status-accepted { background: #D4EDDA; color: #155724; }
+.status-rejected { background: #F8D7DA; color: #721C24; }
+        
+        .btn-tangerine {
+    background: linear-gradient(135deg, #89ba16, #a8d631);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-tangerine:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            color: white;
+        }
+        
+        .btn-outline-tangerine {
+            border: 2px solid var(--tangerine);
+            color: var(--tangerine);
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-tangerine:hover {
+            background: var(--tangerine);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .company-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .logo-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c757d, #495057);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        /* Filter button styles */
+        .filter-btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .filter-btn.active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .badge-count {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        /* Pagination styles */
+        .page-link {
+            color: var(--tangerine);
+            border: 1px solid #dee2e6;
+        }
+        
+        .page-link:hover {
+            color: var(--tangerine-light);
+            background-color: var(--cream);
+            border-color: var(--tangerine);
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--tangerine);
+            border-color: var(--tangerine);
+            color: white;
+        }
+
+        /* Stats cards */
+        .stat-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 12px;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        /* Empty state styling */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Loading animation */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        /* Application details modal */
+        .application-detail-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .application-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .application-card .row {
+                flex-direction: column;
+            }
+            
+            .application-card .col-md-4 {
+                margin-top: 1rem;
+                align-items: flex-start !important;
+            }
+            
+            .filter-buttons {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+        
+        /* Animation for status changes */
+        @keyframes statusChange {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-updated {
+            animation: statusChange 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div th:replace="~{headerLogin :: profile-header}"></div>
+<br><br>
+    <main class="container-fluid bg-light pt-5 min-vh-100" style="background: linear-gradient(135deg, #FFF5F0, #FFFFFF) !important;">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="row mb-5">
+                <div class="col-12">
+                   <div class="d-flex align-items-center mb-4">
+    <i class="bi bi-file-earmark-text-fill display-4 me-3" style="color: #89ba16;"></i>
+    <div class="flex-grow-1">
+        <h1 class="fw-bold text-dark mb-2">My Job Applications</h1>
+        <p class="text-muted mb-0">Track and manage all your job applications in one place</p>
+    </div>
+    <div class="ms-auto">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <div class="d-flex flex-wrap gap-2 filter-buttons">
+                <!-- All Applications Button -->
+                <a th:href="@{/user/resume}" 
+                   th:classappend="${selectedStatus == null or selectedStatus == 'ALL'} ? 'btn-primary active' : 'btn-outline-primary'"
+                   class="btn filter-btn d-flex align-items-center">
+                    <i class="bi bi-collection me-2"></i>All
+                </a>
+                
+                <!-- Pending Applications Button -->
+                <a th:href="@{/user/resume(status='PENDING')}" 
+                   th:classappend="${selectedStatus == 'PENDING'} ? 'btn-warning active' : 'btn-outline-warning'"
+                   class="btn filter-btn d-flex align-items-center">
+                    <i class="bi bi-clock me-2"></i>Pending
+                </a>
+                
+                <a th:href="@{/user/resume(status='APPROVED')}" 
+                   th:classappend="${selectedStatus == 'APPROVED'} ? 'btn-success active' : 'btn-outline-success'"
+                   class="btn filter-btn d-flex align-items-center">
+                    <i class="bi bi-check-circle me-2"></i>Accepted
+                </a>
+                
+                <!-- Rejected Applications Button -->
+                <a th:href="@{/user/resume(status='REJECTED')}" 
+                   th:classappend="${selectedStatus == 'REJECTED'} ? 'btn-danger active' : 'btn-outline-danger'"
+                   class="btn filter-btn d-flex align-items-center">
+                    <i class="bi bi-x-circle me-2"></i>Rejected
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card stat-card border-0 bg-white rounded-3 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                                            <i class="bi bi-briefcase"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-primary mb-1" th:text="${totalCount}">0</h3>
+                                            <p class="text-muted mb-0">Total Applications</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stat-card border-0 bg-white rounded-3 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                                            <i class="bi bi-clock"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-warning mb-1" th:text="${pendingCount}">0</h3>
+                                            <p class="text-muted mb-0">Pending</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stat-card border-0 bg-white rounded-3 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-success mb-1" th:text="${approvedCount}">0</h3>
+                                            <p class="text-muted mb-0">Accepted</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+    <div class="card stat-card border-0 bg-white rounded-3 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger me-3">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div>
+                    <h3 class="text-danger mb-1" th:text="${rejectedCount}">0</h3>
+                    <p class="text-muted mb-0">Rejected</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                        
+                    </div>
+
+                    <!-- Filter Buttons Section -->
+                  
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-tangerine" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading applications...</p>
+            </div>
+
+            <!-- Applications List -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- Empty State -->
+                    <div th:if="${applications == null or applications.empty}" class="empty-state">
+                        <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                        <h4 class="text-muted">No Applications Found</h4>
+                        <p class="text-muted mb-4" th:if="${selectedStatus != null and selectedStatus != 'ALL'}">
+                            No <span th:text="${selectedStatus}"></span> applications found.
+                        </p>
+                        <p class="text-muted mb-4" th:if="${selectedStatus == null or selectedStatus == 'ALL'}">
+                            You haven't applied to any jobs yet. Start your job search today!
+                        </p>
+                        <a th:href="@{/user/user_companies}" class="btn btn-tangerine">
+                            <i class="bi bi-briefcase me-2"></i>Browse Jobs
+                        </a>
+                    </div>
+
+                    <!-- Applications with Pagination -->
+                    <div th:if="${applications != null and !applications.empty}" id="applicationsContainer">
+                        <!-- Applications List -->
+                        <div th:each="app : ${applications}" th:if="${app != null}" 
+                             th:classappend="'card application-card ' + ${#strings.toLowerCase(app?.get('status'))}"
+                             class="card application-card" 
+                             th:attr="data-app-id=${app?.get('id')}, data-status=${app?.get('status')}">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-start">
+                                            <!-- Company Logo -->
+                                            <div class="me-3">
+                                                <div th:if="${app?.get('logo') != null}" class="logo-placeholder bg-primary">
+                                                    <i class="bi bi-building text-white"></i>
+                                                </div>
+                                                <div th:if="${app?.get('logo') == null}" class="logo-placeholder">
+                                                    <i class="bi bi-building"></i>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex-grow-1">
+                                                <h5 class="fw-bold text-dark mb-1" th:text="${app?.get('job_title')}">Job Title</h5>
+                                                <p class="text-muted mb-2" th:text="${app?.get('company_name')}">Company Name</p>
+                                                
+                                                <div class="d-flex flex-wrap gap-3 mb-3">
+                                                    <span class="text-muted">
+                                                        <i class="bi bi-calendar me-1"></i>
+                                                        <span th:text="${app?.get('apply_date') != null ? #temporals.format(app.get('apply_date'), 'MMM dd, yyyy') : 'N/A'}">Apply Date</span>
+                                                    </span>
+                                                    <span class="text-muted">
+                                                        <i class="bi bi-briefcase me-1"></i>
+                                                        <span th:text="${app?.get('job_type')}">Job Type</span>
+                                                    </span>
+                                                    <span class="text-muted" th:if="${app?.get('location') != null}">
+                                                        <i class="bi bi-geo-alt me-1"></i>
+                                                        <span th:text="${app?.get('location')}">Location</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="d-flex flex-column align-items-end gap-2">
+                                            <!-- Status Badge with safe access -->
+                                            <span th:if="${app?.get('status') == 'PENDING'}" class="status-badge status-pending">
+                                                <i class="bi bi-clock me-1"></i>Pending
+                                            </span>
+                                            <span th:if="${app?.get('status') == 'APPROVED'}" class="status-badge status-accepted">
+                                                <i class="bi bi-check-circle me-1"></i>Accepted
+                                            </span>
+                                            <span th:if="${app?.get('status') == 'REJECTED'}" class="status-badge status-rejected">
+                                                <i class="bi bi-x-circle me-1"></i>Rejected
+                                            </span>
+                                            
+                                            <!-- CV Actions with safe access -->
+                                            <div class="d-flex gap-2">
+                                                <a th:if="${app?.get('cv') != null and app?.get('id') != null}" 
+                                                   th:href="@{'/user/view-cv/' + ${app.get('id')}}" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   target="_blank">
+                                                    <i class="bi bi-eye me-1"></i>View CV
+                                                </a>
+                                                <a th:if="${app?.get('cv') != null and app?.get('id') != null}"
+                                                   th:href="@{'/user/download-cv/' + ${app.get('id')}}" 
+                                                   class="btn btn-tangerine btn-sm">
+                                                    <i class="bi bi-download me-1"></i>Download
+                                                </a>
+                                                <span th:if="${app?.get('cv') == null}" class="text-muted small">
+                                                    <i class="bi bi-exclamation-triangle"></i> No CV
+                                                </span>
+                                            </div>
+                                            
+                                            <!-- Application Date with safe access -->
+                                            <small class="text-muted">
+                                                Applied on: <span th:text="${app?.get('apply_date') != null ? #temporals.format(app.get('apply_date'), 'dd MMM, yyyy') : 'N/A'}"></span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${totalPages > 1}" class="mt-5">
+                            <ul class="pagination justify-content-center">
+                                <!-- Previous Page -->
+                                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="${selectedStatus != null and selectedStatus != 'ALL'} ? 
+                                                 @{/user/resume(page=${currentPage - 1}, status=${selectedStatus})} : 
+                                                 @{/user/resume(page=${currentPage - 1})}" 
+                                       aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                
+                                <!-- Page Numbers -->
+                                <li th:each="page : ${#numbers.sequence(1, totalPages)}" 
+                                    class="page-item" 
+                                    th:classappend="${page == currentPage} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="${selectedStatus != null and selectedStatus != 'ALL'} ? 
+                                                 @{/user/resume(page=${page}, status=${selectedStatus})} : 
+                                                 @{/user/resume(page=${page})}" 
+                                       th:text="${page}">1</a>
+                                </li>
+                                
+                                <!-- Next Page -->
+                                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="${selectedStatus != null and selectedStatus != 'ALL'} ? 
+                                                 @{/user/resume(page=${currentPage + 1}, status=${selectedStatus})} : 
+                                                 @{/user/resume(page=${currentPage + 1})}" 
+                                       aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                            
+                            <!-- Page Info -->
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    Page <span th:text="${currentPage}">1</span> of <span th:text="${totalPages}">1</span> 
+                                    | Showing <span th:text="${(currentPage - 1) * pageSize + 1}">1</span> to 
+                                    <span th:text="${(currentPage * pageSize) > filteredCount ? filteredCount : (currentPage * pageSize)}">5</span> of 
+                                    <span th:text="${filteredCount}">0</span> applications
+                                </small>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FIXED: Use proper fragment expression syntax -->
+    <div th:replace="~{footer :: site-footer}"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const applicationsContainer = document.getElementById('applicationsContainer');
+            const searchBar = document.getElementById('searchBar');
+            const searchToggle = document.getElementById('searchToggle');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.getElementById('searchBtn');
+            const sortDateBtn = document.getElementById('sortDateBtn');
+            
+            let isAscending = false;
+
+            // Toggle search bar
+            searchToggle.addEventListener('click', function() {
+                if (searchBar.style.display === 'none') {
+                    searchBar.style.display = 'block';
+                    searchInput.focus();
+                } else {
+                    searchBar.style.display = 'none';
+                    searchInput.value = '';
+                }
+            });
+
+            // Search functionality
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            function performSearch() {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                if (searchTerm === '') return;
+                
+                // Show loading
+                if (applicationsContainer) {
+                    applicationsContainer.style.opacity = '0.5';
+                }
+                
+                // In a real application, this would be an AJAX call to the server
+                // For now, we'll simulate with a client-side filter
+                setTimeout(() => {
+                    filterApplications(searchTerm);
+                    if (applicationsContainer) {
+                        applicationsContainer.style.opacity = '1';
+                    }
+                }, 500);
+            }
+
+            function filterApplications(searchTerm) {
+                const cards = document.querySelectorAll('.application-card');
+                let visibleCount = 0;
+                
+                cards.forEach(card => {
+                    const jobTitle = card.querySelector('h5').textContent.toLowerCase();
+                    const companyName = card.querySelector('p.text-muted').textContent.toLowerCase();
+                    const location = card.querySelector('.bi-geo-alt') ? 
+                        card.querySelector('.bi-geo-alt').parentElement.textContent.toLowerCase() : '';
+                    
+                    if (jobTitle.includes(searchTerm) || companyName.includes(searchTerm) || location.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Show message if no results
+                if (visibleCount === 0) {
+                    applicationsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-search display-1 text-muted mb-3"></i>
+                            <h4 class="text-muted">No Applications Found</h4>
+                            <p class="text-muted mb-4">No applications match your search criteria.</p>
+                            <button class="btn btn-tangerine" onclick="clearSearch()">
+                                <i class="bi bi-arrow-counterclockwise me-2"></i>Clear Search
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            // Add active state to filter buttons
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show loading
+                    if (applicationsContainer) {
+                        applicationsContainer.style.opacity = '0.7';
+                    }
+                    loadingSpinner.style.display = 'block';
+                    
+                    // The page will reload with the new filter, so we don't need to do anything else
+                });
+            });
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                // Add to toast container
+                let toastContainer = document.getElementById('toastContainer');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toastContainer';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.appendChild(toast);
+                
+                // Initialize and show toast
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                
+                // Remove from DOM after hide
+                toast.addEventListener('hidden.bs.toast', function() {
+                    toast.remove();
+                });
+            }
+
+            // Highlight the active filter button on page load
+            const activeFilter = document.querySelector('.filter-btn.active');
+            if (activeFilter) {
+                activeFilter.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

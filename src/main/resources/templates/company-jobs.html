@@ -110,20 +110,42 @@
                                                    th:text="${#strings.length(job.jobDescription) > 150 ? #strings.substring(job.jobDescription, 0, 150) + '...' : job.jobDescription}">
                                                 </p>
                                                 <div class="text-muted small">
-                                                    <span class="me-3"><i class="bi bi-clock me-1"></i> Posted on <span th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}"></span></span>
-                                                    <span th:if="${job.applicationDeadline}"><i class="bi bi-calendar-check me-1"></i> Apply by <span th:text="${job.applicationDeadline}"></span></span>
+                                                    <span class="me-3">
+                                                        <i class="bi bi-clock me-1"></i> Posted on 
+                                                        <span class="posted-date" 
+                                                              th:if="${job.createdAt}" 
+                                                              th:attr="data-original-date=${job.createdAt}"
+                                                              th:text="${#temporals.format(job.createdAt, 'dd MMM, yyyy')}">
+                                                        </span>
+                                                    </span>
+                                                    <span th:if="${job.applicationDeadline}">
+                                                        <i class="bi bi-calendar-check me-1"></i> Apply by 
+                                                        <span class="deadline-date" 
+                                                              th:attr="data-original-date=${job.applicationDeadline}"
+                                                              th:text="${job.applicationDeadline}">
+                                                        </span>
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div class="col-md-4 text-md-end">
-                                                <div class="mb-3">
-                                                    <span class="h5 text-success fw-bold" th:if="${job.salaryMini != null && job.salaryMax != null}">
-                                                        $<span th:text="${job.salaryMini}"></span> - $<span th:text="${job.salaryMax}"></span>
-                                                    </span>
-                                                </div>
-                                                <a th:href="@{/user/job/detail/{id}(id=${job.id})}" class="btn btn-primary btn-lg">
-												    <i class="bi bi-eye me-2"></i>Job Detail
-												</a>
-                                            </div>
+    <div class="mb-3">
+        <!-- Show salary range if both are > 0 -->
+        <span class="h5 text-success fw-bold"
+              th:if="${job.salaryMini != null and job.salaryMax != null and job.salaryMini > 0 and job.salaryMax > 0}">
+            $<span th:text="${job.salaryMini}"></span> - $<span th:text="${job.salaryMax}"></span>
+        </span>
+
+        <!-- Otherwise, show 'Negotiable' -->
+        <span class="h5 text-success fw-bold"
+              th:unless="${job.salaryMini != null and job.salaryMax != null and job.salaryMini > 0 and job.salaryMax > 0}">
+            Negotiable
+        </span>
+    </div>
+    <a th:href="@{/user/job/detail/{id}(id=${job.id})}" class="btn btn-primary btn-lg">
+        <i class="bi bi-eye me-2"></i>Job Detail
+    </a>
+</div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -148,9 +170,118 @@
     </div>
 
     <!-- Footer -->
-    <div th:replace="footer :: site-footer"></div>
+        <div th:replace="footerLogin :: inside-footer"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Format date to "day month year" format (e.g., "15 Jan, 2024")
+        function formatDateToDayMonthYear(dateString) {
+            if (!dateString) return 'Invalid date';
+            
+            try {
+                // Handle different date formats
+                let date;
+                
+                // Try parsing as ISO format (YYYY-MM-DD)
+                if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    date = new Date(dateString + 'T00:00:00');
+                } 
+                // Try parsing as other common formats
+                else {
+                    date = new Date(dateString);
+                }
+                
+                // Check if date is valid
+                if (isNaN(date.getTime())) {
+                    return dateString; // Return original if invalid
+                }
+                
+                // Format to "15 Jan, 2024"
+                const day = date.getDate();
+                const month = date.toLocaleDateString('en-US', { month: 'short' });
+                const year = date.getFullYear();
+                
+                return `${day} ${month}, ${year}`;
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString; // Return original if error
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Format posted dates
+            const postedDateElements = document.querySelectorAll('.posted-date');
+            postedDateElements.forEach(element => {
+                const originalDate = element.getAttribute('data-original-date');
+                if (originalDate) {
+                    const formattedDate = formatDateToDayMonthYear(originalDate);
+                    element.textContent = formattedDate;
+                }
+            });
+
+            // Format deadline dates
+            const deadlineDateElements = document.querySelectorAll('.deadline-date');
+            deadlineDateElements.forEach(element => {
+                const originalDate = element.getAttribute('data-original-date');
+                if (originalDate) {
+                    const formattedDate = formatDateToDayMonthYear(originalDate);
+                    element.textContent = formattedDate;
+                }
+            });
+
+            // Add relative time for recent posts (optional enhancement)
+            addRelativeTime();
+        });
+
+        // Optional: Add relative time display (e.g., "2 days ago")
+        function addRelativeTime() {
+            const postedDateElements = document.querySelectorAll('.posted-date');
+            const now = new Date();
+            
+            postedDateElements.forEach(element => {
+                const originalDate = element.getAttribute('data-original-date');
+                if (originalDate) {
+                    try {
+                        let postDate;
+                        
+                        if (originalDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            postDate = new Date(originalDate + 'T00:00:00');
+                        } else {
+                            postDate = new Date(originalDate);
+                        }
+                        
+                        if (!isNaN(postDate.getTime())) {
+                            const diffTime = Math.abs(now - postDate);
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            
+                            let relativeTime = '';
+                            if (diffDays === 0) {
+                                relativeTime = 'Today';
+                            } else if (diffDays === 1) {
+                                relativeTime = 'Yesterday';
+                            } else if (diffDays <= 7) {
+                                relativeTime = `${diffDays} days ago`;
+                            } else if (diffDays <= 30) {
+                                const weeks = Math.floor(diffDays / 7);
+                                relativeTime = `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+                            }
+                            
+                            if (relativeTime) {
+                                // Create a tooltip or additional text
+                                const originalText = element.textContent;
+                                element.setAttribute('title', `Posted on ${originalText}`);
+                                element.innerHTML = `${originalText} <small class="text-muted">(${relativeTime})</small>`;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error calculating relative time:', error);
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

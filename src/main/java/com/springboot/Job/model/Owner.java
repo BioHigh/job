@@ -25,12 +25,14 @@ public class Owner {
     private String gmail;
     
     @Column(name = "company_phone")
-    private String companyPhone;
+    public String companyPhone;
     
     @Column(columnDefinition = "TEXT")
     private String description;
     
     private String address;
+    
+    private String township;
     
     private String status = "active";
     
@@ -40,6 +42,8 @@ public class Owner {
     @Column(name = "profile_photo", columnDefinition = "LONGBLOB")
     private byte[] profilePhoto;
 
+    @Column(name = "auth_key")
+    private String authKey;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;

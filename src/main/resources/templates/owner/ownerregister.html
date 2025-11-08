@@ -258,6 +258,16 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        .prefilled-badge {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .registration-content {
                 padding: 0.5rem;
@@ -272,49 +282,33 @@
 </head>
 <body>
 
-    <!-- ===== NAVIGATION BAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
-        <div class="container-fluid px-4">
-            <!-- Logo -->
-            <a class="navbar-brand fw-bold" href="#" style="font-size: 1.8rem;">
-                <i class="fas fa-briefcase me-2"></i> JobJump
-            </a>
+   <!-- ===== NAVIGATION BAR (from Employer Portal) ===== -->
+      <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+    <div class="container-fluid px-4">
+        <!-- Logo -->
+        <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #1a73e8; font-size: 2rem;">
+            <i class="bi bi-building-fill me-2"></i> JobJump
+        </a>
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <!-- Menu -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-semibold px-3" th:href="@{/company}" style="color: #1a73e8;">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#pricing">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#testimonials">Testimonials</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold px-3" href="#contact">Contact</a>
-                    </li>
-                </ul>
+        <!-- Menu -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Buttons - Aligned to right -->
+           <div class="d-flex gap-2 ms-auto">
+    <a th:href="@{/owner/login}" class="btn btn-outline-primary fw-semibold">Login</a>
+    <a th:href="@{/request/owner}" class="btn btn-outline-primary fw-semibold">Become Employer</a>
+    <a th:href="@{/}" class="btn btn-primary fw-semibold">Seekers</a>
+    <a th:href="@{/company}" class="btn btn-secondary fw-semibold">Back</a>
+</div>
 
-                <!-- Buttons - Fixed -->
-                <div class="d-flex gap-2 ms-auto">
-                    <a th:href="@{/owner/login}" class="btn btn-outline-primary fw-semibold">Login</a>
-                    <a th:href="@{/owner/register}" class="btn btn-outline-primary fw-semibold">Become an Employer</a>
-                    <a th:href="@{/index}" class="btn btn-primary fw-semibold">Seekers</a>
-                </div>
-            </div>
         </div>
-    </nav>
-
+    </div>
+</nav>
     <!-- ===== SUCCESS NOTIFICATION ===== -->
     <div th:if="${success}" class="alert alert-success alert-dismissible fade show alert-notification" role="alert">
         <i class="bi bi-check-circle me-2"></i>
@@ -336,6 +330,7 @@
                                         <h3 class="h3 text-gray-900 mb-3">
                                             <i class="bi bi-building me-2"></i>Register Your Company
                                         </h3>
+                                        <p class="text-muted">Complete your company registration with pre-filled data from your approved request</p>
                                     </div>
 
                                     <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
@@ -379,13 +374,14 @@
                                                 <div class="mb-3">
                                                     <label for="companyName" class="form-label fw-semibold">
                                                         <i class="bi bi-building me-1"></i>Company Name *
+                                                        <span class="prefilled-badge" id="companyNameBadge" style="display: none;">Pre-filled</span>
                                                     </label>
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light">
                                                             <i class="bi bi-building"></i>
                                                         </span>
                                                         <input type="text" class="form-control" id="companyName" name="companyName" 
-                                                               placeholder="Enter company name" required>
+                                                               placeholder="Enter company name" required readonly>
                                                     </div>
                                                 </div>
                                             </div>
@@ -393,14 +389,23 @@
                                                 <div class="mb-3">
                                                     <label for="gmail" class="form-label fw-semibold">
                                                         <i class="bi bi-envelope me-1"></i>Email *
+                                                        <span class="prefilled-badge" id="emailBadge" style="display: none;">Verified</span>
                                                     </label>
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light">
                                                             <i class="bi bi-envelope"></i>
                                                         </span>
                                                         <input type="email" class="form-control" id="gmail" name="gmail" 
-                                                               placeholder="company@example.com" required>
+                                                               required readonly>
                                                     </div>
+                                                    
+                                                    <!-- Hidden fields to store all approved data -->
+                                                    <input type="hidden" id="approvedEmail" name="approvedEmail">
+                                                    <input type="hidden" id="approvedCompanyName" name="approvedCompanyName">
+                                                    <input type="hidden" id="approvedPhone" name="approvedPhone">
+                                                    <input type="hidden" id="approvedDescription" name="approvedDescription">
+                                                    <input type="hidden" id="approvedAddress" name="approvedAddress">
+                                                    <input type="hidden" id="approvedTownship" name="approvedTownship">
                                                 </div>
                                             </div>
                                         </div>
@@ -410,27 +415,47 @@
                                                 <div class="mb-3">
                                                     <label for="companyPhone" class="form-label fw-semibold">
                                                         <i class="bi bi-telephone me-1"></i>Phone
+                                                        <span class="prefilled-badge" id="phoneBadge" style="display: none;">Pre-filled</span>
                                                     </label>
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light">
                                                             <i class="bi bi-phone"></i>
                                                         </span>
                                                         <input type="tel" class="form-control" id="companyPhone" name="companyPhone" 
-                                                               placeholder="09123456789">
+                                                               placeholder="09123456789" readonly>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label for="address" class="form-label fw-semibold">
-                                                        <i class="bi bi-geo-alt-fill me-1"></i>Address
+                                                        <i class="bi bi-geo-alt-fill me-1"></i>Region
+                                                        <span class="prefilled-badge" id="addressBadge" style="display: none;">Pre-filled</span>
                                                     </label>
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light">
                                                             <i class="bi bi-geo-alt"></i>
                                                         </span>
                                                         <input type="text" class="form-control" id="address" name="address" 
-                                                               placeholder="Enter company address">
+                                                               placeholder="Enter company address" readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="township" class="form-label fw-semibold">
+                                                        <i class="bi bi-geo-alt me-1"></i>Township
+                                                        <span class="prefilled-badge" id="townshipBadge" style="display: none;">Pre-filled</span>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text bg-light">
+                                                            <i class="bi bi-pin-map"></i>
+                                                        </span>
+                                                        <input type="text" class="form-control" id="township" name="township" 
+                                                               placeholder="Enter township" readonly>
                                                     </div>
                                                 </div>
                                             </div>
@@ -439,9 +464,10 @@
                                         <div class="mb-3">
                                             <label for="description" class="form-label fw-semibold">
                                                 <i class="bi bi-info-circle-fill me-1"></i>Company Description
+                                                <span class="prefilled-badge" id="descriptionBadge" style="display: none;">Pre-filled</span>
                                             </label>
                                             <textarea class="form-control" id="description" name="description" 
-                                                      rows="3" placeholder="Brief description of your company..."></textarea>
+                                                      rows="3" placeholder="Brief description of your company..." readonly></textarea>
                                         </div>
 
                                         <div class="row">
@@ -455,7 +481,7 @@
                                                             <i class="bi bi-key"></i>
                                                         </span>
                                                         <input type="password" class="form-control" id="password" name="password" 
-                                                               placeholder="Create password" required>
+                                                               placeholder="Create password" required >
                                                     </div>
                                                 </div>
                                             </div>
@@ -506,80 +532,202 @@
     <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Success notification auto-hide
-            const successNotification = document.querySelector('.alert-notification');
-            if (successNotification) {
-                setTimeout(() => {
-                    const bsAlert = new bootstrap.Alert(successNotification);
-                    bsAlert.close();
-                }, 5000);
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Success notification auto-hide
+        const successNotification = document.querySelector('.alert-notification');
+        if (successNotification) {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(successNotification);
+                bsAlert.close();
+            }, 5000);
+        }
 
-            // Form validation
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-
-            // File upload functionality
-            const input = document.getElementById('profilePhoto');
-            const preview = document.getElementById('photoPreview');
-            const container = document.getElementById('uploadContainer');
-            const removeBtn = document.getElementById('removePhoto');
-            const info = document.getElementById('file-info');
-            const MAX_SIZE = 2 * 1024 * 1024;
-
-            container.addEventListener('click', e => {
-                if (e.target !== removeBtn && !e.target.closest('.remove-photo')) {
-                    input.click();
+        // Form validation
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
                 }
-            });
-
-            input.addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (file) {
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please select an image file (JPEG, PNG, etc.)');
-                        input.value = '';
-                        return;
-                    }
-
-                    if (file.size > MAX_SIZE) {
-                        alert('File size must be less than 2MB');
-                        input.value = '';
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = ev => {
-                        preview.src = ev.target.result;
-                        preview.style.display = 'block';
-                        container.classList.add('has-image');
-                        
-                        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                        info.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>${file.name} (${fileSize}MB)`;
-                        info.className = 'file-info text-success';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            removeBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                input.value = '';
-                preview.style.display = 'none';
-                container.classList.remove('has-image');
-                info.innerHTML = '<i class="bi bi-info-circle me-1"></i>JPG, PNG up to 2MB';
-                info.className = 'file-info text-muted';
-            });
+                form.classList.add('was-validated');
+            }, false);
         });
+
+        // File upload functionality
+        const input = document.getElementById('profilePhoto');
+        const preview = document.getElementById('photoPreview');
+        const container = document.getElementById('uploadContainer');
+        const removeBtn = document.getElementById('removePhoto');
+        const info = document.getElementById('file-info');
+        const MAX_SIZE = 2 * 1024 * 1024;
+
+        container.addEventListener('click', e => {
+            if (e.target !== removeBtn && !e.target.closest('.remove-photo')) {
+                input.click();
+            }
+        });
+
+        input.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file (JPEG, PNG, etc.)');
+                    input.value = '';
+                    return;
+                }
+
+                if (file.size > MAX_SIZE) {
+                    alert('File size must be less than 2MB');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    preview.src = ev.target.result;
+                    preview.style.display = 'block';
+                    container.classList.add('has-image');
+                    
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                    info.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>${file.name} (${fileSize}MB)`;
+                    info.className = 'file-info text-success';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            input.value = '';
+            preview.style.display = 'none';
+            container.classList.remove('has-image');
+            info.innerHTML = '<i class="bi bi-info-circle me-1"></i>JPG, PNG up to 2MB';
+            info.className = 'file-info text-muted';
+        });
+
+        // Enhanced data auto-fill functionality
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        const companyName = urlParams.get('companyName');
+        const phone = urlParams.get('phone');
+        const description = urlParams.get('description');
+        const address = urlParams.get('address');
+        const township = urlParams.get('township');
+
+        if (email) {
+            // Auto-fill all available fields
+            document.getElementById('gmail').value = email;
+            document.getElementById('gmail').readOnly = true;
+            
+            // Set the hidden approved fields
+            document.getElementById('approvedEmail').value = email;
+            document.getElementById('emailBadge').style.display = 'inline';
+            
+            // Fill other fields if provided
+            if (companyName) {
+                const decodedCompanyName = decodeURIComponent(companyName);
+                document.getElementById('companyName').value = decodedCompanyName;
+                document.getElementById('approvedCompanyName').value = decodedCompanyName;
+                document.getElementById('companyNameBadge').style.display = 'inline';
+            }
+            
+            if (phone) {
+                const decodedPhone = decodeURIComponent(phone);
+                document.getElementById('companyPhone').value = decodedPhone;
+                document.getElementById('approvedPhone').value = decodedPhone;
+                document.getElementById('phoneBadge').style.display = 'inline';
+            }
+            
+            if (description) {
+                const decodedDescription = decodeURIComponent(description);
+                document.getElementById('description').value = decodedDescription;
+                document.getElementById('approvedDescription').value = decodedDescription;
+                document.getElementById('descriptionBadge').style.display = 'inline';
+            }
+            
+            if (address) {
+                const decodedAddress = decodeURIComponent(address);
+                document.getElementById('address').value = decodedAddress;
+                document.getElementById('approvedAddress').value = decodedAddress;
+                document.getElementById('addressBadge').style.display = 'inline';
+            }
+            
+            if (township) {
+                const decodedTownship = decodeURIComponent(township);
+                document.getElementById('township').value = decodedTownship;
+                document.getElementById('approvedTownship').value = decodedTownship;
+                document.getElementById('townshipBadge').style.display = 'inline';
+            }
+            
+            // Add a note that data is pre-filled
+            const emailGroup = document.querySelector('input[name="gmail"]').closest('.mb-3');
+            const note = document.createElement('small');
+            note.className = 'form-text text-success';
+            note.innerHTML = '<i class="bi bi-check-circle me-1"></i>Data pre-filled from approved request';
+            emailGroup.appendChild(note);
+            
+            // Show success message about pre-filled data
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-info alert-dismissible fade show mb-4';
+            successAlert.innerHTML = `
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Welcome!</strong> Your company data has been pre-filled from the approved request. Please review and complete your registration.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const cardTitle = document.querySelector('.text-center.mb-4');
+            cardTitle.parentNode.insertBefore(successAlert, cardTitle.nextSibling);
+            
+        } else {
+            // If no email parameter, show error and disable form
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-danger mt-3';
+            errorDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Access Denied:</strong> Please request company registration first and use the approval link sent to your email.
+                <div class="mt-2">
+                    <a href="/request/owner" class="btn btn-sm btn-outline-primary">Request Registration</a>
+                </div>
+            `;
+            
+            // Insert after the card title
+            const cardTitle = document.querySelector('.text-center.mb-4');
+            cardTitle.parentNode.insertBefore(errorDiv, cardTitle.nextSibling);
+            
+            // Disable the form
+            const form = document.querySelector('form');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            form.style.opacity = '0.6';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-lock me-2"></i>Registration Disabled';
+            
+            // Make email field readonly but show message
+            document.getElementById('gmail').readOnly = true;
+            document.getElementById('gmail').placeholder = "Please use approval link";
+            
+            const emailGroup = document.querySelector('input[name="gmail"]').closest('.mb-3');
+            const note = document.createElement('small');
+            note.className = 'form-text text-danger';
+            note.innerHTML = '<i class="bi bi-x-circle me-1"></i>Please use the approval link from your email';
+            emailGroup.appendChild(note);
+        }
+        
+        // Password confirmation validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        function validatePassword() {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Passwords do not match");
+            } else {
+                confirmPassword.setCustomValidity("");
+            }
+        }
+        
+        password.addEventListener('change', validatePassword);
+        confirmPassword.addEventListener('keyup', validatePassword);
+    });
     </script>
 </body>
 </html>

@@ -122,7 +122,7 @@
                                                 <p class="card-text text-muted mb-1">
                                                     <i class="bi bi-calendar"></i> 
                                                     Posted on 
-                                                    <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">Date</span>
+                                                    <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'dd MMM, yyyy')}">Date</span>
                                                     <span th:unless="${job.createdAt}">Date not available</span>
                                                 </p>
                                                 <p class="card-text" th:if="${job.jobDescription != null}">
@@ -318,7 +318,7 @@
         </div>
     </div>
 
-    <div th:replace="footer :: site-footer"></div>
+<div th:replace="owner-footerLogin :: ownerLogin-footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

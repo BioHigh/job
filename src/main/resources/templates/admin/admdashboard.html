@@ -8,76 +8,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="/css/admin.css">
+    
+    
     <style>
-        :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --info: #4895ef;
-            --warning: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-        }
-        body { background-color: #f5f7fb; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .sidebar { background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%); color: white; height: 100vh; position: fixed; width: 250px; transition: all 0.3s; box-shadow: 3px 0 10px rgba(0,0,0,0.1); z-index: 1000; padding-top: 20px; }
-        .sidebar .nav-link { color: rgba(255,255,255,0.8); padding: 12px 20px; margin: 5px 10px; border-radius: 8px; transition: all 0.3s; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background-color: rgba(255,255,255,0.1); }
-        .main-content { margin-left: 250px; padding: 20px; }
-        .card-dashboard { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .stat-card { text-align: center; padding: 20px; }
-        .stat-card i { font-size: 2.5rem; margin-bottom: 15px; opacity: 0.8; }
-        .stat-card .count { font-size: 2rem; font-weight: 700; margin: 10px 0; }
-        .stat-card .label { font-size: 0.9rem; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; }
-        .welcome-banner { background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%); color: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
-        .section-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        
-        /* Enhanced Stats Cards */
-        .stats-card {
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            height: 100%;
-        }
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .stats-card .card-body {
-            padding: 1.5rem;
-            color: white;
-            text-align: center;
-        }
-        .stats-card i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-        .stats-card .count {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-        }
-        .stats-card .label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.9;
-        }
-        
-        /* Card-specific gradients */
-        .card-job-seekers {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .card-employers {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        .card-active-jobs {
-            background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
-        }
-        .card-applications {
-            background: linear-gradient(135deg, #f46b45 0%, #eea849 100%);
-        }
+    
+
+    
     </style>
 </head>
 <body>
@@ -88,7 +25,7 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" th:classappend="${activeSection == 'dashboard'} ? 'active'" th:href="@{/admin/dashboard}">
+                <a class="nav-link" th:classappend="${activeSection == 'dashboard' || activeSection == null} ? 'active'" th:href="@{/admin/dashboard}">
                     <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                 </a>
             </li>
@@ -102,8 +39,16 @@
                     <i class="fas fa-briefcase"></i> <span>Job Listings</span>
                 </a>
             </li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-building"></i> <span>Employers</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-file-alt"></i> <span>Applications</span></a></li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeSection == 'ownerrequests'} ? 'active'" th:href="@{/admin/owner-requests}">
+                    <i class="fas fa-user-plus"></i> <span>Owner Requests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${activeSection == 'feedback'} ? 'active'" th:href="@{/admin/feedback}">
+                    <i class="fas fa-comment-alt"></i> <span>Feedback</span>
+                </a>
+            </li>
         </ul>
         <div class="text-center mt-4">
             <a th:href="@{/admin/logout}" class="btn btn-light w-75"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
@@ -113,117 +58,244 @@
     <!-- Main Content -->
     <div class="main-content">
         <!-- Welcome Banner -->
-        <div class="welcome-banner">
-            <p class="mb-0">Here's today's overview of the JobJump.</p>
-        </div>
-
-        <!-- Enhanced Stats Cards -->
-        <div class="row g-4 mb-4">
-            <!-- Active Job Seekers -->
-            <div class="col-md-3">
-                <div class="card stats-card shadow-sm border-0 card-job-seekers">
-                    <div class="card-body">
-                        <i class="fas fa-users"></i>
-                        <h3 class="count my-2" th:text="${jobSeekerCount}">0</h3>
-                        <small class="label text-uppercase fw-bold">Active Job Seekers</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Verified Employers -->
-            <div class="col-md-3">
-                <div class="card stats-card shadow-sm border-0 card-employers">
-                    <div class="card-body">
-                        <i class="fas fa-building"></i>
-                        <h3 class="count my-2" th:text="${employerCount}">0</h3>
-                        <small class="label text-uppercase fw-bold">Verified Employers</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Jobs -->
-            <div class="col-md-3">
-                <div class="card stats-card shadow-sm border-0 card-active-jobs">
-                    <div class="card-body">
-                        <i class="fas fa-briefcase"></i>
-                        <h3 class="count my-2" th:text="${activeJobCount}">0</h3>
-                        <small class="label text-uppercase fw-bold">Active Jobs</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Applications -->
-            <div class="col-md-3">
-                <div class="card stats-card shadow-sm border-0 card-applications">
-                    <div class="card-body">
-                        <i class="fas fa-file-alt"></i>
-                        <h3 class="count my-2" th:text="${applicationCount}">0</h3>
-                        <small class="label text-uppercase fw-bold">Applications</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+      
 
         <!-- Dynamic Section -->
         <div id="dynamic-section">
-            <div th:if="${activeSection == 'categories'}" th:replace="fragments/categories-section :: categories-section"></div>
-            <div th:if="${activeSection == 'joblistings'}" th:replace="fragments/joblistings-section :: joblistings-section"></div>
-            <!-- nothing shows by default -->
+        
+            <!-- Default Dashboard Section -->
+            <div th:if="${activeSection == 'dashboard' || activeSection == null}">
+              <div class="welcome-banner">
+            <h4><i class="fas fa-chart-line me-2"></i>Admin Dashboard</h4>
+            <p class="mb-0">Here's today's overview of the JobJump platform.</p>
         </div>
+             <!-- Date Filter Section - Both Year and Month -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="section-title mb-0">Dashboard Overview</h4>
+    <div class="date-filter-container">
+    
+       
 
+        <!-- Year Filter -->
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="yearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-calendar-alt me-1"></i>
+                <span th:text="${selectedYear != null ? (selectedYear == 'ALL' ? 'All Data' : selectedYear) : 'Current Year'}">
+                    Current Year
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-scrollable" aria-labelledby="yearDropdown">
+                <li><a class="dropdown-item" th:href="@{/admin/dashboard(year='current', month=${selectedMonth != null ? selectedMonth : 'current'})}">Current Year</a></li>
+                <li><a class="dropdown-item" th:href="@{/admin/dashboard(year='ALL', month='ALL')}">Show All Data</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li th:each="year : ${availableYears}">
+                    <a class="dropdown-item" 
+                       th:href="@{/admin/dashboard(year=${year}, month=${selectedMonth != null ? selectedMonth : 'current'})}" 
+                       th:text="${year} == 'ALL' ? 'All Years' : ${year}"></a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Month Filter -->
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="monthDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-calendar me-1"></i>
+                <span th:text="${selectedMonth != null ? (selectedMonth == 'ALL' ? 'All Months' : selectedMonth) : 'Current Month'}">
+                    Current Month
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-scrollable" aria-labelledby="monthDropdown">
+                <li><a class="dropdown-item" th:href="@{/admin/dashboard(month='current', year=${selectedYear != null ? selectedYear : 'current'})}">Current Month</a></li>
+                <li><a class="dropdown-item" th:href="@{/admin/dashboard(month='ALL', year=${selectedYear != null ? selectedYear : 'current'})}">All Months</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li th:each="month : ${availableMonths}">
+                    <a class="dropdown-item" 
+                       th:href="@{/admin/dashboard(month=${month.key}, year=${selectedYear != null ? selectedYear : 'current'})}" 
+                       th:text="${month.value}"></a>
+                </li>
+            </ul>
+        </div>
+         <!-- Current Selection Badge -->
+        <span class="badge bg-primary fs-6">
+            <span th:if="${selectedYear == 'ALL'}">All Data</span>
+            <span th:if="${selectedYear != 'ALL'}">
+                <span th:text="${selectedMonth == 'ALL' ? 'All Months' : selectedMonth}"></span> 
+                <span th:text="${selectedYear}"></span>
+            </span>
+        </span>
+        
+    </div>
+</div>
+
+                <!-- Enhanced Stats Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stats-card shadow-sm border-0 card-job-seekers">
+                            <div class="card-body">
+                                <i class="fas fa-users"></i>
+                                <h3 class="count my-2" th:text="${jobSeekerCount}">0</h3>
+                                <small class="label text-uppercase fw-bold">Active Job Seekers</small>
+                                <div class="mt-2">
+                                    <small th:if="${previousMonthJobSeekerCount != null}" 
+                                           th:classappend="${jobSeekerCount > previousMonthJobSeekerCount} ? 'text-light' : 'text-warning'">
+                                        <i class="fas" th:classappend="${jobSeekerCount > previousMonthJobSeekerCount} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                                        <span th:text="${jobSeekerCount - previousMonthJobSeekerCount}"></span> from last month
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stats-card shadow-sm border-0 card-employers">
+                            <div class="card-body">
+                                <i class="fas fa-building"></i>
+                                <h3 class="count my-2" th:text="${employerCount}">0</h3>
+                                <small class="label text-uppercase fw-bold">Verified Employers</small>
+                                <div class="mt-2">
+                                    <small th:if="${previousMonthEmployerCount != null}" 
+                                           th:classappend="${employerCount > previousMonthEmployerCount} ? 'text-light' : 'text-warning'">
+                                        <i class="fas" th:classappend="${employerCount > previousMonthEmployerCount} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                                        <span th:text="${employerCount - previousMonthEmployerCount}"></span> from last month
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stats-card shadow-sm border-0 card-active-jobs">
+                            <div class="card-body">
+                                <i class="fas fa-briefcase"></i>
+                                <h3 class="count my-2" th:text="${activeJobCount}">0</h3>
+                                <small class="label text-uppercase fw-bold">Active Jobs</small>
+                                <div class="mt-2">
+                                    <small th:if="${previousMonthJobCount != null}" 
+                                           th:classappend="${activeJobCount > previousMonthJobCount} ? 'text-light' : 'text-warning'">
+                                        <i class="fas" th:classappend="${activeJobCount > previousMonthJobCount} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                                        <span th:text="${activeJobCount - previousMonthJobCount}"></span> from last month
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card stats-card shadow-sm border-0 card-applications">
+                            <div class="card-body">
+                                <i class="fas fa-file-alt"></i>
+                                <h3 class="count my-2" th:text="${applicationCount}">0</h3>
+                                <small class="label text-uppercase fw-bold">Applications</small>
+                                <div class="mt-2">
+                                    <small th:if="${previousMonthApplicationCount != null}" 
+                                           th:classappend="${applicationCount > previousMonthApplicationCount} ? 'text-light' : 'text-warning'">
+                                        <i class="fas" th:classappend="${applicationCount > previousMonthApplicationCount} ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
+                                        <span th:text="${applicationCount - previousMonthApplicationCount}"></span> from last month
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Dashboard Content -->
+                <div class="row mt-4">
+    <div class="col-12">
+        <div class="section-container">
+            <h5><i class="fas fa-info-circle me-2"></i>Data Summary</h5>
+            <p class="text-muted" th:if="${selectedYear == 'ALL'}">
+                Showing <strong>All Data</strong> from the entire database. Total counts across all time periods.
+            </p>
+            <p class="text-muted" th:if="${selectedYear != 'ALL' && selectedMonth == 'ALL'}">
+                Showing data for the <strong>Entire Year</strong> <strong th:text="${selectedYear}"></strong>. 
+                Compare with previous year using the dropdown above.
+            </p>
+            <p class="text-muted" th:if="${selectedYear != 'ALL' && selectedMonth != 'ALL' && selectedMonth != null && selectedYear != null}">
+                Showing data for <strong th:text="${selectedMonth + ' ' + selectedYear}"></strong>. 
+                Compare with previous month using the dropdown above.
+            </p>
+            <p class="text-muted" th:if="${selectedMonth == null || selectedYear == null}">
+                Showing current month data. Use the dropdowns to view different months and years.
+            </p>
+        </div>
+    </div>
+</div>
+            </div>
+
+<div th:if="${activeSection == 'categories'}" th:replace="~{fragments/categories-section :: categories-section}"></div>
+
+<div th:if="${activeSection == 'joblistings'}" th:replace="~{fragments/joblistings-section :: joblistings-section}"></div>
+
+<div th:if="${activeSection == 'ownerrequests'}" th:replace="~{fragments/ownerrequests-section :: ownerrequests-section}"></div>
+
+            <!-- Feedback Section -->
+            <div th:if="${activeSection == 'feedback'}">
+                <div class="section-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="section-title mb-0"><i class="fas fa-comment-alt me-2"></i>User Feedback</h4>
+                        <span class="badge count-badge" th:text="${totalItems} + ' Feedbacks'"></span>
+                    </div>
+
+                    <div th:if="${not #lists.isEmpty(feedbacks)}">
+                        <div class="row">
+                            <div th:each="feedback : ${feedbacks}" class="col-12 mb-3">
+                                <div class="card feedback-card shadow-sm border-0">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="badge bg-light text-dark">
+                                                <i class="fas fa-user-secret me-1"></i>Anonymous
+                                            </span>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                <span th:text="${#dates.format(feedback.created_at, 'MMM dd, yyyy HH:mm')}"></span>
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="feedback-message">
+                                            <p class="mb-0" th:text="${feedback.fbmessage}"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Feedback pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <li th:classappend="${currentPage == 1} ? 'disabled'" class="page-item">
+                                    <a th:href="@{/admin/feedback(page=${currentPage - 1}, size=${pageSize})}" 
+                                       class="page-link" th:if="${currentPage > 1}">Previous</a>
+                                    <span class="page-link" th:unless="${currentPage > 1}">Previous</span>
+                                </li>
+                                
+                                <li th:each="page : ${#numbers.sequence(1, totalPages)}" 
+                                    th:classappend="${page == currentPage} ? 'active'" class="page-item">
+                                    <a th:href="@{/admin/feedback(page=${page}, size=${pageSize})}" 
+                                       class="page-link" th:text="${page}"></a>
+                                </li>
+                                
+                                <li th:classappend="${currentPage == totalPages} ? 'disabled'" class="page-item">
+                                    <a th:href="@{/admin/feedback(page=${currentPage + 1}, size=${pageSize})}" 
+                                       class="page-link" th:if="${currentPage < totalPages}">Next</a>
+                                    <span class="page-link" th:unless="${currentPage < totalPages}">Next</span>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(feedbacks)}" class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-comment-slash text-muted" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="text-muted mb-3">No Feedback Yet</h4>
+                        <p class="text-muted mb-4">There are no feedback messages to display.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Job Details Modal Function
-        function showJobDetails(jobTitle, companyName, jobType, location, department, experienceLevel, educationLevel, salaryMini, salaryMax, jobDescription, requiredSkills, benefits, deadline, status) {
-            const modalContent = document.getElementById('jobDetailsContent');
-            
-            let statusClass = 'status-pending';
-            if (status === 'APPROVED') statusClass = 'status-approved';
-            else if (status === 'REJECTED') statusClass = 'status-rejected';
-            
-            modalContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-8">
-                        <h4>${jobTitle}</h4>
-                        <h5 class="text-muted">${companyName}</h5>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <span class="status-badge ${statusClass}">${status}</span>
-                    </div>
-                </div>
-                <hr>
-                <div class="row mb-3">
-                    <div class="col-md-6"><strong><i class="fas fa-briefcase me-2"></i>Job Type:</strong> ${jobType}</div>
-                    <div class="col-md-6"><strong><i class="fas fa-map-marker-alt me-2"></i>Location:</strong> ${location}</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6"><strong><i class="fas fa-building me-2"></i>Department:</strong> ${department || 'Not specified'}</div>
-                    <div class="col-md-6"><strong><i class="fas fa-graduation-cap me-2"></i>Education:</strong> ${educationLevel || 'Not specified'}</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6"><strong><i class="fas fa-chart-line me-2"></i>Experience:</strong> ${experienceLevel || 'Not specified'}</div>
-                    <div class="col-md-6"><strong><i class="fas fa-money-bill-wave me-2"></i>Salary:</strong> ${salaryMini !== 'N/A' && salaryMax !== 'N/A' ? '$' + salaryMini + ' - $' + salaryMax : 'Not specified'}</div>
-                </div>
-                <div class="row mb-3"><div class="col-12"><strong><i class="fas fa-calendar-times me-2"></i>Application Deadline:</strong> ${deadline}</div></div>
-                <div class="mb-3"><strong><i class="fas fa-file-alt me-2"></i>Job Description:</strong><p class="mt-2">${jobDescription || 'No description provided.'}</p></div>
-                <div class="mb-3"><strong><i class="fas fa-tools me-2"></i>Required Skills:</strong><p class="mt-2">${requiredSkills || 'No specific skills required.'}</p></div>
-                <div class="mb-3"><strong><i class="fas fa-gift me-2"></i>Benefits:</strong><p class="mt-2">${benefits || 'No benefits specified.'}</p></div>
-            `;
-        }
-
-        function openJobModal(button) {
-            const data = button.dataset;
-            showJobDetails(
-                data.title, data.company, data.jobtype, data.location,
-                data.department, data.experience, data.education,
-                data.salarymin, data.salarymax, data.description,
-                data.skills, data.benefits, data.deadline, data.status
-            );
-        }
-    </script>
 </body>
 </html>

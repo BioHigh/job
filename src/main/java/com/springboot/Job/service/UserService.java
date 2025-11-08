@@ -120,4 +120,51 @@ public class UserService {
 
         mailSender.send(message);
     }
+    
+ // =================== PROFESSIONAL PROFILE METHODS ===================
+
+    public boolean updateProfessionalProfile(UserBean user) {
+        return userRepository.updateProfessionalProfile(user);
+    }
+
+    public boolean updateProfession(int userId, String profession) {
+        return userRepository.updateProfession(userId, profession);
+    }
+
+    public boolean updateExperience(int userId, Integer experienceYears) {
+        return userRepository.updateExperience(userId, experienceYears);
+    }
+
+    public boolean updateEducation(int userId, String education) {
+        return userRepository.updateEducation(userId, education);
+    }
+
+    public boolean updateLocation(int userId, String location) {
+        return userRepository.updateLocation(userId, location);
+    }
+
+    public boolean updateSkills(int userId, String skills) {
+        return userRepository.updateSkills(userId, skills);
+    }
+
+    // Resume management methods
+    public boolean updateResume(int userId, byte[] resume) {
+        return userRepository.updateResume(userId, resume);
+    }
+
+    public boolean updateResume(int userId, MultipartFile resumeFile) {
+        if (resumeFile != null && !resumeFile.isEmpty()) {
+            try {
+                byte[] resumeBytes = resumeFile.getBytes();
+                return userRepository.updateResume(userId, resumeBytes);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to process resume file", e);
+            }
+        }
+        return false;
+    }
+
+    public byte[] getResume(int userId) {
+        return userRepository.getResumeById(userId);
+    }
 }

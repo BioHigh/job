@@ -4,210 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
-        .dashboard-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-        .card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: none;
-            border-radius: 10px;
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .stats-card {
-            border-left: 4px solid #4e73df;
-        }
-        .welcome-card {
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-        }
-        .btn-primary {
-            background-color: #4e73df;
-            border-color: #4e73df;
-        }
-        .btn-primary:hover {
-            background-color: #2e59d9;
-            border-color: #2e59d9;
-        }
+        body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f8fafb; color: #333; }
+
+        .card { box-shadow: 0 6px 15px rgba(0,0,0,0.08); border: none; border-radius: 12px; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.12); }
+
+        .welcome-card { background: #fff; }
+        .btn-primary { background-color: #4e73df; border-color: #4e73df; }
+        .btn-primary:hover { background-color: #2e59d9; border-color: #2e59d9; }
+        .btn-outline-primary, .btn-outline-success, .btn-outline-info { min-width: 180px; font-weight: 600; }
+
+        .alert-container { position: fixed; top: 80px; right: 20px; z-index: 1050; width: 90%; max-width: 400px; }
+
+        .job-search-section { background: linear-gradient(135deg, #89ba16, #a8d631); border-radius: 15px; padding: 2rem; margin-bottom: 2rem; color: white; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .search-form { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .search-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .form-group { flex: 1; margin-bottom: 1rem; position: relative; }
+        .search-input { height: 50px; border-radius: 10px; border: 1px solid #ced4da; padding-left: 45px; width: 100%; transition: all 0.3s ease; }
+        .search-input:focus { border-color: #89ba16; box-shadow: 0 0 0 0.2rem rgba(137,186,22,0.25); outline: none; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #6c757d; }
+        .search-btn { background: linear-gradient(135deg, #89ba16, #a8d631); border: none; color: white; border-radius: 10px; height: 50px; font-weight: 600; transition: all 0.3s ease; }
+        .search-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        .recent-jobs h5 { margin-bottom: 1rem; font-weight: 600; }
+        .job-card { border-left: 4px solid #4e73df; transition: all 0.3s ease; }
+        .job-card:hover { border-left-color: #89ba16; }
+
+        .job-type-badge { font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 20px; text-transform: capitalize; }
+        .job-type-fulltime { background: #d4edda; color: #155724; }
+        .job-type-parttime { background: #fff3cd; color: #856404; }
+        .job-type-contract { background: #f8d7da; color: #721c24; }
+        .job-type-remote { background: #d1ecf1; color: #0c5460; }
+
+        .company-logo { width: 50px; height: 50px; border-radius: 8px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 1.25rem; }
+        .badge-status { font-size: 0.8rem; padding: 0.5rem 1rem; }
+        .shortcut-buttons { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+        @media (max-width: 992px) { .search-row { flex-direction: column; } .search-btn { width: 100%; } .shortcut-buttons { justify-content: center; } }
     </style>
 </head>
 <body>
-     <div th:replace="headerLogin :: profile-header"></div>
 
-   <br><br><br>
+<div th:replace="headerLogin :: profile-header"></div>
 
-     <div class="container mt-4">
-        <!-- Quick Stats -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Applications
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">12</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                    Interviews
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-calendar-check fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                    Profile Views
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-eye fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card stats-card h-100">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                    New Jobs
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-briefcase fa-2x text-gray-300"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="container mt-5 pt-4">
+
+    <!-- Alerts -->
+    <div class="alert-container">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <div th:if="${profilePhoto}">
-                            <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
-                                 class="img-fluid rounded-circle mb-3 shadow" 
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                        <div th:unless="${profilePhoto}">
-                            <img src="/images/default-avatar.png" 
-                                 class="img-fluid rounded-circle mb-3 shadow" 
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                        <h4 th:text="${user.name}">User Name</h4>
-                        <p class="text-muted" th:text="${user.userType}">User Type</p>
-                        <div class="d-grid gap-2">
-                            <a th:href="@{/user/profile}" class="btn btn-primary">
-                                <i class="bi bi-person me-1"></i>View Profile
-                            </a>
-                            <a th:href="@{/user/profile/edit}" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil me-1"></i>Edit Profile
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-search me-2"></i>Browse Jobs
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-file-earmark-plus me-2"></i>Create Resume
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-bell me-2"></i>Job Alerts
-                            </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="bi bi-gear me-2"></i>Settings
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-8">
-                <div class="card welcome-card h-100">
-                    <div class="card-header">
-                        <h4 class="mb-0"><i class="bi bi-house-door me-2"></i>Welcome to Your Dashboard</h4>
-                    </div>
-                    <div class="card-body">
-                        <h5>Hello, <span class="text-primary" th:text="${user.name}"></span>!</h5>
-                        <p class="lead">Welcome to your job portal dashboard. Here you can manage your job search and applications.</p>
-                        
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h6><i class="bi bi-file-earmark-text me-2"></i>Applications</h6>
-                                        <p class="mb-0">Track and manage your job applications</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card bg-light mb-3">
-                                    <div class="card-body">
-                                        <h6><i class="bi bi-briefcase me-2"></i>Job Search</h6>
-                                        <p class="mb-0">Find new opportunities that match your skills</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info mt-4">
-                            <h6><i class="bi bi-info-circle me-2"></i>Quick Tips</h6>
-                            <ul class="mb-0">
-                                <li>Keep your profile updated to attract more employers</li>
-                                <li>Set up job alerts to never miss an opportunity</li>
-                                <li>Regularly check your application status</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Job Search -->
+    <section class="job-search-section">
+        <div class="search-form">
+            <form method="get" th:action="@{/user/dashboard}">
+                <div class="search-row">
+                    <div class="form-group">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" name="search" class="form-control search-input" placeholder="Job title or keywords" th:value="${param.search}">
+                    </div>
+                    <div class="form-group">
+                        <i class="bi bi-geo-alt search-icon"></i>
+                        <input type="text" name="location" class="form-control search-input" placeholder="City or Country" th:value="${param.location}">
+                    </div>
+                    <div class="form-group">
+                        <select class="form-select search-input" name="jobType">
+                            <option value="">Any Type</option>
+                            <option value="full-time" th:selected="${param.jobType=='full-time'}">Full Time</option>
+                            <option value="part-time" th:selected="${param.jobType=='part-time'}">Part Time</option>
+                            <option value="contract" th:selected="${param.jobType=='contract'}">Contract</option>
+                            <option value="remote" th:selected="${param.jobType=='remote'}">Remote</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="min-width:auto;">
+                        <button type="submit" class="btn search-btn w-100"><i class="bi bi-search me-1"></i> Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <div class="row">
+        <!-- User Info -->
+        <div class="col-lg-4">
+            <div class="card mb-4 text-center">
+                <div class="card-body">
+                    <h3 th:text="${user.name}">User Name</h3>
+                    <p class="text-muted mb-2" th:text="${user.userType}">User Type</p>
+                    <span class="badge bg-success badge-status" th:text="${user.status}">Active</span>
+
+                  <!-- Shortcut Buttons -->
+				<div class="shortcut-buttons mt-3 d-flex flex-wrap gap-2 justify-content-center">
+				    <a th:href="@{/user/user-jobs-by-category}" class="btn btn-outline-primary flex-fill flex-md-auto">
+				        <i class="bi bi-list-ul me-1"></i> Jobs by Category
+				    </a>
+				    <a th:href="@{/user/user_companies}" class="btn btn-outline-success flex-fill flex-md-auto">
+				        <i class="bi bi-building me-1"></i> Companies
+				    </a>
+				    <a th:href="@{/user/resume}" class="btn btn-outline-info flex-fill flex-md-auto">
+				        <i class="bi bi-file-earmark-text me-1"></i> Applications
+				    </a>
+				</div>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <strong><i class="bi bi-envelope me-2"></i>Email:</strong>
+                        <span th:text="${user.gmail}">user@example.com</span>
+                    </div>
+                    <br>
+                    <div class="info-item">
+                        <strong><i class="bi bi-phone me-2"></i>Phone:</strong>
+                        <span th:text="${user.phone ?: 'Not provided'}">Not provided</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div class="col-lg-8">
+            <div class="card welcome-card h-100 p-4">
+                <h4 class="mb-3"><i class="bi bi-house-door me-2"></i>Welcome, <span th:text="${user.name}">User</span>!</h4>
+                <p class="lead">Manage your job search, applications, and profile from this dashboard.</p>
+
+                <div class="recent-jobs mt-4">
+                    <h5><i class="bi bi-clock-history me-2"></i>Recent Job Opportunities</h5>
+
+                    <div th:if="${#lists.isEmpty(activeJobs)}" class="alert alert-info text-center">
+                        <i class="bi bi-info-circle me-2"></i>No job opportunities available currently.
+                    </div>
+
+                    <!-- Job Cards (Show 4 per page) -->
+                    <div th:each="job : ${activeJobs}" class="card job-card mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1">
+                                    <div class="company-logo"><i class="bi bi-building"></i></div>
+                                </div>
+                                <div class="col-md-7">
+                                    <h6 class="fw-bold mb-1" th:text="${job.jobTitle}">Job Title</h6>
+                                    <p class="text-muted mb-1" th:text="${job.companyName}">Company</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span th:class="'job-type-badge ' +
+                                            (job.jobType=='full-time'?'job-type-fulltime':
+                                            (job.jobType=='part-time'?'job-type-parttime':
+                                            (job.jobType=='remote'?'job-type-remote':'job-type-contract')))"
+                                              th:text="${job.jobType.replace('-',' ')}">Type</span>
+                                        <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i><span th:text="${job.location}">Location</span></span>
+                                        <span class="text-muted small"><i class="bi bi-clock me-1"></i><span th:text="${#dates.format(job.createdAt,'MMM dd')}">Date</span></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <a th:href="@{/user/job/detail/} + ${job.id}" class="btn btn-primary btn-sm">View Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${totalPages > 1}" aria-label="Job Listings Pagination" class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/user/dashboard(page=${currentPage-1}, search=${search}, location=${location}, jobType=${jobType})}">&laquo; Prev</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}" th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/user/dashboard(page=${i}, search=${search}, location=${location}, jobType=${jobType})}" th:text="${i}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                <a class="page-link" th:href="@{/user/dashboard(page=${currentPage+1}, search=${search}, location=${location}, jobType=${jobType})}">Next &raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => setTimeout(() => new bootstrap.Alert(alert).close(), 5000));
+    });
+</script>
 </body>
 </html>

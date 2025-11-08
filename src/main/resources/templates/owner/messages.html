@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Applications - JobJump</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #007bff, #6610f2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .application-card {
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        .message-item {
+            transition: all 0.3s ease;
+        }
+        .message-item:hover {
+            background-color: #f8f9fa !important;
+        }
+        .new-application {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border-left: 4px solid #28a745 !important;
+        }
+        .new-indicator {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        /* Notification badge styles for messages page */
+        .notification-alert {
+            border-left: 4px solid #dc3545;
+            animation: pulse-alert 2s infinite;
+        }
+        
+        @keyframes pulse-alert {
+            0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
+
+        /* Minimalist arrow slide effect */
+		.name-link {
+		    transition: all 0.3s ease;
+		    position: relative;
+		    cursor: pointer;
+		    display: inline-block;
+		    padding: 4px 0;
+		}
+		
+		.name-link::after {
+		    content: '›';
+		    position: absolute;
+		    right: -15px;
+		    opacity: 0;
+		    transition: all 0.3s ease;
+		    color: #007bff;
+		}
+		
+		.name-link:hover {
+		    color: #007bff !important;
+		    padding-right: 15px;
+		}
+		
+		.name-link:hover::after {
+		    opacity: 1;
+		    right: 0;
+		    animation: bounceRight 0.6s ease infinite;
+		}
+		
+		@keyframes bounceRight {
+		    0%, 100% { transform: translateX(0); }
+		    50% { transform: translateX(3px); }
+		}
+		
+		.name-link-secondary {
+		    transition: all 0.3s ease;
+		    position: relative;
+		    padding-left: 0;
+		}
+		
+		.name-link-secondary::before {
+		    content: '👤';
+		    position: absolute;
+		    left: -20px;
+		    opacity: 0;
+		    transition: all 0.3s ease;
+		}
+		
+		.name-link-secondary:hover {
+		    color: #0056b3 !important;
+		    padding-left: 20px;
+		}
+		
+		.name-link-secondary:hover::before {
+		    opacity: 1;
+		    left: 0;
+		}
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px 0;
+        }
+
+        .page-info {
+            margin: 0 15px;
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .pagination .page-link {
+            border-radius: 5px;
+            margin: 0 2px;
+            border: 1px solid #dee2e6;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{ownerheader :: owner-header}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="bi bi-people-fill me-2 text-primary"></i>Job Applications
+                        </h2>
+                        <p class="text-muted mb-0">Manage and review all job applications with candidate details</p>
+                    </div>
+                    <div class="text-end">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge bg-primary fs-6" th:text="${applications.size()} + ' applications'"></span>
+                            <!-- Mark All as Read Button -->
+                            <form th:action="@{/owner/messages/mark-all-read}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-all me-1"></i> Mark All as Read
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Applications Alert -->
+                <div th:if="${newApplicationCount > 0}" class="alert alert-info notification-alert alert-dismissible fade show mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bell-fill me-2 fs-5"></i>
+                        <div>
+                            <strong>New Applications!</strong> You have 
+                            <span class="badge bg-danger ms-1" th:text="${newApplicationCount}"></span> 
+                            unread application(s) waiting for your review.
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Success/Error Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Applications List Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-primary text-white py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-check me-2"></i>All Job Applications
+                            </h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <small>
+                                    <i class="bi bi-circle-fill text-warning me-1"></i>
+                                    <span th:text="${newApplicationCount}" class="fw-bold"></span> new
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <!-- Empty State -->
+                        <div th:if="${applications.empty}" class="text-center p-5">
+                            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                            <h4 class="text-muted mb-2">No Applications Yet</h4>
+                            <p class="text-muted mb-4">When candidates apply to your jobs, they'll appear here with complete details.</p>
+                            <a th:href="@{/owner/jobs}" class="btn btn-primary">
+                                <i class="bi bi-eye me-1"></i>View Your Jobs
+                            </a>
+                        </div>
+                        
+                        <!-- Applications List -->
+                        <div id="applicationsContainer">
+                            <div th:each="app : ${applications}" 
+                                 class="border-bottom p-4 message-item application-card application-item"
+                                 th:classappend="${app.isSeen == false} ? 'new-application' : ''"
+                                 th:data-id="${app.id}">
+                                <div class="row align-items-center">
+                                    <!-- Candidate Information -->
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="position-relative">
+                                                <div class="user-avatar me-3" 
+                                                     th:text="${app.userName != null ? app.userName.substring(0, 1).toUpperCase() : 'U'}">
+                                                </div>
+                                                <!-- New Application Indicator -->
+                                                <span th:if="${app.isSeen == false}" 
+                                                      class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle">
+                                                    <span class="visually-hidden">New application</span>
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <h6 class="mb-0 fw-bold">
+                                                        <span th:if="${app.isSeen == false}" class="badge bg-success ms-2">
+                                                            <span class="new-indicator"></span>NEW
+                                                        </span>
+                                                    </h6>
+                                                </div>
+                                                <div class="text-muted small">
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <i class="bi bi-person me-2"></i>
+                                                       <a th:href="@{/owner/messages/user/{userId}(userId=${app.userId})}" 
+   class="text-decoration-none text-dark fw-bold fs-5 name-link name-tooltip name-link-secondary"
+   title="View candidate profile">
+
+                                                            <span th:text="${app.userName != null ? app.userName : 'User #' + app.userId}"></span>
+                                                        </a>
+                                                    </div>
+                                                    <div class="d-flex align-items-center mb-1">
+                                                        <i class="bi bi-envelope me-2"></i>
+                                                        <span th:text="${app.userEmail != null ? app.userEmail : 'No email'}"></span>
+                                                    </div>
+                                                    <div th:if="${app.userPhone != null}" class="d-flex align-items-center">
+                                                        <i class="bi bi-phone me-2"></i>
+                                                        <span th:text="${app.userPhone}"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Job Information -->
+                                    <div class="col-md-3">
+                                        <h6 class="text-primary mb-2" th:text="${app.jobTitle != null ? app.jobTitle : 'Job #' + app.jobId}"></h6>
+                                        <div class="text-muted small">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-building me-2"></i>
+                                                <span th:text="${app.companyName != null ? app.companyName : 'Your Company'}"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Status & Actions -->
+                                    <div class="col-md-5">
+                                        <div class="d-flex flex-column gap-3">
+                                            <!-- Status Section -->
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <span class="${app.status == 'PENDING'} ? 'badge bg-warning' : 
+                                                                   ${app.status == 'APPROVED'} ? 'badge bg-success' : 
+                                                                   ${app.status == 'REJECTED'} ? 'badge bg-danger' : 
+                                                                   ${app.status == 'SHORTLISTED'} ? 'badge bg-info' : 'badge bg-secondary'"
+                                                          th:text="${app.status}">
+                                                    </span>
+                                                </div>
+                                                <small class="text-muted">
+                                                    App #<span th:text="${app.id}"></span>
+                                                </small>
+                                            </div>
+                                            
+                                            <!-- Action Buttons -->
+                                            <div class="d-flex gap-2 justify-content-between">
+                                                <!-- Download CV -->
+                                                <div class="flex-fill">
+                                                    <a th:if="${app.cvFile != null}" 
+                                                       th:href="@{/owner/messages/cv/{id}(id=${app.id})}" 
+                                                       class="btn btn-outline-primary btn-sm w-100">
+                                                        <i class="bi bi-download me-1"></i>Download CV
+                                                    </a>
+                                                    <button th:if="${app.cvFile == null}" 
+                                                            class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                                        <i class="bi bi-download me-1"></i>No CV
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Status Update Dropdown -->
+                                                <div class="dropdown">
+                                                    <button class="btn btn-outline-success btn-sm dropdown-toggle" 
+                                                            type="button" data-bs-toggle="dropdown">
+                                                        <i class="bi bi-gear"></i> Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <form th:action="@{/owner/messages/status/{id}(id=${app.id})}" method="post" class="d-inline">
+                                                                <input type="hidden" name="status" value="PENDING">
+                                                                <button type="submit" class="dropdown-item" th:classappend="${app.status == 'PENDING'} ? 'active' : ''">
+                                                                    <i class="bi bi-clock"></i> Pending
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form th:action="@{/owner/messages/status/{id}(id=${app.id})}" method="post" class="d-inline">
+                                                                <input type="hidden" name="status" value="SHORTLISTED">
+                                                                <button type="submit" class="dropdown-item" th:classappend="${app.status == 'SHORTLISTED'} ? 'active' : ''">
+                                                                    <i class="bi bi-list-stars"></i> Shortlisted
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form th:action="@{/owner/messages/status/{id}(id=${app.id})}" method="post" class="d-inline">
+                                                                <input type="hidden" name="status" value="APPROVED">
+                                                                <button type="submit" class="dropdown-item" th:classappend="${app.status == 'APPROVED'} ? 'active' : ''">
+                                                                    <i class="bi bi-check-circle"></i> Approved
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form th:action="@{/owner/messages/status/{id}(id=${app.id})}" method="post" class="d-inline">
+                                                                <input type="hidden" name="status" value="REJECTED">
+                                                                <button type="submit" class="dropdown-item" th:classappend="${app.status == 'REJECTED'} ? 'active' : ''">
+                                                                    <i class="bi bi-x-circle"></i> Rejected
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <form th:action="@{/owner/messages/mark-read/{id}(id=${app.id})}" method="post" class="d-inline">
+                                                                <button type="submit" class="dropdown-item text-primary">
+                                                                    <i class="bi bi-check"></i> Mark as Read
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div th:if="${!applications.empty}" id="paginationContainer" class="pagination-container">
+                            <nav aria-label="Applications pagination">
+                                <ul class="pagination mb-0">
+                                    <li class="page-item" id="prevPage">
+                                        <a class="page-link" href="javascript:void(0)" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <!-- Page numbers will be inserted here by JavaScript -->
+                                    <li class="page-item" id="nextPage">
+                                        <a class="page-link" href="javascript:void(0)" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <div class="page-info" id="pageInfo">
+                                Page 1 of 1
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div th:if="${!applications.empty}" class="card-footer bg-light py-3">
+                        <div class="row align-items-center">
+                            <!-- Unread Applications Count -->
+                            <div class="col-md-3 text-center text-md-start">
+                                <small class="text-muted">
+                                    <i class="bi bi-envelope-check text-success me-1"></i>
+                                    <span th:text="${newApplicationCount}"></span> unread applications
+                                </small>
+                            </div>
+                            
+                            <!-- Total Applications Count -->
+                            <div class="col-md-3 text-center">
+                                <small class="text-muted">
+                                    Total: <strong th:text="${applications.size()}"></strong> applications
+                                </small>
+                            </div>
+                            
+                            <!-- Refresh Link -->
+                            <div class="col-md-3 text-center text-md-end">
+                                <small class="text-muted">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                    <a href="javascript:location.reload()" class="text-decoration-none">Refresh</a>
+                                </small>
+                            </div>
+                            
+                            <!-- Back Button -->
+                            <div class="col-md-3 text-center text-md-end mt-2 mt-md-0">
+                                <a th:href="@{/owner/dashboard}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pagination variables
+            const applicationsPerPage = 10;
+            let currentPage = 1;
+            const applicationItems = document.querySelectorAll('.application-item');
+            const totalApplications = applicationItems.length;
+            const totalPages = Math.ceil(totalApplications / applicationsPerPage);
+            
+            // Pagination elements
+            const paginationContainer = document.getElementById('paginationContainer');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevPageBtn = document.getElementById('prevPage');
+            const nextPageBtn = document.getElementById('nextPage');
+            
+            // Initialize pagination
+            function initPagination() {
+                if (totalApplications <= applicationsPerPage) {
+                    // Hide pagination if not needed
+                    paginationContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Show first page initially
+                showPage(1);
+                updatePaginationButtons();
+                generatePageNumbers();
+            }
+            
+            // Show specific page
+            function showPage(page) {
+                currentPage = page;
+                
+                // Hide all applications
+                applicationItems.forEach(item => {
+                    item.style.display = 'none';
+                });
+                
+                // Calculate start and end index
+                const startIndex = (page - 1) * applicationsPerPage;
+                const endIndex = startIndex + applicationsPerPage;
+                
+                // Show applications for current page
+                for (let i = startIndex; i < endIndex && i < totalApplications; i++) {
+                    applicationItems[i].style.display = 'block';
+                }
+                
+                // Update page info
+                pageInfo.textContent = `Page ${page} of ${totalPages}`;
+                
+                // Update pagination buttons
+                updatePaginationButtons();
+                updateActivePageNumber();
+            }
+            
+            // Update pagination buttons state
+            function updatePaginationButtons() {
+                prevPageBtn.classList.toggle('disabled', currentPage === 1);
+                nextPageBtn.classList.toggle('disabled', currentPage === totalPages);
+            }
+            
+            // Generate page number buttons
+            function generatePageNumbers() {
+                const pagination = document.querySelector('.pagination');
+                const prevPage = document.getElementById('prevPage');
+                const nextPage = document.getElementById('nextPage');
+                
+                // Clear existing page numbers (except prev/next)
+                const existingPageNumbers = document.querySelectorAll('.page-number');
+                existingPageNumbers.forEach(el => el.remove());
+                
+                // Determine which pages to show
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
+                
+                // Adjust if we're at the beginning
+                if (currentPage <= 3) {
+                    endPage = Math.min(5, totalPages);
+                }
+                
+                // Adjust if we're at the end
+                if (currentPage >= totalPages - 2) {
+                    startPage = Math.max(1, totalPages - 4);
+                }
+                
+                // Add page numbers
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageItem = document.createElement('li');
+                    pageItem.className = `page-item page-number ${i === currentPage ? 'active' : ''}`;
+                    pageItem.innerHTML = `<a class="page-link" href="javascript:void(0)">${i}</a>`;
+                    
+                    // Insert before next button
+                    pagination.insertBefore(pageItem, nextPage);
+                    
+                    // Add click event
+                    pageItem.addEventListener('click', () => showPage(i));
+                }
+            }
+            
+            // Update active page number
+            function updateActivePageNumber() {
+                document.querySelectorAll('.page-number').forEach(item => {
+                    const pageNum = parseInt(item.textContent);
+                    item.classList.toggle('active', pageNum === currentPage);
+                });
+            }
+            
+            // Event listeners for prev/next buttons
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    showPage(currentPage - 1);
+                    generatePageNumbers();
+                }
+            });
+            
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    showPage(currentPage + 1);
+                    generatePageNumbers();
+                }
+            });
+            
+            // Initialize pagination
+            initPagination();
+
+            // Existing functionality
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 50000);
+            });
+
+            const statusForms = document.querySelectorAll('form[action*="/status/"]');
+            statusForms.forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    const status = this.querySelector('input[name="status"]').value;
+                    const applicationId = this.action.split('/').pop();
+                    const candidateName = this.closest('.application-card').querySelector('.fw-bold').textContent;
+                    
+                    if (!confirm(`Change ${candidateName}'s application status to ${status}?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            const markAllForm = document.querySelector('form[action*="/mark-all-read"]');
+            if (markAllForm) {
+                markAllForm.addEventListener('submit', function(e) {
+                    if (!confirm('Mark all applications as read?')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Add hover delay for better user experience
+            const nameLinks = document.querySelectorAll('.name-link');
+            nameLinks.forEach(function(link) {
+                link.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.3s ease';
+                });
+            });
+
+            setInterval(function() {
+                const activeElements = document.activeElement;
+                if (!activeElements || (activeElements.tagName !== 'INPUT' && activeElements.tagName !== 'TEXTAREA' && activeElements.tagName !== 'SELECT')) {
+                    location.reload();
+                }
+            }, 50000); 
+        });
+    </script>
+</body>
+</html>

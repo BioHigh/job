@@ -4,15 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JobJump Footer Modern</title>
-<!-- Bootstrap CSS -->
-
-<style>
- 
-</style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+<link rel="stylesheet" th:href="@{/css/footer.css}">
 </head>
 <body>
 <div th:fragment="site-footer">
-
 <footer class="footer-modern">
   <div class="container">
     <div class="row">
@@ -30,10 +27,10 @@
       <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
         <h5>Employers</h5>
         <ul>
-          <li><a href="#">Create Free Account</a></li>
-          <li><a href="#">Advertise Jobs</a></li>
-          <li><a href="#">Post a Job</a></li>
-          <li><a href="#">Search Candidates</a></li>
+          <li><a th:href="@{/request/owner}">Create Free Account</a></li>
+          <li><a th:href="@{owner/login}">Advertise Jobs</a></li>
+          <li><a th:href="@{owner/login}">Post a Job</a></li>
+          <li><a th:href="@{/owner/login}">Company Login</a></li>
         </ul>
       </div>
 
@@ -41,29 +38,30 @@
       <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
         <h5>Job Seekers</h5>
         <ul>
-          <li><a href="#">Search Jobs</a></li>
-          <li><a href="#">Upload Resume</a></li>
+          <li><a th:href="@{/user/home}">Search Jobs</a></li>
+          <li><a th:href="@{/user/register}">Create Account</a></li>
+          <li><a th:href="@{/user/login}">User Login</a></li>
           <li><a href="#">Career Advice</a></li>
-          <li><a href="#">Job Alerts</a></li>
         </ul>
       </div>
 
       <!-- Feedback Section (Right) -->
       <div class="col-lg-6 col-md-12 col-sm-12 mb-3">
-  <h5>We Value Your Feedback</h5>
-  <p>Share your thoughts and suggestions!</p>
-  <div class="feedback-section">
-    <form id="feedbackForm">
-      <div class="mb-2">
-        <textarea class="form-control" rows="2" placeholder="Your Message" required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary w-100">
-        <i class="bi bi-send me-1"></i> Send Feedback
-      </button>
-    </form>
-  </div>
-</div>
+        <h5>We Value Your Feedback</h5>
+        <p>Share your thoughts and suggestions!</p>
 
+          <div class="feedback-section">
+            <form id="feedbackForm" th:action="@{/user/feedback}" method="post">
+    <div class="mb-2">
+        <textarea class="form-control" name="fbmessage" rows="3" placeholder="Your feedback message..." required style="resize: none;"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-send me-1"></i> Send Feedback
+    </button>
+</form>
+          </div>
+       
+      </div>
     </div>
 
     <!-- Footer bottom -->
@@ -79,30 +77,8 @@
     </div>
   </div>
 </footer>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const feedbackForm = document.getElementById('feedbackForm');
-    
-    if (feedbackForm) {
-      feedbackForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        
-      
-        const message = this.querySelector('textarea').value;
-        
-        
-        alert('Thank you for your feedback, ' + name + '! We will get back to you soon.');
-        
-        
-        this.reset();
-      });
-    }
-  });
-</script>
 </body>
 </html>

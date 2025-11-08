@@ -139,20 +139,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="job-detail-item">
-                                    <strong>Experience Level:</strong><br>
+                                    <strong>Experience Level:</strong>
                                     <span th:text="${job.experienceLevel ?: 'Not specified'}">Not specified</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="job-detail-item">
-                                    <strong>Education Level:</strong><br>
+                                    <strong>Education Level:</strong>
                                     <span th:text="${job.educationLevel ?: 'Not specified'}">Not specified</span>
                                 </div>
                             </div>
-                        </div>
+                        </div><br>
 
                         <div class="job-detail-item" th:if="${job.requiredSkills}">
-                            <strong>Required Skills:</strong><br>
+                            <strong>Required Skills</strong><br>
                             <div class="mt-2">
                                 <span th:each="skill : ${#strings.listSplit(job.requiredSkills, ',')}" 
                                       class="tag" th:text="${skill}">Skill</span>
@@ -168,7 +168,7 @@
                     </div>
                     <div class="card-body">
                         <div class="job-detail-item">
-                            <strong>Salary Range:</strong><br>
+                            <strong>Salary Range:</strong>
                             <span th:if="${job.salaryMini != null and job.salaryMax != null}" 
                                   th:text="'MMK ' + ${#numbers.formatInteger(job.salaryMini, 1, 'DEFAULT')} + ' - MMK ' + ${#numbers.formatInteger(job.salaryMax, 1, 'DEFAULT')}">
                                 Salary range
@@ -177,9 +177,9 @@
                                 Not specified
                             </span>
                         </div>
-
+<br>
                         <div class="job-detail-item" th:if="${job.benefits}">
-                            <strong>Benefits:</strong><br>
+                            <strong>Benefits</strong><br>
                             <div class="mt-2">
                                 <span th:each="benefit : ${#strings.listSplit(job.benefits, ',')}" 
                                       class="tag" th:text="${benefit}">Benefit</span>
@@ -209,23 +209,23 @@
                         </div>
                         <div class="card-body">
                             <div class="job-detail-item">
-                                <strong><i class="bi bi-briefcase me-2"></i>Department:</strong><br>
+                                <strong><i class="bi bi-briefcase me-2"></i>Department:</strong>
                                 <span th:text="${job.department ?: 'Not specified'}">Not specified</span>
                             </div>
                             <div class="job-detail-item">
-                                <strong><i class="bi bi-geo-alt me-2"></i>Location:</strong><br>
+                                <strong><i class="bi bi-geo-alt me-2"></i>Location:</strong>
                                 <span th:text="${job.location}">Location</span>
                             </div>
                             <div class="job-detail-item">
-                                <strong><i class="bi bi-calendar me-2"></i>Posted Date:</strong><br>
-                                <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">
+                                <strong><i class="bi bi-calendar me-2"></i>Posted Date:</strong>
+                                <span th:if="${job.createdAt}" th:text="${#temporals.format(job.createdAt, 'dd MMM, yyyy')}">
                                     Date
                                 </span>
                                 <span th:unless="${job.createdAt}">Not available</span>
                             </div>
                             <div class="job-detail-item" th:if="${job.applicationDeadline}">
-                                <strong><i class="bi bi-clock me-2"></i>Application Deadline:</strong><br>
-                                <span th:text="${job.applicationDeadline}">Deadline</span>
+                                <strong><i class="bi bi-clock me-2"></i>Application Deadline:</strong>
+                                <span th:text="${job.applicationDeadline}" >Deadline</span>
                             </div>
                         </div>
                     </div>
@@ -237,15 +237,15 @@
                         </div>
                         <div class="card-body">
                             <div class="job-detail-item">
-                                <strong><i class="bi bi-envelope me-2"></i>Email:</strong><br>
+                                <strong><i class="bi bi-envelope me-2"></i>Email:</strong>
                                 <span th:text="${job.applicationEmail}">email@example.com</span>
                             </div>
                             <div class="job-detail-item" th:if="${job.companyWebsite}">
-                                <strong><i class="bi bi-globe me-2"></i>Website:</strong><br>
+                                <strong><i class="bi bi-globe me-2"></i>Website:</strong>
                                 <a th:href="${job.companyWebsite}" th:text="${job.companyWebsite}" target="_blank">Website</a>
                             </div>
                             <div class="job-detail-item" th:if="${job.applicationInstructions}">
-                                <strong><i class="bi bi-list-ol me-2"></i>Instructions:</strong><br>
+                                <strong><i class="bi bi-list-ol me-2"></i>Instructions:</strong>
                                 <span th:text="${job.applicationInstructions}">Instructions</span>
                             </div>
                         </div>
@@ -269,43 +269,16 @@
             <i class="bi bi-pencil me-1"></i> Edit Job
         </a>
        
-        <!-- Disabled Edit Button for non-PENDING jobs -->
-        <button th:unless="${job.status == 'PENDING'}" 
-                type="button" 
-                class="btn btn-outline-secondary edit-disabled"
-                title="Editing is only allowed for jobs in PENDING status">
-            <i class="bi bi-pencil me-1"></i> Edit Job
-        </button>
        
-        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-            <i class="bi bi-trash me-1"></i> Delete Job
-        </button>
+       
+        
     </div>
 </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete the job: <strong th:text="${job.jobTitle}"></strong>?</p>
-                    <p class="text-danger"><small>This action cannot be undone.</small></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form th:action="@{/owner/job/delete/{id}(id=${job.id})}" method="post">
-                        <button type="submit" class="btn btn-danger">Delete Job</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div><br><br>
-    <div th:replace="footer :: site-footer"></div>
+    <br><br>
+<div th:replace="owner-footerLogin :: ownerLogin-footer"></div>
 <script>
     // Prevent clicking on disabled edit buttons
     document.addEventListener('DOMContentLoaded', function() {

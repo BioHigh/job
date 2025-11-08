@@ -17,6 +17,21 @@
             border: 5px solid white;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .avatar-initials {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(135deg, #4e73df, #2e59d9);
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+        }
         .info-item {
             padding: 0.75rem 0;
             border-bottom: 1px solid #e3e6f0;
@@ -48,6 +63,34 @@
         .toast-success { border-left: 4px solid #198754; }
         .toast-danger { border-left: 4px solid #dc3545; }
         .empty-state { opacity: 0.7; }
+        
+        /* Dynamic avatar colors based on initial */
+        .avatar-initials[data-initial^="A"] { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .avatar-initials[data-initial^="B"] { background: linear-gradient(135deg, #4834d4, #686de0); }
+        .avatar-initials[data-initial^="C"] { background: linear-gradient(135deg, #00d2d3, #54a0ff); }
+        .avatar-initials[data-initial^="D"] { background: linear-gradient(135deg, #ff9ff3, #f368e0); }
+        .avatar-initials[data-initial^="E"] { background: linear-gradient(135deg, #feca57, #ff9f43); }
+        .avatar-initials[data-initial^="F"] { background: linear-gradient(135deg, #48dbfb, #0abde3); }
+        .avatar-initials[data-initial^="G"] { background: linear-gradient(135deg, #1dd1a1, #10ac84); }
+        .avatar-initials[data-initial^="H"] { background: linear-gradient(135deg, #ff9f43, #ee5a24); }
+        .avatar-initials[data-initial^="I"] { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .avatar-initials[data-initial^="J"] { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .avatar-initials[data-initial^="K"] { background: linear-gradient(135deg, #ffeaa7, #fdcb6e); }
+        .avatar-initials[data-initial^="L"] { background: linear-gradient(135deg, #dfe6e9, #b2bec3); }
+        .avatar-initials[data-initial^="M"] { background: linear-gradient(135deg, #00b894, #00cec9); }
+        .avatar-initials[data-initial^="N"] { background: linear-gradient(135deg, #0984e3, #74b9ff); }
+        .avatar-initials[data-initial^="O"] { background: linear-gradient(135deg, #e17055, #d63031); }
+        .avatar-initials[data-initial^="P"] { background: linear-gradient(135deg, #e84393, #fd79a8); }
+        .avatar-initials[data-initial^="Q"] { background: linear-gradient(135deg, #00cec9, #81ecec); }
+        .avatar-initials[data-initial^="R"] { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .avatar-initials[data-initial^="S"] { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+        .avatar-initials[data-initial^="T"] { background: linear-gradient(135deg, #00b894, #55efc4); }
+        .avatar-initials[data-initial^="U"] { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+        .avatar-initials[data-initial^="V"] { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+        .avatar-initials[data-initial^="W"] { background: linear-gradient(135deg, #fd79a8, #e84393); }
+        .avatar-initials[data-initial^="X"] { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+        .avatar-initials[data-initial^="Y"] { background: linear-gradient(135deg, #00cec9, #81ecec); }
+        .avatar-initials[data-initial^="Z"] { background: linear-gradient(135deg, #ff7675, #d63031); }
     </style>
 </head>
 <body>
@@ -87,15 +130,20 @@
         <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-body text-center">
+                    <!-- Fixed Profile Photo Section -->
                     <div th:if="${profilePhoto}">
                         <img th:src="'data:image/jpeg;base64,' + ${profilePhoto}" 
                              class="img-fluid rounded-circle mb-3 company-logo" 
                              style="width: 180px; height: 180px; object-fit: cover;">
                     </div>
                     <div th:unless="${profilePhoto}">
-                        <img src="/images/default-company.png" 
-                             class="img-fluid rounded-circle mb-3 company-logo" 
-                             style="width: 180px; height: 180px; object-fit: cover;">
+                        <div class="avatar-initials rounded-circle mx-auto mb-3"
+                             th:data-initial="${owner.companyName != null ? #strings.substring(owner.companyName, 0, 1).toUpperCase() : 'C'}">
+                            <span th:text="${owner.companyName != null ? #strings.substring(owner.companyName, 0, 1).toUpperCase() : 'C'}"></span>
+                        </div>
+                        <small class="text-muted d-block">
+                            <i class="bi bi-info-circle me-1"></i>Avatar generated from company name
+                        </small>
                     </div>
 
                     <h3 th:text="${owner.companyName}">Company Name</h3>
@@ -120,15 +168,15 @@
                 </div>
                 <div class="card-body">
                     <div class="info-item">
-                        <strong><i class="bi bi-envelope me-2"></i>Email:</strong><br>
+                        <strong><i class="bi bi-envelope me-2"></i>Email:</strong>
                         <span th:text="${owner.gmail}">company@example.com</span>
                     </div>
                     <div class="info-item">
-                        <strong><i class="bi bi-phone me-2"></i>Phone:</strong><br>
+                        <strong><i class="bi bi-phone me-2"></i>Phone:</strong>
                         <span th:text="${owner.companyPhone ?: 'Not provided'}">Not provided</span>
                     </div>
                     <div class="info-item">
-                        <strong><i class="bi bi-geo-alt me-2"></i>Address:</strong><br>
+                        <strong><i class="bi bi-geo-alt me-2"></i>Region:</strong>
                         <span th:text="${owner.address ?: 'Not provided'}">Not provided</span>
                     </div>
                 </div>
@@ -155,14 +203,7 @@
                             <div class="col-sm-8" th:text="${owner.type}">Company Type</div>
                         </div>
                     </div>
-                    <div class="info-item">
-                        <div class="row">
-                            <div class="col-sm-4"><strong>Status:</strong></div>
-                            <div class="col-sm-8">
-                                <span class="badge bg-success" th:text="${owner.status}">Active</span>
-                            </div>
-                        </div>
-                    </div>
+                   
                     <div class="info-item">
                         <div class="row">
                             <div class="col-sm-4"><strong>Description:</strong></div>
@@ -175,7 +216,7 @@
                         <div class="row">
                             <div class="col-sm-4"><strong>Member Since:</strong></div>
                             <div class="col-sm-8" th:if="${owner.createdAt}">
-                                <span th:text="${#temporals.format(owner.createdAt, 'MMMM dd, yyyy')}"></span>
+                                <span th:text="${#temporals.format(owner.createdAt, 'dd MMMM, yyyy')}"></span>
                             </div>
                             <div class="col-sm-8" th:unless="${owner.createdAt}">Not available</div>
                         </div>
@@ -228,7 +269,7 @@
                         <div th:each="job : ${recentJobs}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1" th:text="${job.jobTitle}">Job Title</h6>
-                                <small class="text-muted" th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}">Date posted</small>
+                                <small class="text-muted" th:text="${#temporals.format(job.createdAt, 'dd MMM, yyyy')}">Date posted</small>
                             </div>
                             <p class="mb-1">
                                 <span th:text="${job.jobType}">Full-time</span> •  
@@ -274,6 +315,13 @@
         
         if (successToast) new bootstrap.Toast(successToast).show();
         if (errorToast) new bootstrap.Toast(errorToast).show();
+        
+        // Add data attribute for dynamic avatar colors
+        const avatarInitials = document.querySelectorAll('.avatar-initials');
+        avatarInitials.forEach(avatar => {
+            const initial = avatar.textContent.trim();
+            avatar.setAttribute('data-initial', initial);
+        });
     });
 </script>
 

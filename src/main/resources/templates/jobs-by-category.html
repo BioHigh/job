@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Job Categories to Work in Myanmar | JobNet.com.mn</title>
- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-          <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
     
     <style>
-        
         .category-card {
             border: 1px solid #e9ecef;
             border-radius: 8px;
@@ -19,6 +18,9 @@
             background: white;
             cursor: pointer;
         }
+        
+     
+        
         .category-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transform: translateY(-2px);
@@ -33,55 +35,460 @@
             color: #666;
             margin-top: 8px;
         }
-        .nav-link {
-            color: #666;
-            font-weight: 500;
+        .job-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: white;
         }
-        .nav-link:hover {
-            color: #2c5aa0;
+        .job-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
-        .navbar-brand {
-            color: #2c5aa0;
+        .company-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .company-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #2c5aa0, #3498db);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
             font-weight: bold;
+            font-size: 20px;
+            border: 1px solid #e9ecef;
+        }
+        .job-badge {
+            background: #f8f9fa;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        .back-link {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: 500;
+            display: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .section-title {
+            color: #2c5aa0;
+            border-bottom: 2px solid #2c5aa0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .jobs-section {
+            display: none;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
         }
         .zero-jobs {
             opacity: 0.6;
+        }
+        .zero-jobs .category-count {
+            color: #adb5bd;
         }
     </style>
 </head>
 <body>
     <!-- Header Navigation -->
-        <div th:replace="header :: site-header"></div>
+    <div th:replace="header :: site-header"></div>
     <br><br>
 
     <!-- Main Content -->
     <div class="container mt-4">
-        <h2 class="mb-4">All the Top Job Categories to Work</h2>
-        
-        <!-- Categories Grid -->
-        <div class="row">
-            <div class="col-md-3 col-sm-4 col-6" th:each="category : ${categories}">
-                <div class="category-card text-center" 
-                     th:classappend="${jobCounts.get(category.id) == 0} ? 'zero-jobs' : ''"
-                     th:onclick="|window.location.href='/jobs/category/' + ${category.id}|">
-                    <div class="category-count" 
-                         th:text="${jobCounts.get(category.id) != null ? jobCounts.get(category.id) : 0}">
-                        0
-                    </div>
-                    <div class="category-name" th:text="${category.catName}">Category Name</div>
-                </div>
-            </div>
+        <!-- Back Link -->
+        <a href="javascript:void(0)" id="backToCategories" class="back-link mb-3">
+            <i class="bi bi-arrow-left"></i> Back to All Categories
+        </a>
+
+        <!-- Categories List View -->
+        <div id="categoriesSection">
+            <h2 class="section-title">All the Top Job Categories to Work</h2>
             
-            <!-- Fallback if no categories -->
-            <div th:if="${categories == null || categories.empty}" class="col-12">
-                <div class="alert alert-info text-center">
-                    No job categories found.
+            <!-- Categories Grid WITH JOB COUNTS FROM DATABASE -->
+            <div class="row">
+                <div class="col-md-3 col-sm-4 col-6" th:each="category : ${categories}">
+                    <div class="category-card text-center category-item"
+                         th:classappend="${jobCounts.get(category.id) == 0} ? 'zero-jobs' : ''"
+                         th:attr="data-category-id=${category.id}, data-category-name=${category.catName}">
+                        <div class="category-count" 
+                             th:text="${jobCounts.get(category.id) != null ? jobCounts.get(category.id) : 0}">
+                            0
+                        </div>
+                        <div class="category-name" th:text="${category.catName}">Category Name</div>
+                    </div>
+                </div>
+                
+                <!-- Fallback if no categories -->
+                <div th:if="${categories == null || categories.empty}" class="col-12">
+                    <div class="alert alert-info text-center">
+                        No job categories found.
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Jobs by Category View -->
+        <div id="jobsSection" class="jobs-section">
+            <h2 id="categoryTitle" class="section-title"></h2>
+            <p id="jobCountText" class="text-muted mb-4"></p>
+            
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading jobs...</p>
+            </div>
+            
+            <!-- Jobs List -->
+            <div id="jobsList">
+                <!-- Jobs will be loaded here -->
+            </div>
+            
+            <!-- No Jobs Message -->
+            <div id="noJobsMessage" class="text-center py-5" style="display: none;">
+                <h4 class="text-muted">No jobs found in this category</h4>
+                <p class="text-muted">There are currently no active jobs in this category.</p>
+                <button onclick="showCategories()" class="btn btn-primary">Browse Other Categories</button>
+            </div>
+        </div>
     </div>
+    
     <div th:replace="footer :: site-footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Show categories list (default view)
+        function showCategories() {
+            document.getElementById('categoriesSection').style.display = 'block';
+            document.getElementById('jobsSection').style.display = 'none';
+            document.getElementById('backToCategories').style.display = 'none';
+            document.getElementById('jobsList').innerHTML = '';
+        }
+
+        // Show jobs for selected category
+        async function showCategoryJobs(categoryId, categoryName) {
+            try {
+                // Show loading state and hide categories
+                document.getElementById('categoriesSection').style.display = 'none';
+                document.getElementById('jobsSection').style.display = 'block';
+                document.getElementById('backToCategories').style.display = 'inline-block';
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('jobsList').innerHTML = '';
+                document.getElementById('noJobsMessage').style.display = 'none';
+                
+                // Update title
+                document.getElementById('categoryTitle').textContent = 'Jobs in ' + categoryName;
+                document.getElementById('jobCountText').textContent = 'Loading...';
+                
+                // Fetch jobs from API
+                const response = await fetch('/api/jobs/category/' + categoryId);
+                const data = await response.json();
+                
+                // Hide loading spinner
+                document.getElementById('loadingSpinner').style.display = 'none';
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Update job count
+                document.getElementById('jobCountText').textContent = data.totalJobs + ' job(s) found';
+                
+                // Display jobs or no jobs message
+                if (data.jobs && data.jobs.length > 0) {
+                    displayJobs(data.jobs);
+                } else {
+                    document.getElementById('noJobsMessage').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('jobsList').innerHTML = 
+                    '<div class="alert alert-danger text-center">Error loading jobs. Please try again.</div>';
+            }
+        }
+
+        // Get first letter of company name for avatar
+        function getCompanyInitial(companyName) {
+            if (!companyName || companyName.trim().length === 0) {
+                return 'C';
+            }
+            // Get the first letter and convert to uppercase
+            return companyName.charAt(0).toUpperCase();
+        }
+
+        // Get company display name
+        function getCompanyDisplayName(job) {
+            return job.ownerCompanyName || job.companyName || 'Company';
+        }
+
+        // Format date to display as "day month year" (e.g., "15 Jan, 2024")
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                const day = date.getDate();
+                const month = date.toLocaleDateString('en-US', { month: 'short' });
+                const year = date.getFullYear();
+                return `${day} ${month}, ${year}`;
+            } catch (e) {
+                return 'N/A';
+            }
+        }
+
+        // Display jobs in the jobs list
+        function displayJobs(jobs) {
+            const jobsList = document.getElementById('jobsList');
+            
+            jobs.forEach(job => {
+                const jobCard = document.createElement('div');
+                jobCard.className = 'job-card';
+                
+                const companyName = getCompanyDisplayName(job);
+                const companyInitial = getCompanyInitial(companyName);
+                const postedDate = formatDate(job.createdAt);
+                
+                // Format salary if available
+                let salaryHtml = '';
+                if (job.salary_mini && job.salary_max) {
+                    salaryHtml = '<span class="job-badge"><i class="bi bi-cash"></i> $' + job.salary_mini + ' - $' + job.salary_max + '</span>';
+                } else if (job.salaryMini && job.salaryMax) {
+                    // Alternative field names
+                    salaryHtml = '<span class="job-badge"><i class="bi bi-cash"></i> $' + job.salaryMini + ' - $' + job.salaryMax + '</span>';
+                }
+                
+                // Format company logo - show avatar with initial if no profile photo
+                let logoHtml = '';
+                if (job.profilePhoto) {
+                    logoHtml = '<img src="data:image/jpeg;base64,' + job.profilePhoto + '" class="company-logo" alt="' + companyName + ' Logo">';
+                } else {
+                    logoHtml = '<div class="company-avatar" title="' + companyName + '">' + companyInitial + '</div>';
+                }
+                
+                jobCard.innerHTML = `
+                    <div class="row align-items-center">
+                        <div class="col-md-1 text-center">
+                            ${logoHtml}
+                        </div>
+                        <div class="col-md-11">
+                            <h5 class="mb-2">${job.jobTitle || 'No Title'}</h5>
+                            <div class="mb-2">
+                                <strong>${companyName}</strong>
+                            </div>
+                            <div class="mb-2">
+                                <span class="job-badge">
+                                    <i class="bi bi-briefcase"></i> ${job.jobType || 'N/A'}
+                                </span>
+                                <span class="job-badge">
+                                    <i class="bi bi-geo-alt"></i> ${job.location || 'N/A'}
+                                </span>
+                                <span class="job-badge">
+                                    <i class="bi bi-person"></i> ${job.experienceLevel || 'N/A'}
+                                </span>
+                                ${salaryHtml}
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> Posted on ${postedDate}
+                            </small>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click event to navigate to job details
+                //jobCard.style.cursor = 'pointer';
+                //jobCard.addEventListener('click', function() {
+                  //  window.location.href = '/jobs/' + job.id;
+                //});
+                
+                jobsList.appendChild(jobCard);
+            });
+        }
+
+        // Enhanced date formatting with relative time
+        function formatDateEnhanced(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // If within 7 days, show relative time
+                if (diffDays === 1) return 'Yesterday';
+                if (diffDays <= 7) return `${diffDays} days ago`;
+                
+                // Otherwise show full date in "day month year" format
+                const day = date.getDate();
+                const month = date.toLocaleDateString('en-US', { month: 'short' });
+                const year = date.getFullYear();
+                return `${day} ${month}, ${year}`;
+            } catch (e) {
+                return 'N/A';
+            }
+        }
+
+        // Search functionality
+        function searchJobs() {
+            const searchTerm = document.getElementById('jobSearch').value.toLowerCase();
+            const jobCards = document.querySelectorAll('.job-card');
+            let visibleCount = 0;
+
+            jobCards.forEach(card => {
+                const jobTitle = card.querySelector('h5').textContent.toLowerCase();
+                const companyName = card.querySelector('strong').textContent.toLowerCase();
+                const jobType = card.querySelector('.job-badge:nth-child(1)').textContent.toLowerCase();
+                const location = card.querySelector('.job-badge:nth-child(2)').textContent.toLowerCase();
+                
+                const isVisible = jobTitle.includes(searchTerm) || 
+                                companyName.includes(searchTerm) || 
+                                jobType.includes(searchTerm) || 
+                                location.includes(searchTerm);
+                
+                card.style.display = isVisible ? 'block' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            // Show no results message if needed
+            const noResults = document.getElementById('noResultsMessage');
+            if (noResults) {
+                noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
+        // Filter by job type
+        function filterByJobType(jobType) {
+            const jobCards = document.querySelectorAll('.job-card');
+            
+            jobCards.forEach(card => {
+                const cardJobType = card.querySelector('.job-badge:nth-child(1)').textContent.toLowerCase();
+                const shouldShow = jobType === 'all' || cardJobType.includes(jobType.toLowerCase());
+                card.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+
+        // Sort jobs
+        function sortJobs(sortBy) {
+            const jobsList = document.getElementById('jobsList');
+            const jobCards = Array.from(jobsList.querySelectorAll('.job-card'));
+            
+            jobCards.sort((a, b) => {
+                const aDate = new Date(a.getAttribute('data-created') || 0);
+                const bDate = new Date(b.getAttribute('data-created') || 0);
+                const aSalary = parseInt(a.getAttribute('data-salary') || 0);
+                const bSalary = parseInt(b.getAttribute('data-salary') || 0);
+                
+                switch(sortBy) {
+                    case 'newest':
+                        return bDate - aDate;
+                    case 'oldest':
+                        return aDate - bDate;
+                    case 'salary-high':
+                        return bSalary - aSalary;
+                    case 'salary-low':
+                        return aSalary - bSalary;
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Clear and re-append sorted cards
+            jobsList.innerHTML = '';
+            jobCards.forEach(card => jobsList.appendChild(card));
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click event to category cards
+            document.querySelectorAll('.category-item').forEach(card => {
+                card.addEventListener('click', function() {
+                    const categoryId = this.getAttribute('data-category-id');
+                    const categoryName = this.getAttribute('data-category-name');
+                    showCategoryJobs(categoryId, categoryName);
+                });
+            });
+            
+            // Back to categories link
+            document.getElementById('backToCategories').addEventListener('click', showCategories);
+            
+            // Search input event listener
+            const searchInput = document.getElementById('jobSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', searchJobs);
+            }
+            
+            // Job type filter event listeners
+            document.querySelectorAll('.job-type-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    const jobType = this.getAttribute('data-job-type');
+                    filterByJobType(jobType);
+                    
+                    // Update active state
+                    document.querySelectorAll('.job-type-filter').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // Sort dropdown event listener
+            const sortDropdown = document.getElementById('sortDropdown');
+            if (sortDropdown) {
+                sortDropdown.addEventListener('change', function() {
+                    sortJobs(this.value);
+                });
+            }
+        });
+
+        // Utility function to handle API errors
+        function handleApiError(error) {
+            console.error('API Error:', error);
+            return {
+                error: true,
+                message: error.message || 'Failed to fetch data'
+            };
+        }
+
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Apply debouncing to search (300ms delay)
+        const debouncedSearch = debounce(searchJobs, 300);
+        
+        // Update search input listener to use debounced version
+        if (document.getElementById('jobSearch')) {
+            document.getElementById('jobSearch').addEventListener('input', debouncedSearch);
+        }
+    </script>
 </body>
 </html>

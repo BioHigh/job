@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${job.jobTitle} + ' - Application Form'">Job Application</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    
+    <style>
+        :root {
+            --primary: #89ba16;
+            --primary-light: #a5d321;
+            --primary-dark: #729c12;
+            --cream: #FFF5F0;
+            --dark: #2D3748;
+            --premium: #FFD700;
+            --premium-dark: #D4AF37;
+        }
+
+        .primary-bg {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)) !important;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 14px 30px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(137, 186, 22, 0.4);
+            color: white;
+        }
+
+        .premium-btn {
+            background: linear-gradient(135deg, var(--premium), var(--premium-dark));
+            border: none;
+            color: #333;
+            font-weight: 700;
+            padding: 14px 30px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .premium-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            color: #333;
+        }
+
+        .modern-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .form-control-lg-custom {
+            padding: 14px 16px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            border: 2px solid #E2E8F0;
+            transition: all 0.3s ease;
+        }
+
+        .form-control-lg-custom:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(137, 186, 22, 0.1);
+        }
+
+        .section-title {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--cream);
+        }
+
+        .floating-icon {
+            background: var(--cream);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .application-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: -20px;
+            margin-bottom: 20px;
+        }
+
+        .counter-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .counter-active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .counter-used {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .counter-locked {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .premium-feature-card {
+            border: 2px dashed var(--premium);
+            border-radius: 15px;
+            background: rgba(255, 215, 0, 0.05);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .premium-badge {
+            background: linear-gradient(135deg, var(--premium), var(--premium-dark));
+            color: #333;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .locked-section {
+            position: relative;
+            opacity: 0.6;
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            border-radius: 12px;
+            z-index: 10;
+            padding-top: 155px;
+        }
+
+        .locked-overlay .text-center h5 {
+            font-size: 2rem;
+        }
+
+        .locked-overlay .text-center p {
+            font-size: 1.25rem;
+        }
+
+        .locked-overlay .text-center i.bi-lock-fill {
+            font-size: 3rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #E2E8F0;
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(137, 186, 22, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(137, 186, 22, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Compact Alert Styles */
+        .compact-alert {
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.875rem;
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        .compact-alert.fade-out {
+            animation: slideOutUp 0.3s ease-in forwards;
+        }
+
+        .compact-alert .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .compact-alert .alert-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .compact-alert .alert-text {
+            flex: 1;
+        }
+
+        .compact-alert .alert-text .main-text {
+            font-weight: 600;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .compact-alert .alert-text .sub-text {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{headerLogin :: profile-header}"></div>
+
+<main class="container-fluid bg-light pt-5 min-vh-100" style="background: linear-gradient(135deg, #FFF5F0, #FFFFFF) !important;">
+    <div class="container">
+        <div class="row justify-content-center mt-4">
+            <div class="col-12 col-lg-9 col-xl-8">
+                <div class="card modern-card">
+
+                    <!-- Header Section -->
+                    <div class="card-header primary-bg text-white py-4 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="floating-icon">
+                                <i class="bi bi-send-check-fill"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h3 class="mb-2 fw-bold">Apply for Position</h3>
+                                <h5 class="mb-0 opacity-90 fw-normal" th:text="${job.jobTitle}"></h5>
+                            </div>
+                            <div class="badge bg-white text-primary px-3 py-2 rounded-pill">
+                                <i class="bi bi-clock me-1"></i>Quick Apply
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="progress rounded-0" style="height: 4px;">
+                        <div class="progress-bar primary-bg" style="width: 100%"></div>
+                    </div>
+
+                    <div class="card-body p-5">
+
+                        <!-- Application Counter -->
+                        <div class="application-counter">
+                            <div class="text-center">
+                                <h6 class="fw-bold mb-3">Your Application Attempts</h6>
+                                <div class="d-flex justify-content-center align-items-center gap-3">
+                                    <!-- Fixed Thymeleaf expression -->
+                                    <div th:each="i : ${#numbers.sequence(1, 4)}"
+                                         classappend="${i <= applicationCount} ? 'counter-active' : 
+                                                      (i <= 2 ? 'counter-used' : 'counter-locked')"
+                                         class="counter-circle">
+                                        <span th:if="${i <= 2 or i <= applicationCount}" th:text="${i}"></span>
+                                        <i th:if="${i > 2 and i > applicationCount}" class="bi bi-lock-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2 small">Free users can apply up to 2 times per job</p>
+                            </div>
+                        </div>
+
+                        <!-- Application Limit Alerts -->
+                        <div th:if="${applicationCount >= maxApplications}" 
+                             class="compact-alert alert-danger" 
+                             id="limitReachedAlert">
+                            <div class="alert-content">
+                                <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+                                <div class="alert-text">
+                                    <div class="main-text">You've used all your free applications for this job.</div>
+                                    <div class="sub-text">Upgrade to Premium for 2 additional applications.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:unless="${applicationCount >= maxApplications}" 
+                             class="compact-alert alert-warning" 
+                             id="remainingApplicationsAlert">
+                            <div class="alert-content">
+                                <i class="bi bi-info-circle-fill alert-icon"></i>
+                                <div class="alert-text">
+                                    <div class="main-text">
+                                        You have used <span th:text="${applicationCount}">0</span> of your 
+                                        <span th:text="${maxApplications}">2</span> applications for this job.
+                                    </div>
+                                    <div class="sub-text">
+                                        <span th:text="${maxApplications - applicationCount}">2</span> free application(s) remaining.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form -->
+                        <div th:classappend="${applicationCount >= maxApplications} ? 'locked-section' : ''">
+                            <form th:action="@{/user/apply-job}" method="post" enctype="multipart/form-data" id="applicationForm">
+                                <input type="hidden" name="jobId" th:value="${job.id}">
+                                <input type="hidden" name="userId" th:value="${user.id}">
+
+                                <!-- Personal Information Section -->
+                                <div class="mb-5">
+                                    <h5 class="section-title">
+                                        <i class="bi bi-person-vcard me-2"></i>Personal Information
+                                    </h5>
+                                    
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold text-dark">Full Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-lg-custom" name="applicantName" 
+                                                   th:value="${user.name}" readonly required placeholder="Enter your full name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold text-dark">Age <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control form-control-lg-custom" name="age" 
+                                                   th:value="${user.age}" readonly required placeholder="Your age">
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-4 mt-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold text-dark">Gender <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control form-control-lg-custom" 
+                                                   th:value="${user.gender}" readonly 
+                                                   style="background-color: #f8f9fa;">
+                                            <input type="hidden" name="gender" th:value="${user.gender}">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold text-dark">Email Address <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control form-control-lg-custom" name="email" 
+                                                   th:value="${user.gmail}" readonly required placeholder="your.email@example.com">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Upload -->
+                                <div class="mb-5">
+                                    <h5 class="section-title"><i class="bi bi-file-earmark-pdf me-2"></i>CV & Documents</h5>
+                                    <div class="file-upload-area border-2 border-dashed rounded-3 p-4 text-center" id="fileUploadArea">
+                                        <i class="bi bi-cloud-arrow-up fs-1 mb-3" style="color: var(--primary);"></i>
+                                        <h6 class="fw-semibold text-dark">Upload Your CV</h6>
+                                        <input type="file" class="form-control d-none" name="cvFile" accept=".pdf,application/pdf" th:required="${applicationCount < maxApplications}" id="cvFileInput">
+                                        <button type="button" class="btn primary-btn px-4" onclick="document.getElementById('cvFileInput').click()">
+                                            <i class="bi bi-folder2-open me-2"></i>Choose File
+                                        </button>
+                                        <div class="form-text mt-2"><i class="bi bi-info-circle me-1"></i>PDF only • Max size: 5MB</div>
+                                        <div id="fileInfo" class="mt-2 small"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="d-flex flex-column flex-lg-row gap-3 mt-5 pt-3">
+                                    <a th:href="@{/user/job/detail/{id}(id=${job.id})}" class="btn btn-outline-secondary flex-fill py-3 fs-6 border-2 rounded-3">
+                                        <i class="bi bi-arrow-left me-2"></i>Back to Job Details
+                                    </a>
+                                    <button type="submit" class="btn primary-btn flex-fill py-3 fs-6" id="submitBtn" th:disabled="${applicationCount >= maxApplications}">
+                                        <i class="bi bi-send-check-fill me-2"></i>
+                                        <span th:if="${applicationCount < maxApplications}">Submit Application</span>
+                                        <span th:if="${applicationCount >= maxApplications}">Application Limit Reached</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Lock overlay -->
+                        <div th:if="${applicationCount >= maxApplications}" class="locked-overlay">
+                            <div class="text-center">
+                                <i class="bi bi-lock-fill text-danger mb-3" style="font-size: 3rem;"></i>
+                                <h5 class="fw-bold text-dark">Application Limit Reached</h5>
+                                <p class="text-muted">Upgrade to Premium to submit more applications</p>
+                                <button type="button" class="btn premium-btn mt-2" data-bs-toggle="modal" data-bs-target="#premiumModal">
+                                    <i class="bi bi-lightning-fill me-2"></i>Upgrade Now
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Premium Modal -->
+<div class="modal fade" id="premiumModal" tabindex="-1" aria-labelledby="premiumModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-dark" id="premiumModalLabel">
+                    <i class="bi bi-lightning-fill text-warning me-2"></i>
+                    Upgrade to Premium
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="premium-badge d-inline-block mb-3">
+                        <i class="bi bi-star-fill me-1"></i>PREMIUM FEATURES
+                    </div>
+                    <h4 class="fw-bold text-dark">Unlock More Applications</h4>
+                    <p class="text-muted">You've used all your free applications for this job.</p>
+                </div>
+                
+                <div class="premium-feature-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="fw-semibold">2 Additional Applications</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="fw-semibold">Priority Application Review</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <span class="fw-semibold">Enhanced Profile Visibility</span>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted small mb-3">Upgrade now to continue applying</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Maybe Later</button>
+                <button type="button" class="btn premium-btn">
+                    <i class="bi bi-lightning-fill me-2"></i>Upgrade Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="footerLogin :: inside-footer"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('cvFileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const applicationForm = document.getElementById('applicationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    
+    // Get Thymeleaf variables safely
+    const applicationCount = /*[[${applicationCount}]]*/ 0;
+    const maxApplications = /*[[${maxApplications}]]*/ 2;
+
+    // Auto-dismiss alerts after 3 seconds
+    const limitReachedAlert = document.getElementById('limitReachedAlert');
+    const remainingApplicationsAlert = document.getElementById('remainingApplicationsAlert');
+
+    function dismissAlert(alertElement) {
+        if (alertElement) {
+            setTimeout(() => {
+                alertElement.classList.add('fade-out');
+                setTimeout(() => {
+                    if (alertElement.parentNode) {
+                        alertElement.parentNode.removeChild(alertElement);
+                    }
+                }, 500); // Match the animation duration
+            }, 5000); // 3 seconds
+        }
+    }
+
+    // Dismiss alerts
+    dismissAlert(limitReachedAlert);
+    dismissAlert(remainingApplicationsAlert);
+
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            validateAndDisplayFile(file);
+        }
+    });
+
+    // Drag and drop functionality
+    fileUploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+
+    fileUploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+    });
+
+    fileUploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            validateAndDisplayFile(files[0]);
+        }
+    });
+
+    // Click on upload area to trigger file input
+    fileUploadArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+
+    // Form submission handler
+    if (applicationForm) {
+        applicationForm.addEventListener('submit', function(e) {
+            if (applicationCount >= maxApplications) {
+                e.preventDefault();
+                const premiumModal = new bootstrap.Modal(document.getElementById('premiumModal'));
+                premiumModal.show();
+                return false;
+            }
+            
+            // Validate file upload
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
+                fileInfo.innerHTML = '<span class="text-danger">❌ Please upload your CV file.</span>';
+                fileInput.focus();
+                return false;
+            }
+
+            const file = fileInput.files[0];
+            if (!validateFile(file)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Update button state on page load
+    if (submitBtn && applicationCount >= maxApplications) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('disabled');
+    }
+
+    // File validation function
+    function validateFile(file) {
+        if (file.type !== 'application/pdf') {
+            fileInfo.innerHTML = '<span class="text-danger">❌ Only PDF files are allowed.</span>';
+            fileInput.value = '';
+            return false;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            fileInfo.innerHTML = '<span class="text-danger">❌ File size must be less than 5MB.</span>';
+            fileInput.value = '';
+            return false;
+        }
+        
+        return true;
+    }
+
+    // File validation and display function
+    function validateAndDisplayFile(file) {
+        if (!validateFile(file)) {
+            return;
+        }
+        
+        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+        fileInfo.innerHTML = `<span class="text-success">✅ <strong>${file.name}</strong> (${fileSize} MB) - Ready to submit!</span>`;
+        
+        // Enable submit button if it was disabled
+        if (submitBtn && submitBtn.disabled) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('disabled');
+        }
+    }
+
+    // Show file info on page load if file is already selected
+    if (fileInput.files.length > 0) {
+        validateAndDisplayFile(fileInput.files[0]);
+    }
+});
+</script>
+</body>
+</html>

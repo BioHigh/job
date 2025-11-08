@@ -1,346 +1,231 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <title>JobJump</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link rel="shortcut icon" th:href="@{/ftco-32x32.png}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-
-    <link rel="stylesheet" th:href="@{/css/custom-bs.css}">
-    <link rel="stylesheet" th:href="@{/css/jquery.fancybox.min.css}">
-    <link rel="stylesheet" th:href="@{/css/bootstrap-select.min.css}">
-    <link rel="stylesheet" th:href="@{/fonts/icomoon/style.css}">
-    <link rel="stylesheet" th:href="@{/fonts/line-icons/style.css}">
-    <link rel="stylesheet" th:href="@{/css/owl.carousel.min.css}">
-    <link rel="stylesheet" th:href="@{/css/animate.min.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/footer.css}">
 
     <style>
-        .foot {
-            color: #ddd;
-            padding: 50px 0 20px;
-            background-color: black;
-        }
+        body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f8fafb; color: #333; }
+        h1,h2,h3,h4,h5 { font-weight: 600; }
+        a { text-decoration: none; transition: all 0.3s ease; }
 
-        footer h4 {
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
+        .home-section { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; background-size: cover; background-position: center; background-attachment: fixed; }
+        .home-section::after { content:""; position:absolute; inset:0; background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(137,186,22,0.2)); z-index:1; }
+        .home-section .container { position: relative; z-index: 2; }
+        .home-section h1 { font-size:3rem; color:#fff; font-weight:700; line-height:1.3; }
+        .home-section p { color:#f8f9fa; font-size:1.15rem; margin-top:1rem; }
 
-        footer ul {
-            list-style: none;
-            padding: 0;
-        }
+        .search-jobs-form { background: rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); backdrop-filter: blur(10px); border-radius:16px; padding:1.5rem; margin-top:2.5rem; box-shadow:0 10px 30px rgba(0,0,0,0.15); }
+        .search-jobs-form input, .search-jobs-form select { border-radius:10px; border:none; box-shadow:0 3px 8px rgba(0,0,0,0.05); }
+.btn-search {
+  background: linear-gradient(135deg, #89ba16, #6b9a0f);
+  border: none;
+  border-radius: 10px;
+  width: 180px; /* 🔹 increase this value to make it longer */
+  transition: all 0.3s ease;
+}
 
-        footer ul li {
-            margin-bottom: 10px;
-        }
+        .btn-search:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(137,186,22,0.3); }
 
-        footer ul li a {
-            color: #bbb;
-            text-decoration: none;
-            transition: 0.3s;
-        }
+        .stats-counter { background: rgba(255,255,255,0.15); border-radius:16px; padding:2rem 1rem; margin-top:3rem; backdrop-filter:blur(8px); box-shadow:0 8px 32px rgba(0,0,0,0.2); }
+        .stat-item { text-align:center; color:white; transition: all 0.3s ease; }
+        .stat-item:hover { transform:translateY(-5px); }
+        .stat-number { font-size:2.5rem; font-weight:800; background:linear-gradient(135deg,#a8e62c,#89ba16); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .stat-label { text-transform:uppercase; font-size:0.85rem; letter-spacing:1px; color:#e6e6e6; }
 
-        footer ul li a:hover {
-            color: #fff;
-        }
+        .job-listing { border:none; border-radius:14px; overflow:hidden; transition: all 0.35s ease; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,0.05); }
+        .job-listing:hover { transform:translateY(-5px); box-shadow:0 15px 35px rgba(137,186,22,0.2); }
+        .job-listing h5 { font-weight:700; font-size:1.15rem; color:#333; }
+        .badge { border-radius:8px; font-size:0.8rem; padding:6px 10px; }
+        .bg-success { background-color:#89ba16 !important; }
+        .bg-danger { background-color:#dc3545 !important; }
+        .card-footer { background:#f8fafb; color:#000; }
+        .job-listing .mt-2 small { color:#000 !important; }
 
-        .copy-right {
-            border-top: 1px solid #444;
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 15px;
-            font-size: 14px;
-            color: #aaa;
-        }
-
-        /* Job Listing Styles */
-        .job-listing {
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .job-listing:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border-color: #89ba16;
-        }
-
-        .job-listing .card-body {
-            padding: 1.5rem;
-        }
-
-        .job-listing-logo img,
-        .company-logo-placeholder {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .job-listing:hover .job-listing-logo img,
-        .job-listing:hover .company-logo-placeholder {
-            border-color: #89ba16;
-            transform: scale(1.05);
-        }
-
-        .job-listing h5 {
-            color: #333;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-
-        .job-listing .text-primary {
-            color: #89ba16 !important;
-        }
-
-        .badge-success {
-            background-color: #89ba16 !important;
-        }
-
-        .badge-danger {
-            background-color: #dc3545 !important;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .col-md-6 {
-                margin-bottom: 1rem !important;
-            }
-            
-            .job-listing .card-body {
-                padding: 1rem;
-            }
-            
-            .job-listing-logo {
-                margin-right: 0.75rem !important;
-            }
-            
-            .job-listing-logo,
-            .company-logo-placeholder {
-                width: 60px !important;
-                height: 60px !important;
-            }
-
-            footer h4 {
-                margin-top: 20px;
-            }
-
-            .copy-right {
-                font-size: 12px;
-            }
-        }
+        .foot { color:#ddd; padding:60px 0 20px; background:#0b0b0b; }
+        footer h4 { color:#fff; font-size:18px; margin-bottom:20px; }
+        footer ul li a:hover { color:#89ba16; }
+        .copy-right { border-top:1px solid #444; text-align:center; padding-top:15px; font-size:14px; color:#aaa; }
+        .search-jobs-form select[name="jobType"] { font-size:1.1rem; }
+       
+       .pagination .page-link:hover {
+        background-color: skyblue; 
+        color: #fff;
+        transition: 0.3s;
+    }
+   
     </style>
 </head>
-
 <body id="top">
-    <!-- Rest of your HTML content remains the same -->
-    <div id="overlayer"></div>
-    <div class="loader">
-        <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
+<div class="site-wrap">
+    <div th:replace="headerLogin :: profile-header"></div>
 
-    <div class="site-wrap">
-        <!-- Show header when logged in -->
-        <div th:replace="headerLogin :: profile-header"></div>
+    <section class="home-section overlay bg-image" th:style="'background-image: url(' + @{/images/hero_1.jpg} + ');'" id="home-section">
+        <div class="container">
+            <div class="row align-items-center justify-content-center text-center">
+                <div class="col-lg-10 mx-auto">
+                    <h1 class="fw-bold mt-5" data-aos="fade-up" data-aos-delay="200">Find the Fastest Path to Your Dream Job</h1>
+<p class="lead mb-4" data-aos="fade-up" data-aos-delay="400" style="width: 100%; max-width: 100%; text-align: center;">
+    Explore countless opportunities and connect with leading companies.<br>
+    Confidently advance your career to the next level.
+</p>                    <form method="get" th:action="@{/user/home} + '#job-listings'" class="search-jobs-form" id="searchForm" data-aos="zoom-in" data-aos-delay="600">
+                        <div class="row g-3 align-items-center justify-content-center">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-lg" placeholder="Job title, Company..." name="search" th:value="${param.search}">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-lg" placeholder="Location..." name="location" th:value="${param.location}">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select form-select-lg" name="jobType">
+                                    <option value="">Any Type</option>
+                                    <option value="full-time" th:selected="${param.jobType == 'full-time'}">Full Time</option>
+                                    <option value="part-time" th:selected="${param.jobType == 'part-time'}">Part Time</option>
+                                    <option value="contract" th:selected="${param.jobType == 'contract'}">Contract</option>
+                                    <option value="freelance" th:selected="${param.jobType == 'freelance'}">Freelance</option>
+                                    <option value="internship" th:selected="${param.jobType == 'internship'}">Internship</option>
+                                    <option value="remote" th:selected="${param.jobType == 'remote'}">Remote</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-search btn-lg text-white fw-semibold"><i class="bi bi-search me-1"></i> Search</button>
+                            </div>
+                        </div>
+                    </form>
 
-        <!-- Guest header -->
-        <div class="site-mobile-menu site-navbar-target">
-            <div class="site-mobile-menu-header">
-                <div class="site-mobile-menu-close mt-3">
-                    <span class="icon-close2 js-menu-toggle"></span>
+                    <div class="row stats-counter mt-5" data-aos="fade-up" data-aos-delay="800">
+                        <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Jobs Available</span></div></div>
+                        <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Companies</span></div></div>
+                        <div class="col-4"><div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Candidates</span></div></div>
+                    </div>
                 </div>
             </div>
-            <div class="site-mobile-menu-body"></div>
         </div>
+    </section>
 
-        <!-- NAVBAR -->
+    <section class="site-section py-5" id="job-listings">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 th:text="${totalJobs} + ' Active Jobs Available'">Active Jobs Available</h2>
+                <p class="lead text-dark">Discover your next career opportunity from top companies</p>
+            </div>
 
-        <!-- HOME -->
-        <section class="home-section section-hero overlay bg-image"
-            th:style="'background-image: url(' + @{/images/hero_1.jpg} + ');'" id="home-section">
-            <div class="container">
-                <div class="row align-items-center justify-content-center">
-                    <div class="col-md-12">
-                        <div class="mb-5 text-center">
-                            <h1 class="text-white fw-bold">Find the Fastest Path to Your Dream Job</h1>
-                            <p class="text-light">
-                                Discover thousands of opportunities, connect with top companies, and take the next step
-                                in your career with ease.
-                            </p>
-                        </div>
-                        <form method="post" class="search-jobs-form">
-                            <div class="row mb-5">
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                                    <input type="text" class="form-control form-control-lg"
-                                        placeholder="Job title, Company...">
+            <div class="row g-4" th:if="${not #lists.isEmpty(activeJobs)}">
+                <div class="col-md-6" th:each="job : ${activeJobs}" data-aos="fade-up" data-aos-delay="100">
+                    <a th:href="@{/user/job/detail/} + ${job.id}" class="text-decoration-none">
+                        <div class="job-listing card h-100">
+                            <div class="card-body d-flex">
+                                <div class="job-listing-logo me-3">
+                                    <div th:if="${job.profilePhoto != null}" style="width:80px;height:80px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                                        <img th:src="'data:image/jpeg;base64,' + ${job.profilePhoto}" alt="Company Logo" style="width:100%;height:100%;object-fit:cover;">
+                                    </div>
+                                    <div th:unless="${job.profilePhoto != null}" class="company-logo-placeholder bg-light d-flex align-items-center justify-content-center" style="width:80px;height:80px;">
+                                        <i class="bi bi-building text-success" style="font-size:28px;"></i>
+                                    </div>
                                 </div>
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                                    <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%"
-                                        data-live-search="true" title="Select Region">
-                                        <option>Anywhere</option>
-                                        <option>San Francisco</option>
-                                        <option>Palo Alto</option>
-                                        <option>New York</option>
-                                        <option>Manhattan</option>
-                                        <option>Ontario</option>
-                                        <option>Toronto</option>
-                                        <option>Kansas</option>
-                                        <option>Mountain View</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                                    <select class="selectpicker" data-style="btn-white btn-lg" data-width="100%"
-                                        data-live-search="true" title="Select Job Type">
-                                        <option>Part Time</option>
-                                        <option>Full Time</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 mb-lg-0">
-                                    <button type="submit"
-                                        class="btn btn-primary btn-lg btn-block text-white btn-search"><span
-                                            class="icon-search icon mr-2"></span>Search Job</button>
+                                <div class="flex-grow-1">
+                                    <h5 th:text="${job.jobTitle}">Job Title</h5>
+                                    <strong class="text-success" th:text="${job.companyName}">Company</strong>
+                                    <div class="mt-1" th:if="${job.ownerCompanyName != null}">
+                                        <small><i class="bi bi-building me-1"></i><span th:text="${job.ownerCompanyName}">Owner Company</span></small>
+                                    </div>
+                                    <div class="mt-2 small">
+                                        <i class="bi bi-geo-alt"></i> <span th:text="${job.location}">Location</span>
+                                    </div>
+                                    <span th:classappend="${job.jobType == 'Full Time'} ? 'badge bg-success' : 'badge bg-danger'" th:text="${job.jobType}">Type</span>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <a href="#next" class="scroll-button smoothscroll">
-                <span class="icon-keyboard_arrow_down"></span>
-            </a>
-        </section>
-        
-        <!-- Show Jobs -->
-        <section class="site-section">
-            <div class="container">
-                <div class="row mb-5 justify-content-center">
-                    <div class="col-md-7 text-center">
-                        <h2 class="section-title mb-2" th:text="${totalJobs} + ' Active Jobs Available'">Active Jobs Available</h2>
-                        <p class="lead">Discover your next career opportunity from top companies</p>
-                    </div>
-                </div>
-                
-                <!-- Active Jobs Listings -->
-				<div class="row mb-5" th:if="${not #lists.isEmpty(activeJobs)}">
-				    <div class="col-md-6 mb-4" th:each="job : ${activeJobs}">
-				        <a th:href="@{/user/job/detail/} + ${job.id}" class="text-decoration-none">
-				            <div class="job-listing card h-100 shadow-sm">
-				                <div class="card-body d-flex">
-				                    <!-- Company Logo -->
-				                    <div class="job-listing-logo me-3">
-				                        <div th:if="${job.profilePhoto != null}" 
-				                             style="width: 80px; height: 80px; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-				                            <img th:src="'data:image/jpeg;base64,' + ${job.profilePhoto}" 
-				                                 alt="Company Logo" 
-				                                 style="width: 100%; height: 100%; object-fit: cover;">
-				                        </div>
-				                        <div th:unless="${job.profilePhoto != null}"
-				                             class="company-logo-placeholder"
-				                             style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-				                            <i class="fas fa-building text-primary" style="font-size: 24px;"></i>
-				                        </div>
-				                    </div>
-				
-				                    <!-- Job Details -->
-				                    <div class="job-listing-details flex-grow-1">
-				                        <div class="job-listing-position mb-2">
-				                            <h5 class="mb-1" th:text="${job.jobTitle}">Job Title</h5>
-				                            <strong class="text-primary" th:text="${job.companyName}">Company Name</strong>
-				                            <div class="mt-1" th:if="${job.ownerCompanyName != null}">
-				                                <small class="text-muted">
-				                                    <i class="bi bi-building"></i>
-				                                    <span th:text="${job.ownerCompanyName}">Owner Company</span>
-				                                </small>
-				                            </div>
-				                        </div>
-				                        
-				                        <div class="job-listing-info">
-				                            <div class="job-listing-location mb-2">
-				                                <span class="icon-room text-muted me-1"></span> 
-				                                <small th:text="${job.location}">Location</small>
-				                            </div>
-				                            
-				                            <div class="job-listing-meta">
-				                                <span th:classappend="${job.jobType == 'Full Time'} ? 
-				                                      'badge badge-success' : 'badge badge-danger'"
-				                                      class="badge"
-				                                      th:text="${job.jobType}">Job Type</span>
-				                            </div>
-				                        </div>
-				                    </div>
-				                </div>
-				                
-				                <!-- Optional: Add hover effect -->
-				                <div class="card-footer bg-transparent border-0 pt-0">
-				                    <small class="text-muted">
-				                        <i class="far fa-clock me-1"></i>
-				                        <span th:text="${#dates.format(job.createdAt, 'MMM dd, yyyy')}">Posted date</span>
-				                    </small>
-				                </div>
-				            </div>
-				        </a>
-				    </div>
-				</div>
-        
-                <div th:if="${#lists.isEmpty(activeJobs)}" class="text-center py-5">
-                    <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">No Active Jobs Available</h4>
-                    <p class="text-muted">Check back later for new job opportunities.</p>
-                </div>
-        
-                <!-- Pagination -->
-                <div class="row pagination-wrap">
-                    <div class="col-md-6 text-center text-md-left mb-4 mb-md-0">
-                        <span>
-                            Page <span th:text="${currentPage}">1</span> of <span th:text="${totalPages}">1</span>
-                            - Showing <span th:text="${#lists.size(activeJobs)}">0</span> of <span th:text="${totalJobs}">0</span> jobs
-                        </span>
-                    </div>
-                    <div class="col-md-6 text-center text-md-right">
-                        <div class="custom-pagination ml-auto">
-                            <!-- Previous Button -->
-                            <a th:if="${hasPrev}" 
-                               th:href="@{/home(page=${currentPage - 1})}" 
-                               class="prev">
-                               <i class="fas fa-chevron-left"></i> Previous
-                            </a>
-                            
-                            <!-- Next Button -->
-                            <a th:if="${hasNext}" 
-                               th:href="@{/home(page=${currentPage + 1})}" 
-                               class="next">
-                               Next <i class="fas fa-chevron-right"></i>
-                            </a>
+                            <div class="card-footer small">
+                                <i class="bi bi-clock"></i> <span th:text="${#dates.format(job.createdAt, 'dd MMM, yyyy')}">Date</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
-        </section>
-        
-        <!-- FOOTER -->
-        <div th:replace="footer :: site-footer"></div>
-    </div>
 
-    <!-- SCRIPTS -->
-    <script th:src="@{/js/jquery.min.js}"></script>
-    <script th:src="@{/js/isotope.pkgd.min.js}"></script>
-    <script th:src="@{/js/stickyfill.min.js}"></script>
-    <script th:src="@{/js/jquery.fancybox.min.js}"></script>
-    <script th:src="@{/js/jquery.easing.1.3.js}"></script>
-    <script th:src="@{/js/jquery.waypoints.min.js}"></script>
-    <script th:src="@{/js/jquery.animateNumber.min.js}"></script>
-    <script th:src="@{/js/owl.carousel.min.js}"></script>
-    <script th:src="@{/js/bootstrap-select.min.js}"></script>
-    <script th:src="@{/js/custom.js}"></script>
+            <div th:if="${#lists.isEmpty(activeJobs)}" class="text-center py-5">
+                <i class="bi bi-briefcase fs-1 text-muted"></i>
+                <h4 class="text-muted mt-3">No Active Jobs Available</h4>
+                <p class="text-muted">Check back later for new job opportunities.</p>
+            </div>
+
+ <div th:if="${totalPages > 1}" class="mt-4">
+    <nav aria-label="Job Listings Pagination">
+        <ul class="pagination justify-content-center">
+
+            <!-- Prev -->
+            <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/user/home(page=${currentPage - 1}, search=${param.search}, location=${param.location}, jobType=${param.jobType})} + '#job-listings'">
+                    <i class="bi bi-chevron-left"></i> Prev
+                </a>
+            </li>
+
+            <!-- Page Numbers (3-page sliding window) -->
+            <li th:each="page : ${#numbers.sequence(
+                                currentPage == 1 ? 1 :
+                                currentPage == totalPages ? totalPages - 2 :
+                                currentPage - 1,
+
+                                currentPage == 1 ? 3 :
+                                currentPage == totalPages ? totalPages :
+                                currentPage + 1)}"
+                class="page-item"
+                th:classappend="${page == currentPage} ? 'active'">
+
+                <a class="page-link"
+                   th:href="@{/user/home(page=${page}, search=${param.search}, location=${param.location}, jobType=${param.jobType})} + '#job-listings'"
+                   th:text="${page}">
+                </a>
+            </li>
+
+            <!-- Next -->
+            <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/user/home(page=${currentPage + 1}, search=${param.search}, location=${param.location}, jobType=${param.jobType})} + '#job-listings'">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+</div>
+
+
+        </div>
+    </section>
+
+    <div th:replace="footerLogin :: inside-footer"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 900, once: true, offset: 100 });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    const scrollBtn = document.createElement('button');
+    scrollBtn.textContent = "↑";
+    scrollBtn.style.cssText = `position: fixed; bottom: 30px; right: 30px; padding: 10px 15px; font-size: 18px; border: none; border-radius: 8px; background: #89ba16; color: #fff; cursor: pointer; display: none; z-index: 999;`;
+    document.body.appendChild(scrollBtn);
+
+    scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    window.addEventListener('scroll', () => { scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+</script>
 </body>
 </html>

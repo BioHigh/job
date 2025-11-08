@@ -1,22 +1,61 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Posting Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/jobposting.css}">
-   
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        .job-posting-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .posting-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .posting-header h1 {
+            color: var(--secondary-color);
+            font-weight: 700;
+        }
+        
+        .posting-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
         .draft-options {
             background-color: #f8f9fa;
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
+        
         .draft-card {
             border: 2px dashed #dee2e6;
             border-radius: 8px;
@@ -24,14 +63,270 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+        
         .draft-card:hover {
-            border-color: #007bff;
+            border-color: var(--primary-color);
             background-color: #f8f9ff;
         }
+        
         .draft-card.selected {
-            border-color: #007bff;
+            border-color: var(--primary-color);
             background-color: #e7f3ff;
         }
+        
+        .progress-container {
+            margin: 2rem 0;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            cursor: pointer;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-circle {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 0 5px rgba(52, 152, 219, 0.2);
+        }
+        
+        .step.completed .step-circle {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .step.completed .step-label {
+            color: var(--success-color);
+        }
+        
+        .progress {
+            height: 6px;
+            background-color: #e9ecef;
+        }
+        
+        .progress-bar {
+            background-color: var(--primary-color);
+            transition: width 0.5s ease;
+        }
+        
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-title {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
+        }
+        
+        .section-title i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .required::after {
+            content: " *";
+            color: var(--danger-color);
+        }
+        
+        /* Salary option cards */
+        .salary-option-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 0;
+            height: 100%;
+        }
+        
+        .salary-option-card:hover {
+            border-color: var(--primary-color);
+            background-color: #f8f9ff;
+        }
+        
+        .salary-option-card .form-check-input {
+            margin-top: 0;
+            margin-left: 0;
+        }
+        
+        .salary-option-card .form-check-input:checked + .form-check-label {
+            color: var(--primary-color);
+        }
+        
+        .salary-option-card .form-check-input:checked ~ .salary-option-content {
+            color: var(--primary-color);
+        }
+        
+        .salary-option-card .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .salary-option-content {
+            text-align: center;
+            padding: 0.5rem;
+        }
+        
+        .salary-option-content h6 {
+            font-weight: 600;
+        }
+        
+        /* Selected state for salary cards */
+        .salary-option-card.selected {
+            border-color: var(--primary-color);
+            background-color: #e7f3ff;
+        }
+        
+        /* Skills tags */
+        .skill-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            margin: 0.25rem;
+        }
+        
+        .skill-tag .btn-close {
+            margin-left: 0.5rem;
+            filter: invert(1);
+            opacity: 0.8;
+        }
+        
+        .skill-tag .btn-close:hover {
+            opacity: 1;
+        }
+        
+        /* Preview styles */
+        .preview-card {
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #fdfdfd;
+        }
+        
+        .preview-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .preview-company {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .preview-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preview-detail {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+        }
+        
+        .preview-detail i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .preview-description {
+            line-height: 1.6;
+            color: #495057;
+        }
+        
+        .preview-skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .preview-skill-tag {
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #495057;
+        }
+        
+        /* Toast notifications */
+        .toast {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Loading overlay */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -44,23 +339,62 @@
             justify-content: center;
             align-items: center;
         }
+        
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Skills counter */
+        #skillsCounter {
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        /* Salary negotiation styles */
+        .salary-negotiable {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .step-label {
+                font-size: 0.75rem;
+            }
+            
+            .step-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
+            .form-navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .navigation-left, .navigation-right {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
-    <div th:replace="ownerheader :: owner-header"></div>
 
+
+    <div th:replace="ownerheader :: owner-header"></div>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -166,6 +500,8 @@
             <form th:action="@{/owner/job/post}" method="post" id="jobPostingForm">
                 <!-- Hidden field to track if using draft -->
                 <input type="hidden" id="useDraft" name="useDraft" value="false">
+                <!-- Hidden field for salary negotiable -->
+                <input type="hidden" id="salaryNegotiable" name="salaryNegotiable" value="false">
                 
                 <!-- Job Details -->
                 <div class="form-section active" id="section1">
@@ -173,11 +509,11 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="jobTitle" class="form-label">Job Title *</label>
+                            <label for="jobTitle" class="form-label required">Job Title</label>
                             <input type="text" class="form-control" id="jobTitle" name="jobTitle" placeholder="e.g. Senior Web Developer" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="jobType" class="form-label">Job Type *</label>
+                            <label for="jobType" class="form-label required">Job Type</label>
                             <select class="form-select" id="jobType" name="jobType" required>
                                 <option value="" selected disabled>Select job type</option>
                                 <option value="full-time">Full-time</option>
@@ -192,7 +528,7 @@
                     <!-- Category Selection -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="categoryId" class="form-label">Job Category *</label>
+                            <label for="categoryId" class="form-label required">Job Category</label>
                             <select class="form-select" id="categoryId" name="categoryId" required>
                                 <option value="" selected disabled>Select a category</option>
                                 <option th:each="category : ${categories}" 
@@ -209,13 +545,13 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="location" class="form-label">Location *</label>
+                            <label for="location" class="form-label required">Location</label>
                             <input type="text" class="form-control" id="location" name="location" placeholder="e.g. New York, NY" required>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="jobDescription" class="form-label">Job Description *</label>
+                        <label for="jobDescription" class="form-label required">Job Description</label>
                         <textarea class="form-control" id="jobDescription" name="jobDescription" rows="5" placeholder="Describe the role, responsibilities, and requirements..." required></textarea>
                     </div>
                     
@@ -237,7 +573,7 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="companyName" class="form-label">Company Name *</label>
+                            <label for="companyName" class="form-label required">Company Name</label>
                             <input type="text" class="form-control" id="companyName" th:value="${owner.companyName}" readonly>
                             <input type="hidden" name="companyName" th:value="${owner.companyName}">
                         </div>
@@ -256,7 +592,11 @@
                     <h3 class="section-title mt-4"><i class="bi bi-list-check"></i> Requirements & Skills</h3>
                     
                     <div class="mb-3">
-                        <label class="form-label">Required Skills *</label>
+                        <label class="form-label required">Required Skills</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Add skills by typing and pressing Enter</span>
+                            <span class="badge bg-danger" id="skillsCounter">0 skills</span>
+                        </div>
                         <div class="mb-2">
                             <input type="text" class="form-control" id="skillInput" placeholder="Add a skill and press Enter">
                         </div>
@@ -264,7 +604,6 @@
                             <!-- Skills will be added here dynamically -->
                         </div>
                         <input type="hidden" id="requiredSkills" name="requiredSkills" required>
-                        <div class="form-text">Add skills by typing and pressing Enter. Click the × button to remove a skill.</div>
                     </div>
                     
                     <div class="row">
@@ -312,18 +651,72 @@
                     <h3 class="section-title"><i class="bi bi-currency-dollar"></i> Compensation & Benefits</h3>
                     
                     <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label required">Salary Type</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check salary-option-card selected">
+                                                <input class="form-check-input" type="radio" name="salaryType" id="salaryFixed" value="fixed" checked>
+                                                <label class="form-check-label w-100" for="salaryFixed">
+                                                    <div class="salary-option-content">
+                                                        <i class="bi bi-currency-dollar text-primary fs-4 mb-2"></i>
+                                                        <h6 class="mb-1">Fixed Salary Range</h6>
+                                                        <p class="text-muted mb-0 small">Set minimum and maximum salary</p>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check salary-option-card">
+                                                <input class="form-check-input" type="radio" name="salaryType" id="salaryNegotiableRadio" value="negotiable">
+                                                <label class="form-check-label w-100" for="salaryNegotiableRadio">
+                                                    <div class="salary-option-content">
+                                                        <i class="bi bi-currency-exchange text-warning fs-4 mb-2"></i>
+                                                        <h6 class="mb-1">Negotiable Salary</h6>
+                                                        <p class="text-muted mb-0 small">Salary based on experience</p>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fixed Salary Range (Visible when fixed option is selected) -->
+                    <div class="row" id="fixedSalarySection">
                         <div class="col-md-6 mb-3">
                             <label for="salaryMin" class="form-label">Salary Range (Min)</label>
                             <div class="input-group">
                                 <span class="input-group-text">MMK</span>
-                                <input type="number" class="form-control" id="salaryMin" name="salaryMin" placeholder="e.g. 50000" min="0">
+                                <input type="number" class="form-control" id="salaryMin" name="salaryMin" placeholder="e.g. 500000" min="0">
                             </div>
+                            <div class="form-text">Minimum salary in MMK</div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="salaryMax" class="form-label">Salary Range (Max)</label>
                             <div class="input-group">
                                 <span class="input-group-text">MMK</span>
-                                <input type="number" class="form-control" id="salaryMax" name="salaryMax" placeholder="e.g. 80000" min="0">
+                                <input type="number" class="form-control" id="salaryMax" name="salaryMax" placeholder="e.g. 800000" min="0">
+                            </div>
+                            <div class="form-text">Maximum salary in MMK</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Negotiable Salary Message (Visible when negotiable option is selected) -->
+                    <div class="row" id="negotiableSalarySection" style="display: none;">
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-info-circle me-2 fs-5"></i>
+                                    <div>
+                                        <h6 class="alert-heading mb-1">Salary Negotiable</h6>
+                                        <p class="mb-0">Salary will be negotiated based on the candidate's experience and qualifications.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -383,15 +776,17 @@
                     <h3 class="section-title"><i class="bi bi-send"></i> Application Process</h3>
                     
                     <div class="mb-3">
-                        <label for="applicationEmail" class="form-label">Application Email *</label>
+                        <label for="applicationEmail" class="form-label required">Application Email</label>
                         <input type="email" class="form-control" id="applicationEmail" th:value="${owner.gmail}" readonly>
                         <input type="hidden" name="applicationEmail" th:value="${owner.gmail}">
                     </div>
                     
                     <div class="mb-3">
-                        <label for="applicationDeadline" class="form-label">Application Deadline</label>
-                        <input type="date" class="form-control" id="applicationDeadline" name="applicationDeadline">
-                    </div>
+    <label for="applicationDeadline" class="form-label">Application Deadline</label>
+    <input type="date" class="form-control" id="applicationDeadline" name="applicationDeadline">
+    <!-- Add this line below -->
+    <div class="form-text">Deadline must be tomorrow or a future date</div>
+</div>
                     
                     <div class="mb-3">
                         <label for="applicationInstructions" class="form-label">Application Instructions</label>
@@ -475,535 +870,436 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Multi-step form navigation
-            let currentStep = 1;
-            const totalSteps = 5;
-            let selectedOption = '';
-            let hasShownDraftOptions = false;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Multi-step form navigation
+        let currentStep = 1;
+        const totalSteps = 5;
+        let selectedOption = '';
+        let hasShownDraftOptions = false;
 
-            // Skills functionality
-            const skillInput = document.getElementById('skillInput');
-            const skillsContainer = document.getElementById('skillsContainer');
-            const previewSkills = document.getElementById('previewSkills');
-            const requiredSkillsInput = document.getElementById('requiredSkills');
+        // Skills functionality
+        const skillInput = document.getElementById('skillInput');
+        const skillsContainer = document.getElementById('skillsContainer');
+        const previewSkills = document.getElementById('previewSkills');
+        const requiredSkillsInput = document.getElementById('requiredSkills');
+        
+        // Benefits functionality
+        const benefitCheckboxes = document.querySelectorAll('.benefit-checkbox');
+        const benefitsInput = document.getElementById('benefits');
+
+        // Salary type radio button functionality
+        const salaryFixedRadio = document.getElementById('salaryFixed');
+        const salaryNegotiableRadio = document.getElementById('salaryNegotiableRadio');
+        const fixedSalarySection = document.getElementById('fixedSalarySection');
+        const negotiableSalarySection = document.getElementById('negotiableSalarySection');
+        const salaryMinInput = document.getElementById('salaryMin');
+        const salaryMaxInput = document.getElementById('salaryMax');
+        const salaryNegotiableInput = document.getElementById('salaryNegotiable');
+
+        // Application deadline validation
+        function setupDeadlineValidation() {
+            const deadlineInput = document.getElementById('applicationDeadline');
             
-            // Benefits functionality
-            const benefitCheckboxes = document.querySelectorAll('.benefit-checkbox');
-            const benefitsInput = document.getElementById('benefits');
+            // Set min date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            deadlineInput.min = minDate;
+            
+            // Add change event listener
+            deadlineInput.addEventListener('change', function() {
+                validateDeadline();
+            });
+        }
 
-            // Check for existing draft and show options
-            function checkForDraft() {
-                const savedDraft = localStorage.getItem('jobDraft');
-                if (savedDraft && !hasShownDraftOptions) {
-                    try {
-                        const draft = JSON.parse(savedDraft);
-                        if (draft.jobTitle || draft.jobType || draft.location) {
-                            showDraftOptions(draft);
-                        }
-                    } catch (error) {
-                        console.error('Error parsing draft:', error);
+        function validateDeadline() {
+            const deadlineInput = document.getElementById('applicationDeadline');
+            const selectedDate = new Date(deadlineInput.value);
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0); // Set to start of day
+            
+            if (deadlineInput.value && selectedDate < tomorrow) {
+                alert('Application deadline must be tomorrow or a future date.');
+                deadlineInput.value = ''; // Clear the invalid value
+                deadlineInput.focus();
+                return false;
+            }
+            return true;
+        }
+
+        // Skills counter function
+        function updateSkillsCounter() {
+            const skillCount = skillsContainer.querySelectorAll('.skill-tag').length;
+            const counter = document.getElementById('skillsCounter');
+            counter.textContent = `${skillCount} skill${skillCount !== 1 ? 's' : ''}`;
+            
+            // Change color based on count
+            if (skillCount === 0) {
+                counter.className = 'badge bg-danger';
+            } else if (skillCount < 3) {
+                counter.className = 'badge bg-warning';
+            } else {
+                counter.className = 'badge bg-success';
+            }
+        }
+
+        // Initialize salary type
+        function initializeSalaryType() {
+            if (salaryNegotiableRadio.checked) {
+                showNegotiableSalary();
+            } else {
+                showFixedSalary();
+            }
+            updateSalaryCardSelection();
+        }
+
+        function showFixedSalary() {
+            fixedSalarySection.style.display = 'flex';
+            negotiableSalarySection.style.display = 'none';
+            salaryMinInput.required = true;
+            salaryMaxInput.required = true;
+            salaryNegotiableInput.value = 'false';
+        }
+
+        function showNegotiableSalary() {
+            fixedSalarySection.style.display = 'none';
+            negotiableSalarySection.style.display = 'block';
+            salaryMinInput.required = false;
+            salaryMaxInput.required = false;
+            salaryMinInput.value = '';
+            salaryMaxInput.value = '';
+            salaryNegotiableInput.value = 'true';
+        }
+
+        function updateSalaryCardSelection() {
+            const fixedCard = salaryFixedRadio.closest('.salary-option-card');
+            const negotiableCard = salaryNegotiableRadio.closest('.salary-option-card');
+            
+            if (salaryFixedRadio.checked) {
+                fixedCard.classList.add('selected');
+                negotiableCard.classList.remove('selected');
+            } else {
+                fixedCard.classList.remove('selected');
+                negotiableCard.classList.add('selected');
+            }
+        }
+
+        // Check for existing draft and show options
+        function checkForDraft() {
+            const savedDraft = localStorage.getItem('jobDraft');
+            if (savedDraft && !hasShownDraftOptions) {
+                try {
+                    const draft = JSON.parse(savedDraft);
+                    if (draft.jobTitle || draft.jobType || draft.location) {
+                        showDraftOptions(draft);
                     }
+                } catch (error) {
+                    console.error('Error parsing draft:', error);
                 }
             }
+        }
 
-            function showDraftOptions(draft) {
-                const draftOptions = document.getElementById('draftOptions');
-                const progressContainer = document.getElementById('progressContainer');
-                const formSections = document.querySelectorAll('.form-section');
+        function showDraftOptions(draft) {
+            const draftOptions = document.getElementById('draftOptions');
+            const progressContainer = document.getElementById('progressContainer');
+            const formSections = document.querySelectorAll('.form-section');
+            
+            // Hide form and progress initially
+            progressContainer.style.display = 'none';
+            formSections.forEach(section => section.style.display = 'none');
+            
+            // Update draft info
+            const draftInfo = document.getElementById('draftInfo');
+            const draftTitle = draft.jobTitle || 'Untitled Draft';
+            const draftStep = draft.currentStep || 1;
+            draftInfo.textContent = `${draftTitle} (Step ${draftStep}/5)`;
+            
+            // Show draft options
+            draftOptions.style.display = 'block';
+            hasShownDraftOptions = true;
+        }
+
+        function selectOption(option) {
+            selectedOption = option;
+            
+            // Update UI
+            document.getElementById('newJobCard').classList.toggle('selected', option === 'new');
+            document.getElementById('draftCard').classList.toggle('selected', option === 'draft');
+            document.getElementById('confirmSelection').disabled = false;
+        }
+
+        function confirmSelection() {
+            const draftOptions = document.getElementById('draftOptions');
+            const progressContainer = document.getElementById('progressContainer');
+            const formSections = document.querySelectorAll('.form-section');
+            
+            if (selectedOption === 'new') {
+                // Clear draft and start fresh
+                localStorage.removeItem('jobDraft');
+                document.getElementById('useDraft').value = 'false';
                 
-                // Hide form and progress initially
-                progressContainer.style.display = 'none';
-                formSections.forEach(section => section.style.display = 'none');
+                // Reset form
+                document.getElementById('jobPostingForm').reset();
+                skillsContainer.innerHTML = '';
+                updateRequiredSkills();
+                updatePreview();
+                updateSkillsCounter();
+                initializeSalaryType();
                 
-                // Update draft info
-                const draftInfo = document.getElementById('draftInfo');
-                const draftTitle = draft.jobTitle || 'Untitled Draft';
-                const draftStep = draft.currentStep || 1;
-                draftInfo.textContent = `${draftTitle} (Step ${draftStep}/5)`;
+                // Show form
+                draftOptions.style.display = 'none';
+                progressContainer.style.display = 'block';
+                formSections.forEach((section, index) => {
+                    section.style.display = index === 0 ? 'block' : 'none';
+                });
                 
-                // Show draft options
-                draftOptions.style.display = 'block';
-                hasShownDraftOptions = true;
+            } else if (selectedOption === 'draft') {
+                // Load draft
+                document.getElementById('useDraft').value = 'true';
+                loadDraft();
+                
+                // Show form
+                draftOptions.style.display = 'none';
+                progressContainer.style.display = 'block';
+                formSections.forEach(section => section.style.display = 'block');
+                
+                // Show success message
+                showToast('Draft loaded successfully!', 'success');
             }
+        }
 
-            function selectOption(option) {
-                selectedOption = option;
-                
-                // Update UI
-                document.getElementById('newJobCard').classList.toggle('selected', option === 'new');
-                document.getElementById('draftCard').classList.toggle('selected', option === 'draft');
-                document.getElementById('confirmSelection').disabled = false;
-            }
+        // Enhanced save draft function
+        function saveDraft() {
+            const formData = {
+                jobTitle: document.getElementById('jobTitle').value,
+                jobType: document.getElementById('jobType').value,
+                categoryId: document.getElementById('categoryId').value,
+                department: document.getElementById('department').value,
+                location: document.getElementById('location').value,
+                jobDescription: document.getElementById('jobDescription').value,
+                companyWebsite: document.getElementById('companyWebsite').value,
+                experienceLevel: document.getElementById('experienceLevel').value,
+                educationLevel: document.getElementById('educationLevel').value,
+                salaryMin: document.getElementById('salaryMin').value,
+                salaryMax: document.getElementById('salaryMax').value,
+                salaryType: document.querySelector('input[name="salaryType"]:checked').value,
+                applicationDeadline: document.getElementById('applicationDeadline').value,
+                applicationInstructions: document.getElementById('applicationInstructions').value,
+                requiredSkills: requiredSkillsInput.value,
+                benefits: benefitsInput.value,
+                currentStep: currentStep,
+                lastSaved: new Date().toISOString()
+            };
+            
+            localStorage.setItem('jobDraft', JSON.stringify(formData));
+            showToast('Draft saved successfully!', 'success');
+        }
 
-            function confirmSelection() {
-                const draftOptions = document.getElementById('draftOptions');
-                const progressContainer = document.getElementById('progressContainer');
-                const formSections = document.querySelectorAll('.form-section');
-                
-                if (selectedOption === 'new') {
-                    // Clear draft and start fresh
-                    localStorage.removeItem('jobDraft');
-                    document.getElementById('useDraft').value = 'false';
+        // Enhanced load draft function
+        function loadDraft() {
+            const savedDraft = localStorage.getItem('jobDraft');
+            if (savedDraft) {
+                try {
+                    const draft = JSON.parse(savedDraft);
                     
-                    // Reset form
-                    document.getElementById('jobPostingForm').reset();
+                    // Load form data
+                    document.getElementById('jobTitle').value = draft.jobTitle || '';
+                    document.getElementById('jobType').value = draft.jobType || '';
+                    document.getElementById('categoryId').value = draft.categoryId || '';
+                    document.getElementById('department').value = draft.department || '';
+                    document.getElementById('location').value = draft.location || '';
+                    document.getElementById('jobDescription').value = draft.jobDescription || '';
+                    document.getElementById('companyWebsite').value = draft.companyWebsite || '';
+                    document.getElementById('experienceLevel').value = draft.experienceLevel || '';
+                    document.getElementById('educationLevel').value = draft.educationLevel || '';
+                    document.getElementById('salaryMin').value = draft.salaryMin || '';
+                    document.getElementById('salaryMax').value = draft.salaryMax || '';
+                    document.getElementById('applicationDeadline').value = draft.applicationDeadline || '';
+                    document.getElementById('applicationInstructions').value = draft.applicationInstructions || '';
+                    
+                    // Load salary type
+                    if (draft.salaryType) {
+                        document.querySelector(`input[name="salaryType"][value="${draft.salaryType}"]`).checked = true;
+                        initializeSalaryType();
+                    }
+                    
+                    // Load skills
                     skillsContainer.innerHTML = '';
-                    updateRequiredSkills();
+                    if (draft.requiredSkills) {
+                        draft.requiredSkills.split(',').forEach(skill => {
+                            if (skill.trim()) {
+                                addSkill(skill.trim());
+                            }
+                        });
+                    }
+                    
+                    // Load benefits
+                    if (draft.benefits) {
+                        const benefits = draft.benefits.split(',');
+                        benefitCheckboxes.forEach(checkbox => {
+                            checkbox.checked = benefits.includes(checkbox.value);
+                        });
+                        updateBenefits();
+                    }
+                    
+                    // Navigate to saved step
+                    if (draft.currentStep && draft.currentStep > 1) {
+                        currentStep = draft.currentStep;
+                        showStep(currentStep);
+                    }
+                    
                     updatePreview();
+                    updateSkillsCounter();
                     
-                    // Show form
-                    draftOptions.style.display = 'none';
-                    progressContainer.style.display = 'block';
-                    formSections.forEach((section, index) => {
-                        section.style.display = index === 0 ? 'block' : 'none';
-                    });
-                    
-                } else if (selectedOption === 'draft') {
-                    // Load draft
-                    document.getElementById('useDraft').value = 'true';
-                    loadDraft();
-                    
-                    // Show form
-                    draftOptions.style.display = 'none';
-                    progressContainer.style.display = 'block';
-                    formSections.forEach(section => section.style.display = 'block');
-                    
-                    // Show success message
-                    showToast('Draft loaded successfully!', 'success');
+                } catch (error) {
+                    console.error('Error loading draft:', error);
+                    showToast('Error loading draft. Starting fresh.', 'error');
                 }
             }
+        }
 
-            // Enhanced save draft function
-            function saveDraft() {
-                const formData = {
-                    jobTitle: document.getElementById('jobTitle').value,
-                    jobType: document.getElementById('jobType').value,
-                    categoryId: document.getElementById('categoryId').value,
-                    department: document.getElementById('department').value,
-                    location: document.getElementById('location').value,
-                    jobDescription: document.getElementById('jobDescription').value,
-                    companyWebsite: document.getElementById('companyWebsite').value,
-                    experienceLevel: document.getElementById('experienceLevel').value,
-                    educationLevel: document.getElementById('educationLevel').value,
-                    salaryMin: document.getElementById('salaryMin').value,
-                    salaryMax: document.getElementById('salaryMax').value,
-                    applicationDeadline: document.getElementById('applicationDeadline').value,
-                    applicationInstructions: document.getElementById('applicationInstructions').value,
-                    requiredSkills: requiredSkillsInput.value,
-                    benefits: benefitsInput.value,
-                    currentStep: currentStep,
-                    lastSaved: new Date().toISOString()
-                };
-                
-                localStorage.setItem('jobDraft', JSON.stringify(formData));
-                showToast('Draft saved successfully!', 'success');
-            }
-
-            // Enhanced load draft function
-            function loadDraft() {
-                const savedDraft = localStorage.getItem('jobDraft');
-                if (savedDraft) {
-                    try {
-                        const draft = JSON.parse(savedDraft);
-                        
-                        // Load form data
-                        document.getElementById('jobTitle').value = draft.jobTitle || '';
-                        document.getElementById('jobType').value = draft.jobType || '';
-                        document.getElementById('categoryId').value = draft.categoryId || '';
-                        document.getElementById('department').value = draft.department || '';
-                        document.getElementById('location').value = draft.location || '';
-                        document.getElementById('jobDescription').value = draft.jobDescription || '';
-                        document.getElementById('companyWebsite').value = draft.companyWebsite || '';
-                        document.getElementById('experienceLevel').value = draft.experienceLevel || '';
-                        document.getElementById('educationLevel').value = draft.educationLevel || '';
-                        document.getElementById('salaryMin').value = draft.salaryMin || '';
-                        document.getElementById('salaryMax').value = draft.salaryMax || '';
-                        document.getElementById('applicationDeadline').value = draft.applicationDeadline || '';
-                        document.getElementById('applicationInstructions').value = draft.applicationInstructions || '';
-                        
-                        // Load skills
-                        skillsContainer.innerHTML = '';
-                        if (draft.requiredSkills) {
-                            draft.requiredSkills.split(',').forEach(skill => {
-                                if (skill.trim()) {
-                                    addSkill(skill.trim());
-                                }
-                            });
-                        }
-                        
-                        // Load benefits
-                        if (draft.benefits) {
-                            const benefits = draft.benefits.split(',');
-                            benefitCheckboxes.forEach(checkbox => {
-                                checkbox.checked = benefits.includes(checkbox.value);
-                            });
-                            updateBenefits();
-                        }
-                        
-                        // Navigate to saved step
-                        if (draft.currentStep && draft.currentStep > 1) {
-                            currentStep = draft.currentStep;
-                            showStep(currentStep);
-                        }
-                        
-                        updatePreview();
-                        
-                    } catch (error) {
-                        console.error('Error loading draft:', error);
-                        showToast('Error loading draft. Starting fresh.', 'error');
-                    }
-                }
-            }
-
-            // Toast notification function
-            function showToast(message, type) {
-                const toast = new bootstrap.Toast(document.getElementById('successToast'));
-                const toastBody = document.getElementById('successToastBody');
-                
-                if (type === 'success') {
-                    toastBody.textContent = message;
-                    toast.show();
-                }
-            }
-
-            // Navigation functions
-            function showStep(step) {
-                // Hide all sections
-                document.querySelectorAll('.form-section').forEach(section => {
-                    section.classList.remove('active');
-                });
-                
-                // Show current section
-                document.getElementById(`section${step}`).classList.add('active');
-                
-                // Update progress indicator
-                updateProgressIndicator(step);
-                
-                // Update preview if we're on the preview step
-                if (step === 5) {
-                    updatePreview();
-                }
-            }
+        // Toast notification function
+        function showToast(message, type) {
+            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+            const toastBody = document.getElementById('successToastBody');
             
-            function updateProgressIndicator(step) {
-                // Update step indicators
-                document.querySelectorAll('.step').forEach((stepEl, index) => {
-                    if (index + 1 < step) {
-                        stepEl.classList.remove('active');
-                        stepEl.classList.add('completed');
-                    } else if (index + 1 === step) {
-                        stepEl.classList.add('active');
-                        stepEl.classList.remove('completed');
-                    } else {
-                        stepEl.classList.remove('active', 'completed');
-                    }
-                });
-                
-                // Update progress bar
-                const progress = ((step - 1) / (totalSteps - 1)) * 100;
-                document.getElementById('progressBar').style.width = `${progress}%`;
+            if (type === 'success') {
+                toastBody.textContent = message;
+                toast.show();
             }
-            
-            // Step navigation functionality - Click on any step to jump to it
-            document.querySelectorAll('.step').forEach((step, index) => {
-                step.addEventListener('click', function() {
-                    const stepNumber = index + 1;
-                    
-                    // Don't allow jumping to future steps without validation
-                    if (stepNumber > currentStep && !validateAllPreviousSteps(stepNumber)) {
-                        return;
-                    }
-                    
-                    currentStep = stepNumber;
-                    showStep(currentStep);
-                });
+        }
+
+        // Navigation functions
+        function showStep(step) {
+            // Hide all sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
             });
             
-            // Validate all steps up to the target step
-            function validateAllPreviousSteps(targetStep) {
-                for (let i = 1; i < targetStep; i++) {
-                    if (!validateStep(i)) {
-                        // Show which step has validation issues
-                        alert(`Please complete step ${i} before jumping to step ${targetStep}`);
-                        return false;
-                    }
-                }
-                return true;
-            }
+            // Show current section
+            document.getElementById(`section${step}`).classList.add('active');
             
-            // Navigation event listeners
-            document.getElementById('next1').addEventListener('click', function() {
-                if (validateStep(1)) {
-                    currentStep = 2;
-                    showStep(currentStep);
+            // Update progress indicator
+            updateProgressIndicator(step);
+            
+            // Update preview if we're on the preview step
+            if (step === 5) {
+                updatePreview();
+            }
+        }
+        
+        function updateProgressIndicator(step) {
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                if (index + 1 < step) {
+                    stepEl.classList.remove('active');
+                    stepEl.classList.add('completed');
+                } else if (index + 1 === step) {
+                    stepEl.classList.add('active');
+                    stepEl.classList.remove('completed');
+                } else {
+                    stepEl.classList.remove('active', 'completed');
                 }
             });
             
-            document.getElementById('next2').addEventListener('click', function() {
-                // Validate skills
-                const skills = requiredSkillsInput.value.trim();
-                if (!skills) {
-                    alert('Please add at least one required skill.');
-                    skillInput.focus();
+            // Update progress bar
+            const progress = ((step - 1) / (totalSteps - 1)) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+        
+        // Step navigation functionality - Click on any step to jump to it
+        document.querySelectorAll('.step').forEach((step, index) => {
+            step.addEventListener('click', function() {
+                const stepNumber = index + 1;
+                
+                // Don't allow jumping to future steps without validation
+                if (stepNumber > currentStep && !validateAllPreviousSteps(stepNumber)) {
                     return;
                 }
                 
-                currentStep = 3;
+                currentStep = stepNumber;
                 showStep(currentStep);
             });
-            
-            document.getElementById('next3').addEventListener('click', function() {
-                currentStep = 4;
-                showStep(currentStep);
-            });
-            
-            document.getElementById('next4').addEventListener('click', function() {
-                currentStep = 5;
-                showStep(currentStep);
-            });
-            
-            // Previous buttons
-            document.getElementById('prev2').addEventListener('click', function() {
-                currentStep = 1;
-                showStep(currentStep);
-            });
-            
-            document.getElementById('prev3').addEventListener('click', function() {
-                currentStep = 2;
-                showStep(currentStep);
-            });
-            
-            document.getElementById('prev4').addEventListener('click', function() {
-                currentStep = 3;
-                showStep(currentStep);
-            });
-            
-            document.getElementById('prev5').addEventListener('click', function() {
-                currentStep = 4;
-                showStep(currentStep);
-            });
-            
-            // Step validation
-            function validateStep(step) {
-                if (step === 1) {
-                    const jobTitle = document.getElementById('jobTitle').value.trim();
-                    const jobType = document.getElementById('jobType').value;
-                    const location = document.getElementById('location').value.trim();
-                    const jobDescription = document.getElementById('jobDescription').value.trim();
-                    const categoryId = document.getElementById('categoryId').value;
-                    
-                    if (!jobTitle) {
-                        alert('Please enter a job title.');
-                        document.getElementById('jobTitle').focus();
-                        return false;
-                    }
-                    
-                    if (!jobType) {
-                        alert('Please select a job type.');
-                        document.getElementById('jobType').focus();
-                        return false;
-                    }
-                    
-                    if (!location) {
-                        alert('Please enter a location.');
-                        document.getElementById('location').focus();
-                        return false;
-                    }
-                    
-                    if (!jobDescription) {
-                        alert('Please enter a job description.');
-                        document.getElementById('jobDescription').focus();
-                        return false;
-                    }
-                    
-                    if (!categoryId) {
-                        alert('Please select a job category.');
-                        document.getElementById('categoryId').focus();
-                        return false;
-                    }
-                }
-                
-                return true;
-            }
-            
-            // Skills functionality
-            skillInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const skill = skillInput.value.trim();
-                    if (skill) {
-                        addSkill(skill);
-                        skillInput.value = '';
-                    }
-                }
-            });
-            
-            function addSkill(skill) {
-                // Create skill tag
-                const skillElement = document.createElement('div');
-                skillElement.className = 'skill-tag';
-                skillElement.innerHTML = `
-                    ${skill}
-                    <button type="button" class="btn-close" onclick="removeSkill(this)"></button>
-                `;
-                skillsContainer.appendChild(skillElement);
-                
-                // Update hidden input and preview
-                updateRequiredSkills();
-                updatePreviewSkills();
-            }
-            
-            function removeSkill(button) {
-                button.parentElement.remove();
-                updateRequiredSkills();
-                updatePreviewSkills();
-            }
-            
-            function updateRequiredSkills() {
-                const skills = Array.from(skillsContainer.querySelectorAll('.skill-tag'))
-                    .map(tag => tag.textContent.trim().replace('×', ''));
-                requiredSkillsInput.value = skills.join(',');
-                
-                // Update validation state
-                if (skills.length > 0) {
-                    requiredSkillsInput.setCustomValidity('');
-                } else {
-                    requiredSkillsInput.setCustomValidity('Please add at least one skill');
-                }
-            }
-            
-            function updatePreviewSkills() {
-                const skills = Array.from(skillsContainer.querySelectorAll('.skill-tag'))
-                    .map(tag => tag.textContent.trim().replace('×', ''));
-                
-                previewSkills.innerHTML = '';
-                if (skills.length > 0) {
-                    const skillsTitle = document.createElement('div');
-                    skillsTitle.className = 'fw-bold mb-2';
-                    skillsTitle.textContent = 'Required Skills:';
-                    previewSkills.appendChild(skillsTitle);
-                    
-                    skills.forEach(skill => {
-                        const skillElement = document.createElement('span');
-                        skillElement.className = 'tag';
-                        skillElement.textContent = skill;
-                        previewSkills.appendChild(skillElement);
-                    });
-                }
-            }
-            
-            // Benefits functionality
-            benefitCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', updateBenefits);
-            });
-            
-            function updateBenefits() {
-                const selectedBenefits = Array.from(benefitCheckboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                benefitsInput.value = selectedBenefits.join(',');
-                updatePreviewBenefits();
-            }
-            
-            function updatePreviewBenefits() {
-                const selectedBenefits = Array.from(benefitCheckboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                
-                const previewBenefits = document.getElementById('previewBenefits');
-                previewBenefits.innerHTML = '';
-                
-                if (selectedBenefits.length > 0) {
-                    const benefitsTitle = document.createElement('div');
-                    benefitsTitle.className = 'fw-bold mb-2';
-                    benefitsTitle.textContent = 'Benefits:';
-                    previewBenefits.appendChild(benefitsTitle);
-                    
-                    selectedBenefits.forEach(benefit => {
-                        const benefitElement = document.createElement('span');
-                        benefitElement.className = 'tag';
-                        benefitElement.textContent = benefit;
-                        previewBenefits.appendChild(benefitElement);
-                    });
-                }
-            }
-            
-            // Preview functionality
-            document.getElementById('previewBtn').addEventListener('click', updatePreview);
-            
-            function updatePreview() {
-                // Job details
-                document.getElementById('previewJobTitle').textContent = 
-                    document.getElementById('jobTitle').value || 'Job Title';
-                document.getElementById('previewLocation').textContent = 
-                    document.getElementById('location').value || 'Location';
-                
-                const jobTypeSelect = document.getElementById('jobType');
-                const jobTypeText = jobTypeSelect.options[jobTypeSelect.selectedIndex]?.text || 'Job Type';
-                document.getElementById('previewJobType').textContent = jobTypeText;
-                
-                // Category
-                const categorySelect = document.getElementById('categoryId');
-                const categoryText = categorySelect.options[categorySelect.selectedIndex]?.text || 'Not specified';
-                document.getElementById('previewCategory').textContent = categoryText;
-                
-                // Experience level
-                const experienceSelect = document.getElementById('experienceLevel');
-                const experienceText = experienceSelect.options[experienceSelect.selectedIndex]?.text || 'Not specified';
-                document.getElementById('previewExperience').textContent = experienceText;
-                
-                // Salary
-                const minSalary = document.getElementById('salaryMin').value;
-                const maxSalary = document.getElementById('salaryMax').value;
-                let salaryText = 'Salary not specified';
-                if (minSalary && maxSalary) {
-                    salaryText = `MMK ${parseInt(minSalary).toLocaleString()} - MMK ${parseInt(maxSalary).toLocaleString()}`;
-                } else if (minSalary) {
-                    salaryText = `From MMK ${parseInt(minSalary).toLocaleString()}`;
-                } else if (maxSalary) {
-                    salaryText = `Up to MMK ${parseInt(maxSalary).toLocaleString()}`;
-                }
-                document.getElementById('previewSalary').textContent = salaryText;
-                
-                // Description (truncate if too long)
-                const fullDescription = document.getElementById('jobDescription').value;
-                const previewDescription = fullDescription.length > 300 ? 
-                    fullDescription.substring(0, 300) + '...' : fullDescription;
-                document.getElementById('previewDescription').textContent = 
-                    previewDescription || 'Job description will appear here...';
-                
-                // Skills and Benefits
-                updatePreviewSkills();
-                updatePreviewBenefits();
-            }
-
-            // Setup event listeners for draft functionality
-            document.getElementById('confirmSelection').addEventListener('click', confirmSelection);
-            
-            // Enhanced save draft buttons setup
-            function setupSaveDraftButtons() {
-                for (let i = 1; i <= 5; i++) {
-                    document.getElementById(`saveDraft${i}`).addEventListener('click', function() {
-                        saveDraft();
-                    });
-                }
-            }
-
-            // Enhanced form submission
-            document.getElementById('jobPostingForm').addEventListener('submit', function(e) {
-                // Validate required skills
-                const skills = requiredSkillsInput.value.trim();
-                if (!skills) {
-                    e.preventDefault();
-                    alert('Please add at least one required skill.');
-                    skillInput.focus();
+        });
+        
+        // Validate all steps up to the target step
+        function validateAllPreviousSteps(targetStep) {
+            for (let i = 1; i < targetStep; i++) {
+                if (!validateStep(i)) {
+                    // Show which step has validation issues
+                    alert(`Please complete step ${i} before jumping to step ${targetStep}`);
                     return false;
                 }
-                
-                // Validate other required fields
+            }
+            return true;
+        }
+        
+        // Navigation event listeners
+        document.getElementById('next1').addEventListener('click', function() {
+            if (validateStep(1)) {
+                currentStep = 2;
+                showStep(currentStep);
+            }
+        });
+        
+        document.getElementById('next2').addEventListener('click', function() {
+            // Validate skills
+            const skills = requiredSkillsInput.value.trim();
+            if (!skills) {
+                alert('Please add at least one required skill.');
+                skillInput.focus();
+                return;
+            }
+            
+            currentStep = 3;
+            showStep(currentStep);
+        });
+        
+        document.getElementById('next3').addEventListener('click', function() {
+            if (validateStep(3)) {
+                currentStep = 4;
+                showStep(currentStep);
+            }
+        });
+        
+        document.getElementById('next4').addEventListener('click', function() {
+            // Validate application deadline if provided
+            const deadlineInput = document.getElementById('applicationDeadline');
+            if (deadlineInput.value && !validateDeadline()) {
+                return;
+            }
+            
+            currentStep = 5;
+            showStep(currentStep);
+        });
+        
+        // Previous buttons
+        document.getElementById('prev2').addEventListener('click', function() {
+            currentStep = 1;
+            showStep(currentStep);
+        });
+        
+        document.getElementById('prev3').addEventListener('click', function() {
+            currentStep = 2;
+            showStep(currentStep);
+        });
+        
+        document.getElementById('prev4').addEventListener('click', function() {
+            currentStep = 3;
+            showStep(currentStep);
+        });
+        
+        document.getElementById('prev5').addEventListener('click', function() {
+            currentStep = 4;
+            showStep(currentStep);
+        });
+        
+        // Step validation
+        function validateStep(step) {
+            if (step === 1) {
                 const jobTitle = document.getElementById('jobTitle').value.trim();
                 const jobType = document.getElementById('jobType').value;
                 const location = document.getElementById('location').value.trim();
@@ -1011,75 +1307,344 @@
                 const categoryId = document.getElementById('categoryId').value;
                 
                 if (!jobTitle) {
-                    e.preventDefault();
                     alert('Please enter a job title.');
                     document.getElementById('jobTitle').focus();
                     return false;
                 }
                 
                 if (!jobType) {
-                    e.preventDefault();
                     alert('Please select a job type.');
                     document.getElementById('jobType').focus();
                     return false;
                 }
                 
                 if (!location) {
-                    e.preventDefault();
                     alert('Please enter a location.');
                     document.getElementById('location').focus();
                     return false;
                 }
                 
                 if (!jobDescription) {
-                    e.preventDefault();
                     alert('Please enter a job description.');
                     document.getElementById('jobDescription').focus();
                     return false;
                 }
                 
                 if (!categoryId) {
-                    e.preventDefault();
                     alert('Please select a job category.');
                     document.getElementById('categoryId').focus();
                     return false;
                 }
-                
-                // Validate salary range
-                const minSalary = parseInt(document.getElementById('salaryMin').value) || 0;
-                const maxSalary = parseInt(document.getElementById('salaryMax').value) || 0;
-                if (minSalary > 0 && maxSalary > 0 && minSalary > maxSalary) {
-                    e.preventDefault();
-                    alert('Minimum salary cannot be greater than maximum salary.');
-                    document.getElementById('salaryMin').focus();
-                    return false;
+            } else if (step === 3) {
+                if (salaryFixedRadio.checked) {
+                    const min = document.getElementById('salaryMin').value;
+                    const max = document.getElementById('salaryMax').value;
+                    
+                    if (!min && !max) {
+                        alert('Please enter either a minimum or maximum salary, or select "Negotiable Salary"');
+                        return false;
+                    }
+                    
+                    if (min && max && parseInt(min) > parseInt(max)) {
+                        alert('Minimum salary cannot be greater than maximum salary');
+                        document.getElementById('salaryMin').focus();
+                        return false;
+                    }
                 }
-                
-                // Clear draft after successful submission
-                localStorage.removeItem('jobDraft');
-                
-                // Show loading overlay
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                
-                return true;
-            });
-
-            // Auto-update preview when form changes
-            const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
-            formElements.forEach(element => {
-                element.addEventListener('input', updatePreview);
-                element.addEventListener('change', updatePreview);
-            });
-
-            // Initialize
-            checkForDraft();
-            setupSaveDraftButtons();
-            updatePreview();
+            }
             
-            // Make functions globally available
-            window.selectOption = selectOption;
-            window.removeSkill = removeSkill;
+            return true;
+        }
+        
+        // Skills functionality
+        skillInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const skill = skillInput.value.trim();
+                if (skill) {
+                    addSkill(skill);
+                    skillInput.value = '';
+                }
+            }
         });
-    </script>
+        
+        function addSkill(skill) {
+            // Create skill tag
+            const skillElement = document.createElement('div');
+            skillElement.className = 'skill-tag';
+            skillElement.innerHTML = `
+                ${skill}
+                <button type="button" class="btn-close" onclick="removeSkill(this)"></button>
+            `;
+            skillsContainer.appendChild(skillElement);
+            
+            // Update hidden input and preview
+            updateRequiredSkills();
+            updatePreviewSkills();
+            updateSkillsCounter();
+        }
+        
+        function removeSkill(button) {
+            button.parentElement.remove();
+            updateRequiredSkills();
+            updatePreviewSkills();
+            updateSkillsCounter();
+        }
+        
+        function updateRequiredSkills() {
+            const skills = Array.from(skillsContainer.querySelectorAll('.skill-tag'))
+                .map(tag => tag.textContent.trim().replace('×', ''));
+            requiredSkillsInput.value = skills.join(',');
+            
+            // Update validation state
+            if (skills.length > 0) {
+                requiredSkillsInput.setCustomValidity('');
+            } else {
+                requiredSkillsInput.setCustomValidity('Please add at least one skill');
+            }
+        }
+        
+        function updatePreviewSkills() {
+            const skills = Array.from(skillsContainer.querySelectorAll('.skill-tag'))
+                .map(tag => tag.textContent.trim().replace('×', ''));
+            
+            previewSkills.innerHTML = '';
+            if (skills.length > 0) {
+                const skillsTitle = document.createElement('div');
+                skillsTitle.className = 'fw-bold mb-2';
+                skillsTitle.textContent = `Required Skills (${skills.length}):`;
+                previewSkills.appendChild(skillsTitle);
+                
+                const skillsContainer = document.createElement('div');
+                skillsContainer.className = 'preview-skills-container';
+                
+                skills.forEach(skill => {
+                    const skillElement = document.createElement('span');
+                    skillElement.className = 'preview-skill-tag';
+                    skillElement.textContent = skill;
+                    skillsContainer.appendChild(skillElement);
+                });
+                
+                previewSkills.appendChild(skillsContainer);
+            }
+        }
+        
+        // Benefits functionality
+        benefitCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateBenefits);
+        });
+        
+        function updateBenefits() {
+            const selectedBenefits = Array.from(benefitCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            benefitsInput.value = selectedBenefits.join(',');
+            updatePreviewBenefits();
+        }
+        
+        function updatePreviewBenefits() {
+            const selectedBenefits = Array.from(benefitCheckboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+            
+            const previewBenefits = document.getElementById('previewBenefits');
+            previewBenefits.innerHTML = '';
+            
+            if (selectedBenefits.length > 0) {
+                const benefitsTitle = document.createElement('div');
+                benefitsTitle.className = 'fw-bold mb-2';
+                benefitsTitle.textContent = 'Benefits:';
+                previewBenefits.appendChild(benefitsTitle);
+                
+                selectedBenefits.forEach(benefit => {
+                    const benefitElement = document.createElement('span');
+                    benefitElement.className = 'preview-skill-tag';
+                    benefitElement.textContent = benefit;
+                    previewBenefits.appendChild(benefitElement);
+                });
+            }
+        }
+        
+        // Preview functionality
+        document.getElementById('previewBtn').addEventListener('click', updatePreview);
+        
+        function updatePreview() {
+            // Job details
+            document.getElementById('previewJobTitle').textContent = 
+                document.getElementById('jobTitle').value || 'Job Title';
+            document.getElementById('previewLocation').textContent = 
+                document.getElementById('location').value || 'Location';
+            
+            const jobTypeSelect = document.getElementById('jobType');
+            const jobTypeText = jobTypeSelect.options[jobTypeSelect.selectedIndex]?.text || 'Job Type';
+            document.getElementById('previewJobType').textContent = jobTypeText;
+            
+            // Category
+            const categorySelect = document.getElementById('categoryId');
+            const categoryText = categorySelect.options[categorySelect.selectedIndex]?.text || 'Not specified';
+            document.getElementById('previewCategory').textContent = categoryText;
+            
+            // Experience level
+            const experienceSelect = document.getElementById('experienceLevel');
+            const experienceText = experienceSelect.options[experienceSelect.selectedIndex]?.text || 'Not specified';
+            document.getElementById('previewExperience').textContent = experienceText;
+            
+            // Salary with negotiation
+            const minSalary = document.getElementById('salaryMin').value;
+            const maxSalary = document.getElementById('salaryMax').value;
+            const isNegotiable = salaryNegotiableRadio.checked;
+            
+            let salaryText = 'Salary not specified';
+            if (minSalary && maxSalary) {
+                salaryText = `MMK ${parseInt(minSalary).toLocaleString()} - MMK ${parseInt(maxSalary).toLocaleString()}`;
+                if (isNegotiable) {
+                    salaryText += ' (Negotiable)';
+                }
+            } else if (minSalary) {
+                salaryText = `From MMK ${parseInt(minSalary).toLocaleString()}`;
+                if (isNegotiable) {
+                    salaryText += ' (Negotiable)';
+                }
+            } else if (maxSalary) {
+                salaryText = `Up to MMK ${parseInt(maxSalary).toLocaleString()}`;
+                if (isNegotiable) {
+                    salaryText += ' (Negotiable)';
+                }
+            } else if (isNegotiable) {
+                salaryText = 'Negotiable based on experience';
+            }
+            document.getElementById('previewSalary').textContent = salaryText;
+            
+            // Description (truncate if too long)
+            const fullDescription = document.getElementById('jobDescription').value;
+            const previewDescription = fullDescription.length > 300 ? 
+                fullDescription.substring(0, 300) + '...' : fullDescription;
+            document.getElementById('previewDescription').textContent = 
+                previewDescription || 'Job description will appear here...';
+            
+            // Skills and Benefits
+            updatePreviewSkills();
+            updatePreviewBenefits();
+        }
+
+        // Setup event listeners for draft functionality
+        document.getElementById('confirmSelection').addEventListener('click', confirmSelection);
+        
+        // Enhanced save draft buttons setup
+        function setupSaveDraftButtons() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`saveDraft${i}`).addEventListener('click', function() {
+                    saveDraft();
+                });
+            }
+        }
+
+        // Enhanced form submission
+        document.getElementById('jobPostingForm').addEventListener('submit', function(e) {
+            // Validate required skills
+            const skills = requiredSkillsInput.value.trim();
+            if (!skills) {
+                e.preventDefault();
+                alert('Please add at least one required skill.');
+                skillInput.focus();
+                return false;
+            }
+            
+            // Validate other required fields
+            const jobTitle = document.getElementById('jobTitle').value.trim();
+            const jobType = document.getElementById('jobType').value;
+            const location = document.getElementById('location').value.trim();
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+            const categoryId = document.getElementById('categoryId').value;
+            
+            if (!jobTitle) {
+                e.preventDefault();
+                alert('Please enter a job title.');
+                document.getElementById('jobTitle').focus();
+                return false;
+            }
+            
+            if (!jobType) {
+                e.preventDefault();
+                alert('Please select a job type.');
+                document.getElementById('jobType').focus();
+                return false;
+            }
+            
+            if (!location) {
+                e.preventDefault();
+                alert('Please enter a location.');
+                document.getElementById('location').focus();
+                return false;
+            }
+            
+            if (!jobDescription) {
+                e.preventDefault();
+                alert('Please enter a job description.');
+                document.getElementById('jobDescription').focus();
+                return false;
+            }
+            
+            if (!categoryId) {
+                e.preventDefault();
+                alert('Please select a job category.');
+                document.getElementById('categoryId').focus();
+                return false;
+            }
+            
+            // Validate salary range
+            const minSalary = parseInt(document.getElementById('salaryMin').value) || 0;
+            const maxSalary = parseInt(document.getElementById('salaryMax').value) || 0;
+            if (minSalary > 0 && maxSalary > 0 && minSalary > maxSalary) {
+                e.preventDefault();
+                alert('Minimum salary cannot be greater than maximum salary.');
+                document.getElementById('salaryMin').focus();
+                return false;
+            }
+            
+            // Validate application deadline if provided
+            const deadlineInput = document.getElementById('applicationDeadline');
+            if (deadlineInput.value && !validateDeadline()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            localStorage.removeItem('jobDraft');
+            
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            return true;
+        });
+
+        const formElements = document.querySelectorAll('#jobPostingForm input, #jobPostingForm select, #jobPostingForm textarea');
+        formElements.forEach(element => {
+            element.addEventListener('input', updatePreview);
+            element.addEventListener('change', updatePreview);
+        });
+
+        salaryFixedRadio.addEventListener('change', function() {
+            showFixedSalary();
+            updateSalaryCardSelection();
+            updatePreview();
+        });
+        
+        salaryNegotiableRadio.addEventListener('change', function() {
+            showNegotiableSalary();
+            updateSalaryCardSelection();
+            updatePreview();
+        });
+
+       
+        checkForDraft();
+        setupSaveDraftButtons();
+        initializeSalaryType();
+        setupDeadlineValidation(); 
+        updatePreview();
+        updateSkillsCounter();
+        
+        window.selectOption = selectOption;
+        window.removeSkill = removeSkill;
+    });
+</script>
 </body>
 </html>

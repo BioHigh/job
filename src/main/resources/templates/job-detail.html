@@ -153,12 +153,64 @@
             border: 2px solid rgba(255,255,255,0.3);
         }
 
-        .description-content {
-            line-height: 1.8;
-            white-space: pre-line;
-            color: #555;
-            font-size: 1.05rem;
-        }
+       .justified-text {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    line-height: 1.7;
+    color: #374151;
+    font-size: 1.05rem;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+}
+
+.justified-text p {
+    margin-bottom: 1.25rem;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+.justified-text p:last-child {
+    margin-bottom: 0;
+}
+
+.justified-text strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.justified-text em {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.justified-text ul, .justified-text ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    text-align: left;
+}
+
+.justified-text li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.justified-text li:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive - Remove justify on mobile for better readability */
+@media (max-width: 768px) {
+    .justified-text {
+        text-align: left;
+        text-justify: auto;
+    }
+    
+    .justified-text p {
+        text-align: left;
+        text-justify: auto;
+    }
+}
 
         .info-item {
             display: flex;
@@ -393,7 +445,15 @@
 </head>
 <body>
     <!-- Header -->
+<!-- Show different headers based on login -->
+
+<th:block th:if="${user != null}">
     <div th:replace="headerLogin :: profile-header"></div>
+</th:block>
+<th:block th:unless="${user != null}">
+    <div th:replace="header :: site-header"></div>
+</th:block>
+
 
     <!-- Main Content -->
     <div class="container-fluid" style="margin-top: 80px;">
@@ -455,22 +515,26 @@
                         </div>
                         <div class="col-md-4 text-md-end animate__animated animate__fadeInLeft">
                             <div class="mb-4">
-                                <span class="salary-badge d-inline-block pulse-animation" 
-                                      th:if="${job.salaryMini != null and job.salaryMax != null}">
-                                    $<span th:text="${#numbers.formatInteger(job.salaryMini, 1)}"></span> - $<span th:text="${#numbers.formatInteger(job.salaryMax, 1)}"></span>
-                                </span>
-                                <span class="salary-badge d-inline-block" th:if="${job.salaryMini == null or job.salaryMax == null}">
-                                    Salary: Negotiable
-                                </span>
+                                <span class="salary-badge d-inline-block pulse-animation"
+      th:if="${job.salaryMini != null and job.salaryMax != null and (job.salaryMini != 0 or job.salaryMax != 0)}">
+    $<span th:text="${#numbers.formatInteger(job.salaryMini, 1)}"></span> - $<span th:text="${#numbers.formatInteger(job.salaryMax, 1)}"></span>
+</span>
+<span class="salary-badge d-inline-block"
+      th:if="${job.salaryMini == null or job.salaryMax == null or (job.salaryMini == 0 and job.salaryMax == 0)}">
+    Salary: Negotiable
+</span>
+
                             </div>
                             <div th:if="${job.applicationDeadline}" class="text-light mt-3">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <i class="bi bi-clock me-2 fs-5"></i>
-                                    <div>
-                                        <div class="fw-bold">Apply before</div>
-                                        <div class="fs-6" th:text="${job.applicationDeadline}"></div>
-                                    </div>
-                                </div>
+                                <div th:if="${job.applicationDeadline}" class="text-light mt-3">
+							    <div class="d-flex align-items-center justify-content-end">
+							        <i class="bi bi-clock me-2 fs-5"></i>
+							        <div>
+							            <div class="fw-bold">Apply before</div>
+							            <div class="fs-6" th:text="${#temporals.format(job.applicationDeadline, 'dd MMM, yyyy')}"></div>
+							        </div>
+							    </div>
+							</div>
                             </div>
                         </div>
                     </div>
@@ -480,38 +544,44 @@
                     <!-- Main Job Content -->
                     <div class="col-lg-8">
                         <!-- Job Description -->
-                        <div class="card job-card mb-4 animate__animated animate__fadeInUp">
-                            <div class="card-body p-4">
-                                <h3 class="section-title">📝 Job Description</h3>
-                                <div class="description-content" th:text="${job.jobDescription}"></div>
-                            </div>
-                        </div>
+<div class="card job-card mb-4 animate__animated animate__fadeInUp">
+    <div class="card-body p-4">
+        <h3 class="section-title mb-4">📝 Job Description</h3>
+        <div class="description-content justified-text" th:utext="${job.jobDescription}"></div>
+    </div>
+</div>
 
                         <!-- Required Skills -->
-                        <div class="card job-card mb-4 animate__animated animate__fadeInUp animate__delay-1s">
-                            <div class="card-body p-4">
-                                <h3 class="section-title">💼 Required Skills & Qualifications</h3>
-                                <div th:if="${job.requiredSkills}">
-                                    <div th:each="skill : ${#strings.arraySplit(job.requiredSkills, ',')}">
-                                        <span class="skill-tag" th:text="${skill.trim()}"></span>
-                                    </div>
-                                </div>
-                                <div th:unless="${job.requiredSkills}" class="text-muted text-center py-4">
-                                    <i class="bi bi-info-circle display-4 text-muted mb-3"></i>
-                                    <p class="fs-5">No specific skills required</p>
-                                </div>
-                            </div>
-                        </div>
-
+                       <div class="card job-card mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+    <div class="card-body p-4">
+        <h3 class="section-title mb-4">💼 Required Skills & Qualifications</h3>
+        
+        <div th:if="${job.requiredSkills}" class="star-skills-list">
+            <div th:each="skill : ${#strings.arraySplit(job.requiredSkills, ',')}" class="star-skill-item">
+                <span class="star-bullet">★</span>
+                <span class="skill-text" th:text="${skill.trim()}"></span>
+            </div>
+        </div>
+        
+        <div th:unless="${job.requiredSkills}" class="text-muted text-center py-4">
+            <i class="bi bi-info-circle display-4 text-muted mb-3"></i>
+            <p class="fs-5">No specific skills required</p>
+        </div>
+    </div>
+</div>
                         <!-- Benefits -->
-                        <div th:if="${job.benefits}" class="card job-card animate__animated animate__fadeInUp animate__delay-2s">
-                            <div class="card-body p-4">
-                                <h3 class="section-title">🎁 Benefits & Perks</h3>
-                                <div class="description-content" th:text="${job.benefits}"></div>
-                            </div>
-                        </div>
-
-                        <!-- Application CTA - Enhanced Version -->
+<div th:if="${job.benefits}" class="card job-card animate__animated animate__fadeInUp animate__delay-2s">
+    <div class="card-body p-4">
+        <h3 class="section-title mb-4">🎁 Benefits & Perks</h3>
+        <div class="benefits-container">
+            <div th:each="benefit : ${#strings.arraySplit(job.benefits, ',')}" class="benefit-item">
+                <i class="bi bi-check-circle-fill benefit-icon"></i>
+                <span class="benefit-text" th:text="${benefit.trim()}"></span>
+            </div>
+        </div>
+    </div>
+</div>
+                        <!-- Application CTA - Enhanced Version 17-10-25 -->
                         <div class="card job-card mt-4 animate__animated animate__fadeInUp animate__delay-3s">
                             <div class="card-body p-4">
                                 <div class="row align-items-center">
@@ -530,18 +600,26 @@
                                             <small>Send your application to: <strong th:text="${job.applicationEmail}"></strong></small>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 text-md-end">
-                                        <div class="d-flex flex-column gap-3">
-                                            <a th:href="'mailto:' + ${job.applicationEmail} + '?subject=Application for ' + ${job.jobTitle} + '&body=Dear Hiring Manager,%0D%0A%0D%0AI am excited to apply for the ' + ${job.jobTitle} + ' position at ' + ${company.companyName} + '. Please find my application attached.%0D%0A%0D%0ABest regards,'" 
-                                               class="btn apply-btn">
-                                                <i class="bi bi-send me-2"></i>Apply Now
-                                            </a>
-                                            <a th:href="@{/user/user_companies}" class="btn back-btn">
-                                                <i class="bi bi-arrow-left me-2"></i>Back to Companies
-                                            </a>
-                                        </div>
-                                    </div>
+                                    
+                       <div class="col-md-4 text-md-end">
+						    <div class="d-flex flex-column gap-3">
+						        <!-- Apply Now Button that goes to form page -->
+						        <a th:href="@{/user/apply-form/{jobId}(jobId=${job.id})}" class="btn apply-btn" th:if="${user != null}">
+						            <i class="bi bi-cloud-upload me-2"></i>Apply Now
+						        </a>
+						        
+						        <a th:href="@{/user/login}" class="btn btn-warning" th:unless="${user != null}">
+						            <i class="bi bi-person me-2"></i>Login to Apply
+						        </a>
+						
+						        <a th:href="@{/user/user_companies}" class="btn back-btn btn-secondary">
+						            <i class="bi bi-arrow-left me-2"></i>Back to Companies
+						        </a>
+						    </div>
+						</div>
+                              
                                 </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -597,7 +675,7 @@
                                     <i class="bi bi-calendar"></i>
                                     <div>
                                         <strong>Posted Date</strong>
-                                        <div th:text="${#temporals.format(job.createdAt, 'MMM dd, yyyy')}"></div>
+                                        <div th:text="${#temporals.format(job.createdAt, 'dd MMM, yyyy')}"></div>
                                     </div>
                                 </div>
                             </div>
@@ -669,7 +747,7 @@
     </div> <br>
 		
     <!-- Footer --> 
-    <div th:replace="footer :: site-footer"></div>
+        <div th:replace="footerLogin :: inside-footer"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
